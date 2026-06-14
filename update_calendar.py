@@ -1,14 +1,18 @@
 import json
 import os
+import re
+import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from apify_client import ApifyClient
 
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8")
+
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 OUT_PATH = Path(__file__).parent / "calendar_data.json"
 
-# 그룹별로 브랜드를 분산 (3/3/4 배치)
 BRANDS_GROUPS = {
     0: [
         {"name": "ROJITA", "ig": "rojita__official", "tw": "ROJITA__jp", "color": "#C41055", "emoji": "🖤"},
@@ -29,7 +33,6 @@ BRANDS_GROUPS = {
 }
 
 def get_today_group():
-    # 3일 텀 순환: 오늘이 몇 번째 날인지 계산
     return datetime.now().day % 3
 
 def apify_instagram(client, ig_handle):
@@ -37,7 +40,8 @@ def apify_instagram(client, ig_handle):
         run = client.actor("apify/instagram-scraper").call(run_input={
             "directUrls": [f"https://www.instagram.com/{ig_handle}/"], "resultsLimit": 5
         })
-        return [item.get("caption") or item.get("text") for item in client.dataset(run.default_dataset_id).iterate_items()]
+        # .get() 뒤에 or ""를 추가하여 None인 경우 빈 문자열로 처리
+        return [item.get("caption") or item.get("text") or "" for item in client.dataset(run.default_dataset_id).iterate_items()]
     except: return []
 
 def apify_twitter(client, x_handle):
@@ -45,17 +49,16 @@ def apify_twitter(client, x_handle):
         run = client.actor("katerinahronik/twitter-scraper").call(run_input={
             "handles": [x_handle.lstrip("@")], "tweetsDesired": 5
         })
-        return [item.get("text") for item in client.dataset(run.default_dataset_id).iterate_items() if not item.get("text", "").startswith("RT ")]
+        # 여기도 빈 문자열 체크 추가
+        return [item.get("text") or "" for item in client.dataset(run.default_dataset_id).iterate_items() if not (item.get("text") or "").startswith("RT ")]
     except: return []
 
 def main():
     client = ApifyClient(APIFY_TOKEN) if APIFY_TOKEN else None
     today_group_idx = get_today_group()
-    target_brands = BRANDS_GROUPS[today_group_idx]
+    target_brands = BRANDS_GROUPS.get(today_group_idx, [])
     
-    print(f"📅 오늘은 그룹 {today_group_idx} 수집일입니다. ({len(target_brands)}개 브랜드)")
-    
-    # 기존 데이터 불러오기
+    print(f"📅 오늘은 그룹 {today_group_idx} 수집일입니다.")
     all_events = json.loads(OUT_PATH.read_text(encoding="utf-8")) if OUT_PATH.exists() else []
     
     for brand in target_brands:
@@ -65,18 +68,19 @@ def main():
             if brand["ig"]: texts.extend(apify_instagram(client, brand["ig"]))
             if brand["tw"]: texts.extend(apify_twitter(client, brand["tw"]))
         
-        # 기존 데이터 중 현재 브랜드 건 제거
         all_events = [e for e in all_events if e["br"] != brand["name"]]
         
         for text in texts:
-            if any(trig in text for trig in ["発売", "新作", "drop", "예약", "팝업"]):
-                all_events.append({
-                    "dt": datetime.now().strftime("%Y-%m-%d"), "br": brand["name"], "d": text[:50]
-                })
+            # 방어 코드: text가 None이거나 비어있으면 루프를 돌지 않음
+            if text and isinstance(text, str):
+                if any(trig in text for trig in ["発売", "新作", "drop", "예약", "팝업"]):
+                    all_events.append({
+                        "dt": datetime.now().strftime("%Y-%m-%d"), "br": brand["name"], "d": text[:50]
+                    })
         time.sleep(15)
 
     OUT_PATH.write_text(json.dumps(all_events, ensure_ascii=False, indent=2), encoding="utf-8")
-    print("✅ 로테이션 수집 완료.")
+    print("✅ 완료.")
 
 if __name__ == "__main__":
     main()
