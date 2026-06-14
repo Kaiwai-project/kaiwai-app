@@ -171,24 +171,27 @@ def clean_desc(text: str, max_len: int = 55) -> str:
 def apify_instagram(client: ApifyClient, ig_handle: str, limit: int = 5) -> list[str]:
     """
     apify/instagram-scraper 로 공개 계정의 최근 게시물 캡션을 수집합니다.
-    https://apify.com/apify/instagram-scraper
     """
     try:
+        # .call() 안에서 timeout_secs를 삭제하고 표준 설정만 남깁니다.
         run = client.actor(ACTOR_IG).call(
             run_input={
                 "directUrls":   [f"https://www.instagram.com/{ig_handle}/"],
                 "resultsType":  "posts",
                 "resultsLimit": limit,
                 "addParentData": False,
-            },
-            timeout_secs=ACTOR_TIMEOUT_SECS,
+            }
         )
-        if run is None:
+        
+        # run 결과가 바로 딕셔너리로 나오는지 확인합니다.
+        if not run or "defaultDatasetId" not in run:
             print(f"    ⚠️  Actor 실행 결과 없음 ({ig_handle})")
             return []
 
         captions = []
-        for item in client.dataset(run["defaultDatasetId"]).iterate_items():
+        # dataset ID를 사용하여 아이템을 가져옵니다.
+        dataset_id = run["defaultDatasetId"]
+        for item in client.dataset(dataset_id).iterate_items():
             cap = item.get("caption") or item.get("text") or ""
             if cap:
                 captions.append(cap)
