@@ -1,3 +1,2 @@
 apify-client
-requests
 googletrans==4.0.0-rc1
