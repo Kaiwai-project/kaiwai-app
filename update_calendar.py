@@ -6,8 +6,9 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from apify_client import ApifyClient
+from googletrans import Translator
 
-# 1. 환경 설정
+# 1. 환경 설정 및 인코딩 방지
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
 
@@ -19,7 +20,10 @@ OUT_PATH = Path(__file__).parent / "calendar_data.json"
 ACTOR_IG = "apify/instagram-scraper"
 ACTOR_TW = "katerinahronik/twitter-scraper"
 
-# 2. 브랜드 로테이션 그룹 (3일 텀)
+# 번역기 초기화
+translator = Translator()
+
+# 브랜드 로테이션 그룹 (3일 텀)
 BRANDS_GROUPS = {
     0: [
         {"name": "ROJITA", "ig": "rojita__official", "tw": "ROJITA__jp", "color": "#C41055", "emoji": "🖤"},
@@ -39,11 +43,16 @@ BRANDS_GROUPS = {
     ]
 }
 
-# 3. 유틸리티 함수
+def translate_to_korean(text: str) -> str:
+    """텍스트를 한국어로 번역합니다."""
+    try:
+        return translator.translate(text, dest='ko').text
+    except:
+        return text
+
 def parse_date(text: str) -> str:
     today = datetime.now()
     text = text.replace("今日", today.strftime("%m/%d")).replace("明日", (today + timedelta(days=1)).strftime("%m/%d"))
-    # 영어 날짜 패턴 추가
     patterns = [
         (r'(\d{4})[./\-](\d{1,2})[./\-](\d{1,2})', "ymd"),
         (r'(\d{1,2})月(\d{1,2})日', "md_jp"),
@@ -82,7 +91,6 @@ def apify_twitter(client, x_handle):
         return [item.get("text") or "" for item in client.dataset(run.default_dataset_id).iterate_items() if not (item.get("text") or "").startswith("RT ")]
     except: return []
 
-# 4. 메인 실행
 def main():
     client = ApifyClient(APIFY_TOKEN) if APIFY_TOKEN else None
     group_idx = datetime.now().day % 3
@@ -97,17 +105,22 @@ def main():
             if brand["ig"]: texts.extend(apify_instagram(client, brand["ig"]))
             if brand["tw"]: texts.extend(apify_twitter(client, brand["tw"]))
         
+        # 기존 데이터 삭제 후 병합
         all_events = [e for e in all_events if e["br"] != brand["name"]]
         
         for text in texts:
             if text and isinstance(text, str) and any(trig in text for trig in ["発売", "新作", "drop", "예약", "팝업"]):
                 all_events.append({
-                    "dt": parse_date(text), "br": brand["name"], "d": text[:50], "c": brand["color"], "e": brand["emoji"]
+                    "dt": parse_date(text), 
+                    "br": brand["name"], 
+                    "d": translate_to_korean(text[:50]), 
+                    "c": brand["color"], 
+                    "e": brand["emoji"]
                 })
         time.sleep(15)
 
     OUT_PATH.write_text(json.dumps(all_events, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"✅ 그룹 {group_idx} 수집 완료.")
+    print(f"✅ 그룹 {group_idx} 수집 및 번역 완료.")
 
 if __name__ == "__main__":
     main()
