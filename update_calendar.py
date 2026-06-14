@@ -1,3 +1,4 @@
+import time
 """
 KAIWAI 캘린더 자동 수집기 — update_calendar.py
 =====================================================
@@ -61,41 +62,12 @@ BRANDS = [
     ("Ank Rouge",                      "ankrouge_official",         "AnkRouge",         "#C41055", "🎀"),
     ("Honey Cinnamon",                 "",                          "honeyc0214",       "#C41055", "🍯"),
     ("Secret Honey",                   "secrethoney_official",      "SecretHoney_HB",   "#C41055", "🐰"),
-    ("evelyn",                         "evelyn.official",           "evelyn_tokyo",     "#C41055", "🌼"),
-    ("Swankiss",                       "",                          "Swankiss",         "#C41055", "💗"),
     ("ROJITA",                         "rojita__official",          "ROJITA__jp",       "#C41055", "🖤"),
     ("NOEMIE",                         "noemie_official_",          "Noemie_shop",      "#C41055", "🩷"),
-    ("Jamie エーエヌケー",              "jamieank_official",         "Jamie_ank",        "#C41055", "🎀"),
     ("MA*RS",                          "marsofficialjapan",         "mars_amoebamars",  "#C41055", "♦️"),
-    ("EATME",                          "eatme_japan",               "EATME_tweet",      "#C41055", "🌹"),
     ("DearMyLove",                     "dearmylove_official",       "dearmylove_yume",  "#C41055", "💕"),
     ("pium",                           "",                          "pium__official",   "#AA7020", "🌸"),
-    ("SNIDEL",                         "snidel_official",           "snidelOfficial",   "#AA7020", "🌿"),
-    ("titty&Co.",                      "tittyandco_com",            "tittyandco_",      "#AA7020", "🤎"),
-    ("GRL",                            "grl_official",              "GRL_official",     "#AA7020", "🌾"),
     ("DimMoire",                       "",                          "_DimMoire_",       "#7733BB", "🌑"),
-    ("Amilige",                        "amilige_official",          "",                 "#7733BB", "🖤"),
-    ("KRY clothing",                   "kry231",                    "KRY_official_",    "#7733BB", "🖤"),
-    ("REFLEM",                         "",                          "_REFLEM",          "#7733BB", "⚡"),
-    ("TRAVAS TOKYO",                   "travas_tokyo",              "travas_tokyo",     "#7733BB", "🎮"),
-    ("ililil",                         "",                          "",                 "#E05C00", "💙"),
-    ("anonenone",                      "",                          "anonenone_jp",     "#E05C00", "👼"),
-    ("ACDC RAG",                       "acdcrag_harajuku",          "acdcrag",          "#E05C00", "⚡"),
-    ("LISTEN FLAVOR",                  "listenflavor_official",     "listenflavor",     "#E05C00", "🎨"),
-    ("NieR Clothing",                  "",                          "NieR_tokyo",       "#E05C00", "🌀"),
-    ("HEIHEI",                         "",                          "heihei_official",  "#E05C00", "🖤"),
-    ("BABY THE STARS SHINE BRIGHT",    "babythessbofficial",        "BABY_THE_STARS",   "#BB22CC", "🌹"),
-    ("Angelic Pretty",                 "angelicpretty_official",    "",                 "#BB22CC", "💜"),
-    ("Moi-même-Moitié",                "",                          "moitie_official",  "#BB22CC", "🌙"),
-    ("Alice and the Pirates",          "alice_and_the_pirates",     "",                 "#BB22CC", "🏴‍☠️"),
-    ("Atelier Pierrot",                "",                          "atelier_pierrot",  "#BB22CC", "🌸"),
-    ("Amavel",                         "amavel_official",           "_amavel_",         "#BB22CC", "👑"),
-    ("To Alice",                       "toalicejapan",              "toalicejapan",     "#BB22CC", "🐇"),
-    ("BUBBLES",                        "bubbles_tokyo",             "bubbles_tokyo",    "#009966", "👟"),
-    ("Maison de FLEUR",                "maisondefleur_press",       "Maison_de_FLEUR",  "#009966", "👜"),
-    ("Samantha Vega",                  "samantha.vega_official",    "samantha_PR_ST",   "#009966", "💎"),
-    ("Vivienne Westwood",              "",                          "VW_JAPAN",         "#009966", "✨"),
-    ("Lafary",                         "lafary_jp",                 "lafary_jp",        "#009966", "🎀"),
 ]
 
 # ─────────────────────────────────────────────────────────
@@ -115,7 +87,14 @@ EVENT_TRIGGERS = [
     "新入荷", "collection", "collaboration", "再入荷", "restock",
 ]
 
-
+for brand in brands:
+    print(f"DEBUG: Processing brand: {brand['name']}")
+    
+    # ... 데이터 수집 로직 ...
+    
+    # 2. 브랜드 하나를 처리한 후, 강제로 10초~20초 동안 쉽니다.
+    print("DEBUG: 수집 보호를 위해 15초간 대기합니다...")
+    time.sleep(15)
 # ─────────────────────────────────────────────────────────
 # 유틸 함수
 # ─────────────────────────────────────────────────────────
