@@ -208,25 +208,26 @@ def apify_instagram(client: ApifyClient, ig_handle: str, limit: int = 5) -> list
 def apify_twitter(client: ApifyClient, x_handle: str, limit: int = 5) -> list[str]:
     """
     apify/twitter-scraper 로 공개 계정의 최근 트윗을 수집합니다.
-    https://apify.com/apify/twitter-scraper
     """
     handle = x_handle.lstrip("@")
     try:
+        # 마찬가지로 .call() 안에서 timeout_secs를 삭제합니다.
         run = client.actor(ACTOR_TW).call(
             run_input={
                 "startUrls": [{"url": f"https://twitter.com/{handle}"}],
                 "maxItems":  limit,
                 "addUserInfo": False,
-            },
-            timeout_secs=ACTOR_TIMEOUT_SECS,
+            }
         )
-        if run is None:
+        
+        if not run or "defaultDatasetId" not in run:
             print(f"    ⚠️  Actor 실행 결과 없음 (@{handle})")
             return []
 
         texts = []
-        for item in client.dataset(run["defaultDatasetId"]).iterate_items():
-            # apify/twitter-scraper 필드명: full_text 또는 text
+        dataset_id = run["defaultDatasetId"]
+        for item in client.dataset(dataset_id).iterate_items():
+            # 트윗 텍스트 추출
             txt = item.get("full_text") or item.get("text") or ""
             if txt and not txt.startswith("RT "):   # 리트윗 제외
                 texts.append(txt)
