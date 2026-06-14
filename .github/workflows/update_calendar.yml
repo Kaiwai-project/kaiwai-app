@@ -25,7 +25,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: "pip"
 
       # ③ 의존성 설치
       #    instaloader : Instagram 크롤링 (무료, 로그인 불필요)
