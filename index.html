@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>KAIWAI 🎀 — 일본 서브컬쳐 패션 디렉토리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://developers.kakaocdn.net/js/kakao.js"></script>
+<script src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  body { font-family:'Noto Sans KR',sans-serif; background:#FFF0F5; color:#4A373A; }
+  .logo-font { font-family:'M PLUS Rounded 1c',sans-serif; font-weight:800; }
+  .brand-font { font-family:'M PLUS Rounded 1c',sans-serif; font-weight:700; }
+  .noscroll::-webkit-scrollbar{display:none}
+  .noscroll{-ms-overflow-style:none;scrollbar-width:none}
+  .drag{cursor:grab;user-select:none}
+  .drag.on{cursor:grabbing}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .fu{animation:fadeUp .36s ease both}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .su{animation:slideUp .32s cubic-bezier(.32,.72,0,1)}
+  .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .masonry{columns:2;column-gap:10px}
+  .mitem{break-inside:avoid;margin-bottom:10px}
+  a{text-decoration:none}
+  .auth-input{width:100%;padding:13px 16px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A373A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+  .auth-input:focus{border-color:#FF6FA8;box-shadow:0 0 0 3px rgba(255,111,168,.12)}
+  .auth-input::placeholder{color:#C4A8B0}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+  .shake{animation:shake .32s ease}
+  @keyframes likeBounce{0%{transform:scale(1)}20%{transform:scale(1.55)}50%{transform:scale(.88)}70%{transform:scale(1.18)}85%{transform:scale(.96)}100%{transform:scale(1)}}
+  .like-bounce{animation:likeBounce .5s cubic-bezier(.36,.07,.19,.97);display:inline-block}
+</style>
+</head>
+<body class="flex justify-center min-h-screen" style="background:#FFF0F5">
+
+<div id="app" class="relative w-full max-w-[430px] min-h-screen flex flex-col" style="background:#FFF0F5">
+
+<!-- ══ 홈 탭 ══ -->
+<div id="tHome" class="flex flex-col flex-1">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+    <div class="flex items-end justify-between mb-4">
+      <span class="logo-font text-[32px] leading-none" style="color:#4A373A">KAIWAI <span style="color:#FF6FA8">🎀</span></span>
+      <button id="authBtn" onclick="openAuth('login')" style="background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:100px;padding:7px 16px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;font-weight:700;color:#FF6FA8;transition:all .2s" onmouseover="this.style.background='#FFE0EE'" onmouseout="this.style.background='#FFF0F5'">로그인</button>
+    </div>
+    <div id="filterRow" class="flex gap-2 overflow-x-auto noscroll pb-1 drag"></div>
+    <div style="position:relative;margin-top:10px">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;color:#8D7B80">🔍</span>
+      <input id="searchBox" type="search" placeholder="브랜드명, 스타일, 키워드로 검색…"
+        oninput="setSearch(this.value)"
+        style="width:100%;background:#fff;border:1.5px solid #FFD6E8;border-radius:100px;padding:10px 40px 10px 36px;color:#4A373A;font-size:13px;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;box-shadow:0 2px 12px rgba(255,150,180,.1)"
+        onfocus="this.style.borderColor='#FF6FA8';this.style.boxShadow='0 0 0 3px rgba(255,111,168,.15)'"
+        onblur="this.style.borderColor='#FFD6E8';this.style.boxShadow='0 2px 12px rgba(255,150,180,.1)'"/>
+      <button id="searchClear" onclick="clearSearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#8D7B80;cursor:pointer;font-size:14px;padding:0;width:26px;height:26px;line-height:1">✕</button>
+    </div>
+  </div>
+  <div id="banner" class="mx-4 mt-1 mb-3 overflow-hidden" style="height:156px;border-radius:24px"></div>
+  <p id="homeCountWrap" class="px-4 mb-2 text-xs" style="color:#8D7B80"></p>
+  <div id="brandList" class="px-4 pb-28 flex flex-col gap-3"></div>
+</div>
+
+<!-- ══ 쇼핑맵 탭 ══ -->
+<div id="tMap" style="display:none" class="flex-col flex-1">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+    <div class="flex items-center justify-between mb-4">
+      <div><h1 class="font-bold text-lg" style="color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif">🗺️ 쇼핑 맵</h1><p style="color:#8D7B80;font-size:10px">현지 오프라인 매장 가이드</p></div>
+      <span style="background:#FFE8F0;color:#8D7B80;font-size:10px;padding:4px 10px;border-radius:10px">면세 ✓ 표시 있음</span>
+    </div>
+    <div id="regionRow" class="flex gap-2 overflow-x-auto noscroll pb-1 drag"></div>
+    <div id="mallRow" class="flex gap-2 overflow-x-auto noscroll mt-2 pb-1 drag"></div>
+  </div>
+  <p class="px-4 mt-3 mb-2 text-xs" style="color:#8D7B80"><span id="mapBrandCount" style="color:#4A373A;font-weight:700"></span> 브랜드 · <span id="mapStoreCount" style="color:#4A373A;font-weight:700"></span> 매장</p>
+  <div id="mapList" class="px-4 pb-28 flex flex-col gap-3"></div>
+</div>
+
+<!-- ══ 피드 탭 ══ -->
+<div id="tFeed" style="display:none" class="flex-col flex-1">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0))">
+    <div class="flex items-center justify-between">
+      <div><h1 class="font-bold text-lg" style="color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif">📸 스타일 피드</h1><p style="color:#8D7B80;font-size:10px">서브컬쳐 OOTD 모음</p></div>
+      <button style="background:#FFE0EE;color:#C41055;border:1.5px solid #FFB3CC;font-size:11px;font-weight:700;padding:6px 14px;border-radius:100px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif">+ 업로드</button>
+    </div>
+  </div>
+  <div id="feedGrid" class="px-3 pt-2 pb-28 masonry"></div>
+</div>
+
+<!-- ══ 즐겨찾기 탭 ══ -->
+<div id="tFav" style="display:none" class="flex-col flex-1">
+  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,#FFF0F5 60%,transparent)">
+    <h1 class="font-bold text-lg" style="color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif">❤️ 즐겨찾기</h1>
+    <p style="color:#8D7B80;font-size:10px;margin-top:2px">하트를 누른 브랜드 모음</p>
+  </div>
+  <div id="favList" class="px-4 pb-28 flex flex-col gap-3"></div>
+</div>
+
+<!-- ══ 캘린더 탭 ══ -->
+<div id="tCal" style="display:none" class="flex-col flex-1">
+  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,#FFF0F5 60%,transparent)">
+    <h1 class="font-bold text-lg" style="color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif">🗓️ 신상 캘린더</h1>
+    <p style="color:#8D7B80;font-size:10px;margin-top:2px">2026년 발매 · 수주 · 팝업 일정</p>
+  </div>
+  <div id="calList" class="px-4 pb-28 flex flex-col gap-3"></div>
+</div>
+
+<!-- ══ 하단 탭바 ══ -->
+<nav class="fixed bottom-0 z-20 w-full max-w-[430px] flex" style="background:#fff;border-top:1.5px solid #FFD6E8;box-shadow:0 -4px 20px rgba(255,150,180,.12)">
+  <button id="nb-home" onclick="go('home')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:700;color:#FF6FA8;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🎀</span>홈</button>
+  <button id="nb-map"  onclick="go('map')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗺️</span>쇼핑맵</button>
+  <button id="nb-feed" onclick="go('feed')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">📸</span>피드</button>
+  <button id="nb-fav"  onclick="go('fav')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">❤️</span>즐겨찾기</button>
+  <button id="nb-cal"  onclick="go('cal')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗓️</span>캘린더</button>
+</nav>
+</div>
+
+<!-- ══ 브랜드 모달 ══ -->
+<div id="overlay" onclick="closeModal()" style="display:none;position:fixed;inset:0;background:rgba(74,55,58,.4);z-index:40;align-items:flex-end;justify-content:center">
+  <div id="mSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:90vh">
+    <div id="mBody"></div>
+  </div>
+</div>
+
+<!-- ══ 인증 모달 ══ -->
+<div id="authOverlay" onclick="closeAuth()" style="display:none;position:fixed;inset:0;background:rgba(74,55,58,.4);z-index:50;align-items:flex-end;justify-content:center">
+  <div id="authSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeAuth()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+
+    <!-- 로그인 뷰 -->
+    <div id="viewLogin" style="padding:20px 24px 44px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A373A;margin:8px 0 5px">로그인 🎀</h2>
+      <p style="font-size:13px;color:#8D7B80;margin:0 0 22px">KAIWAI 계정으로 시작하세요</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+        <button onclick="socialLogin('kakao')" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:14px;border:none;cursor:pointer;background:#FEE500;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:14px;color:#191919;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 40 40" fill="none"><path fill="#191919" d="M20 4C11.163 4 4 9.82 4 17c0 4.687 2.857 8.804 7.2 11.27L9.6 34l6.72-3.36C17.57 30.87 18.77 31 20 31c8.837 0 16-5.82 16-13S28.837 4 20 4z"/></svg>
+          카카오로 시작하기
+        </button>
+        <button onclick="socialLogin('naver')" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:14px;border:none;cursor:pointer;background:#03C75A;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:14px;color:#fff;transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+          네이버로 시작하기
+        </button>
+        <button onclick="socialLogin('google')" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:14px;border:1.5px solid #E8D8DC;cursor:pointer;background:#fff;font-family:'Noto Sans KR',sans-serif;font-weight:700;font-size:14px;color:#4A373A;transition:background .15s" onmouseover="this.style.background='#FFF5F8'" onmouseout="this.style.background='#fff'">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Google로 시작하기
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+        <div style="flex:1;height:1px;background:#FFE8F0"></div>
+        <span style="font-size:12px;color:#C4A8B0;font-weight:500">또는</span>
+        <div style="flex:1;height:1px;background:#FFE8F0"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+        <input class="auth-input" id="loginId" type="text" placeholder="아이디 또는 이메일" autocomplete="username"/>
+        <input class="auth-input" id="loginPw" type="password" placeholder="비밀번호" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <p id="loginErr" style="font-size:12px;color:#C41055;margin:0 0 12px;display:none;line-height:1.5"></p>
+      <button onclick="doLogin()" style="width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;font-weight:700;font-size:15px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 16px rgba(196,16,85,.28);transition:opacity .15s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">로그인</button>
+      <p style="text-align:center;font-size:13px;color:#8D7B80;margin:16px 0 0">계정이 없으신가요? <button onclick="switchAuth('signup')" style="background:none;border:none;color:#FF6FA8;font-weight:700;cursor:pointer;font-size:13px;font-family:'Noto Sans KR',sans-serif">회원가입</button></p>
+    </div>
+
+    <!-- 회원가입 뷰 -->
+    <div id="viewSignup" style="display:none;padding:20px 24px 44px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A373A;margin:8px 0 5px">회원가입 🎀</h2>
+      <p style="font-size:13px;color:#8D7B80;margin:0 0 22px">KAIWAI와 함께 서브컬쳐 패션을 탐색해보세요</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px">
+        <input class="auth-input" id="regNick" type="text" placeholder="닉네임 (2~10자)" maxlength="10"/>
+        <input class="auth-input" id="regId" type="text" placeholder="아이디 (영문+숫자 4~20자)" maxlength="20" autocomplete="username"/>
+        <input class="auth-input" id="regEmail" type="email" placeholder="이메일"/>
+        <input class="auth-input" id="regPw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="new-password"/>
+        <input class="auth-input" id="regPw2" type="password" placeholder="비밀번호 확인" autocomplete="new-password" onkeydown="if(event.key==='Enter')doRegister()"/>
+      </div>
+      <p id="regErr" style="font-size:12px;color:#C41055;margin:0 0 12px;display:none;line-height:1.5"></p>
+      <button onclick="doRegister()" style="width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;font-weight:700;font-size:15px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 16px rgba(196,16,85,.28);transition:opacity .15s" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">회원가입</button>
+      <p style="text-align:center;font-size:13px;color:#8D7B80;margin:16px 0 0">이미 계정이 있으신가요? <button onclick="switchAuth('login')" style="background:none;border:none;color:#FF6FA8;font-weight:700;cursor:pointer;font-size:13px;font-family:'Noto Sans KR',sans-serif">로그인</button></p>
+    </div>
+
+    <!-- 프로필 뷰 -->
+    <div id="viewProfile" style="display:none;padding:20px 24px 44px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A373A;margin:8px 0 22px">내 계정 🎀</h2>
+      <div style="display:flex;align-items:center;gap:14px;padding:18px;background:#FFF5F8;border-radius:20px;margin-bottom:16px;border:1.5px solid #FFE8F0">
+        <div id="profAvatar" style="width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#FF6FA8,#C41055);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;flex-shrink:0"></div>
+        <div>
+          <p id="profNick" style="font-weight:700;font-size:16px;color:#4A373A;margin:0 0 3px;font-family:'M PLUS Rounded 1c',sans-serif"></p>
+          <p id="profSub" style="font-size:12px;color:#8D7B80;margin:0"></p>
+        </div>
+      </div>
+      <div style="background:#FFF5F8;border-radius:16px;padding:14px 16px;margin-bottom:16px;border:1px solid #FFE8F0">
+        <p style="font-size:12px;color:#C4A8B0;margin:0 0 6px;font-weight:600;letter-spacing:1px">즐겨찾기</p>
+        <p id="profFavCount" style="font-size:20px;font-weight:800;color:#C41055;margin:0;font-family:'M PLUS Rounded 1c',sans-serif"></p>
+      </div>
+      <button onclick="doLogout()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid #FFD6E8;cursor:pointer;background:#fff;font-weight:700;font-size:14px;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;transition:background .15s" onmouseover="this.style.background='#FFF5F8'" onmouseout="this.style.background='#fff'">로그아웃</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════
+   카테고리 메타
+═══════════════════════════════════ */
+const CM = {
+  "전체보기":             { c:"#D63070", e:"✦",  g:"linear-gradient(135deg,#FFF0F5,#F5E0EE)", bgImg:"여기에_사진_링크_넣기", d:"일본 서브컬쳐 패션의 모든 세계를 탐색해보세요." },
+  "양산형·지뢰계":        { c:"#C41055", e:"🎀", g:"linear-gradient(135deg,#FFE0EC,#FFB3CC)", bgImg:"여기에_사진_링크_넣기", d:"달콤하고 아련한 다크 페미닌 — 레이스, 리본, 퍼프 소매의 세계" },
+  "다크지뢰계·멘헤라":    { c:"#7733BB", e:"🖤", g:"linear-gradient(135deg,#F0E0FF,#D8B3FF)", bgImg:"여기에_사진_링크_넣기", d:"달콤함 속의 어둠 — 멘헤라 미학과 서브컬처가 만나는 지점" },
+  "스나계":               { c:"#AA7020", e:"🌿", g:"linear-gradient(135deg,#FFF5E0,#FFE0A0)", bgImg:"여기에_사진_링크_넣기", d:"자연스럽고 세련된 내추럴 페미닌 — 루미네·루쿠아가 사랑하는 무드" },
+  "서브컬쳐":             { c:"#E05C00", e:"⚡", g:"linear-gradient(135deg,#FFF3E0,#FFD0A8)", bgImg:"여기에_사진_링크_넣기", d:"하라주쿠 원조 스트리트 — 데코라, 팝, 아방가르드 패션" },
+  "로리타":               { c:"#BB22CC", e:"🌸", g:"linear-gradient(135deg,#F8E0FF,#EEB3FF)", bgImg:"여기에_사진_링크_넣기", d:"빅토리안 드림 — 화려한 프릴과 레이스 파라솔, 하라주쿠의 살아있는 전설" },
+  "비쥬얼계 고스·펑크":   { c:"#4A0080", e:"🌹", g:"linear-gradient(135deg,#F5E5FF,#E0C0FF)", bgImg:"여기에_사진_링크_넣기", d:"비주얼계의 화려함과 고딕 펑크의 어둠이 교차하는 세계" },
+  "잡화(가방,신발,악세)": { c:"#009966", e:"👜", g:"linear-gradient(135deg,#E0FFF5,#B3FFE0)", bgImg:"여기에_사진_링크_넣기", d:"통굽 로퍼부터 이타백까지 — 서브컬쳐 룩을 완성하는 오리지널 아이템" },
+};
+const FILTERS = Object.keys(CM);
+
+/* ═══════════════════════════════════
+   브랜드 데이터 (60개 — CSV 마스터 기준)
+═══════════════════════════════════ */
+const B = [
+  /* ── 양산형·지뢰계 ── */
+  {id:1,  n:"LIZ LISA",                      s:"양산형·지뢰계", i:"LL", c:"#C41055", tax:true,
+   desc:"양산형의 교과서. 히메 카지×양산형을 대표하는 플라워 레이스와 핑크 톤의 아이코닉 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://tokyokawaiilife.jp", globalUrl:"https://tokyokawaiilife.com", xId:"@lizlisaofficial", instaId:"@lizlisa_official_japan",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"5F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 EST",fl:"B1F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:2,  n:"Ank Rouge",                     s:"양산형·지뢰계", i:"AR", c:"#C41055", tax:true,
+   desc:"달콤한 레이스와 빈티지 디테일. 지뢰계와 양산형 사이의 완벽한 밸런스.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://ailand-store.jp/ankrouge/", globalUrl:"", xId:"@AnkRouge", instaId:"@ankrouge_official",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"3F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:3,  n:"Honey Cinnamon",                s:"양산형·지뢰계", i:"HC", c:"#C41055", tax:true,
+   desc:"따뜻하고 달콤한 양산형. 이케부쿠로와 시부야109를 거점으로 하는 자연스러운 페미닌 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"http://honeycinnamon.jp/", globalUrl:"https://bunnyapartment.com/honeycinnamon/", xId:"@honeyc0214", instaId:"",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"}]},
+  {id:4,  n:"Secret Honey",                  s:"양산형·지뢰계", i:"SH", c:"#C41055", tax:true,
+   desc:"디즈니·산리오 콜라보로 매 시즌 완판 행진. 달콤하고 일상적인 양산형의 최정상.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.rakuten.ne.jp/gold/secrethoney/", globalUrl:"", xId:"@SecretHoney_HB", instaId:"",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"3F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"5F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"4F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:5,  n:"evelyn",                        s:"양산형·지뢰계", i:"EV", c:"#C41055", tax:true,
+   desc:"시부야109·라포레·우메다 거점의 정통 양산형 브랜드. 봄마다 완판되는 플라워 원피스 유명.",
+   logo:"https://evelyn.tokyo.jp/assets/front/evelyn/img/logo.svg?1753456294",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://evelyn.tokyo.jp/", globalUrl:"", xId:"@evelyn_tokyo", instaId:"@evelyn.official",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"3F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"5F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"1F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:6,  n:"Swankiss",                      s:"양산형·지뢰계", i:"SW", c:"#C41055", tax:true,
+   desc:"빈티지하고 로맨틱한 양산형. 동화 속 공주님 무드와 레이스·리본의 조화가 특징인 달콤한 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://swankiss.net/", globalUrl:"", xId:"@Swankiss", instaId:"",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"5F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:7,  n:"meltie",                        s:"양산형·지뢰계", i:"ML", c:"#C41055", tax:false,
+   desc:"프렌치 가리 감성이 섞인 부드러운 양산형. 달콤하고 여성스러운 일상 코디를 제안하는 온라인 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://meltie.jp/", globalUrl:"", xId:"", instaId:"",
+   st:[]},
+  {id:8,  n:"ROJITA",                        s:"양산형·지뢰계", i:"RJ", c:"#C41055", tax:true,
+   desc:"지뢰계 패션의 대표 주자. 블랙×핑크 레이스 원피스와 리본 머리핀이 아이콘.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://rlab-store.jp", globalUrl:"", xId:"@ROJITA__jp", instaId:"@rojita__official",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"도쿄",mall:"이케부쿠로 파르코",fl:"B2F",map:"https://maps.google.com/?q=Ikebukuro+Parco+Tokyo"},
+       {city:"오사카",mall:"우메다 EST",fl:"B1F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:9,  n:"NOEMIE",                        s:"양산형·지뢰계", i:"NM", c:"#C41055", tax:false,
+   desc:"오사카 우메다 HEP FIVE에서만 만날 수 있는 지뢰계 신흥 브랜드. 프렌치×지뢰 무드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://palemoba.com/noemie/", globalUrl:"", xId:"@Noemie_shop", instaId:"@noemie_official_",
+   st:[{city:"오사카",mall:"우메다 HEP FIVE",fl:"3F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:10, n:"Jamie エーエヌケー",              s:"양산형·지뢰계", i:"JK", c:"#C41055", tax:true,
+   desc:"Ank Rouge의 자매 브랜드. 달콤하고 청순한 무드의 지뢰계 코디를 제안.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://ailand-store.jp/jamieank/", globalUrl:"", xId:"@Jamie_ank", instaId:"@jamieank_official",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 EST",fl:"2F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:11, n:"MA*RS",                         s:"양산형·지뢰계", i:"MA", c:"#C41055", tax:true,
+   desc:"시부야109의 레전드 지뢰계 브랜드. 2000년대부터 이어온 달콤 다크 페미닌의 선구자.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://lilimpark.jp/", globalUrl:"", xId:"@mars_amoebamars", instaId:"@marsofficialjapan",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
+  {id:12, n:"EATME",                         s:"양산형·지뢰계", i:"EM", c:"#C41055", tax:true,
+   desc:"아방가르드한 감성의 지뢰×스트리트 퓨전 브랜드. 우메다 EST 입점.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://runway-webstore.com/eatme/", globalUrl:"", xId:"@EATME_tweet", instaId:"@eatme_japan",
+   st:[{city:"오사카",mall:"우메다 EST",fl:"3F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:13, n:"DearMyLove",                    s:"양산형·지뢰계", i:"DL", c:"#C41055", tax:false,
+   desc:"유메텐보 산하 지뢰계 브랜드. 두꺼운 굽 구두와 셋업으로 유명한 지뢰계 코디의 핵심.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://dreamvs.jp/collections/dearmylove", globalUrl:"", xId:"@dearmylove_yume", instaId:"@dearmylove_official",
+   st:[]},
+  /* ── 스나계 ── */
+  {id:14, n:"pium",                          s:"스나계", i:"PI", c:"#AA7020", tax:false,
+   desc:"달콤한 아마메 지뢰계. 아이돌 멤버 우스키 사야카 프로듀스. '귀여움을 포기하지 않는다'는 콘셉트.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://piumofficial.com/", globalUrl:"", xId:"@pium__official", instaId:"",
+   st:[]},
+  {id:15, n:"SNIDEL",                        s:"스나계", i:"SN", c:"#AA7020", tax:true,
+   desc:"스나계 내추럴 페미닌의 정점. 루미네·루쿠아 전국 셀렉트숍 입점의 국민 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://snidel.com/", globalUrl:"", xId:"@snidelOfficial", instaId:"@snidel_official",
+   st:[{city:"도쿄",mall:"루미네 신주쿠",fl:"2F",map:"https://maps.google.com/?q=Lumine+Shinjuku"},
+       {city:"오사카",mall:"루쿠아 오사카",fl:"3F",map:"https://maps.google.com/?q=Lucua+Osaka"}]},
+  {id:16, n:"REDYAZEL",                      s:"스나계", i:"RZ", c:"#AA7020", tax:true,
+   desc:"트렌디하고 배색이 돋보이는 스나계 페미닌룩. 루미네 입점의 세련된 오토나카와이 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://online.burnedestrose.com/bstr/shop/brand/redyazel", globalUrl:"https://www.burnedestrose.com/shop/e/eRAfeat/", xId:"@redyazel", instaId:"",
+   st:[{city:"도쿄",mall:"루미네 신주쿠",fl:"3F",map:"https://maps.google.com/?q=Lumine+Shinjuku"}]},
+  {id:17, n:"titty&Co.",                     s:"스나계", i:"TC", c:"#AA7020", tax:true,
+   desc:"시부야109 5F의 스나계 편집샵. 자연스러운 소재와 트렌디한 실루엣의 캐주얼 페미닌.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://zozo.jp/brand/tittyandco/", globalUrl:"", xId:"@tittyandco_", instaId:"@tittyandco_com",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"5F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
+  {id:18, n:"GRL",                           s:"스나계", i:"GR", c:"#AA7020", tax:false,
+   desc:"압도적인 가성비의 스나계 패스트 패션. SNS 인플루언서 중심의 온라인 전용 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.grail.bz/", globalUrl:"", xId:"@GRL_official", instaId:"@grl_official",
+   st:[]},
+  /* ── 다크지뢰계·멘헤라 ── */
+  {id:19, n:"DimMoire",                      s:"다크지뢰계·멘헤라", i:"DM", c:"#7733BB", tax:false,
+   desc:"라포레 하라주쿠 아크로도쿄에서 만나는 다크 지뢰계 편집샵. 팝업과 온라인 위주 전개.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.dimmoire.jp", globalUrl:"https://acrotokyo-global.com", xId:"@_DimMoire_", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F (아크로도쿄)",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:20, n:"Amilige",                       s:"다크지뢰계·멘헤라", i:"AM", c:"#7733BB", tax:true,
+   desc:"라포레와 우메다 EST 입점. 풍성한 레이스와 리본이 특징인 감성 지뢰계 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"@OfficialAmilige", instaId:"@amilige_official",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 EST",fl:"2F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:21, n:"KRY clothing",                  s:"다크지뢰계·멘헤라", i:"KY", c:"#7733BB", tax:false,
+   desc:"흑백 중심의 다크 스트릿 서브컬처. 모노톤 그래픽과 날카로운 실루엣의 온라인 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.kry.tokyo/", globalUrl:"", xId:"@KRY_official_", instaId:"@kry231",
+   st:[]},
+  {id:22, n:"REFLEM",                        s:"다크지뢰계·멘헤라", i:"RF", c:"#7733BB", tax:true,
+   desc:"라포레 하라주쿠 아크로도쿄의 다크 미즈이로 계열 브랜드. 서브컬처 감성의 독보적인 아이덴티티.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"https://acrotokyo-global.com", xId:"@_REFLEM", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F (아크로도쿄)",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"6F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:23, n:"TRAVAS TOKYO",                  s:"다크지뢰계·멘헤라", i:"TV", c:"#7733BB", tax:true,
+   desc:"게임·애니 감성의 서브컬처 브랜드. REFLEM과 함께 라포레 아크로도쿄의 양대 산맥.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.acrotokyo.com/c/travas", globalUrl:"https://acrotokyo-global.com", xId:"@travas_tokyo", instaId:"@travas_tokyo",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F (아크로도쿄)",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  /* ── 서브컬쳐 ── */
+  {id:24, n:"ililil",                        s:"서브컬쳐", i:"IL", c:"#E05C00", tax:true,
+   logo:"https://ililil.itembox.cloud/item/ililil-logo.png?t=20260430154215",
+   desc:"마그넷 바이 시부야109 입점 미즈이로/천사계 대표 브랜드. 투명하고 청순한 수색 무드의 끝판왕.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.ililil.jp/", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"마그넷 바이 시부야 109",fl:"4F",map:"https://maps.google.com/?q=MAGNET+by+SHIBUYA109"}]},
+  {id:25, n:"anonenone",                     s:"서브컬쳐", i:"AN", c:"#E05C00", tax:false,
+   desc:"'あのね' 로고 저지와 스커트 셋업으로 천사계 유행을 선도. 매주 화요일 신상 업데이트.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.anonenone.net/", globalUrl:"", xId:"@anonenone_jp", instaId:"",
+   st:[]},
+  {id:26, n:"ACDC RAG",                      s:"서브컬쳐", i:"AC", c:"#E05C00", tax:true,
+   logo:"https://acdcrag.com/cdn/shop/files/ACDC_RAG_weblogo_150x.svg?v=1701423231",
+   desc:"하라주쿠 로드샵의 전설. 사이버펑크×하라주쿠 감성의 원조 서브컬처 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://acdcrag.com/", globalUrl:"https://acdcrag.com/en", xId:"@acdcrag", instaId:"@acdcrag_harajuku",
+   st:[{city:"도쿄",mall:"하라주쿠 캣스트리트",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Cat+Street+Tokyo"}]},
+  {id:27, n:"LISTEN FLAVOR",                 s:"서브컬쳐", i:"LV", c:"#E05C00", tax:false,
+   desc:"하라주쿠 데코라 감성의 팝 아트 스트릿 브랜드. 독특한 프린트와 화려한 콜라보로 유명.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://listenflavor.com/", globalUrl:"", xId:"@listenflavor", instaId:"@listenflavor_official",
+   st:[]},
+  {id:28, n:"NieR Clothing",                 s:"서브컬쳐", i:"NC", c:"#E05C00", tax:false,
+   desc:"'새로운 나'를 테마로 한 유니섹스 서브컬처 펑크. BASE 90만 샵 중 월간 1위를 달성한 인기 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://shop.nier.tokyo/", globalUrl:"", xId:"@NieR_tokyo", instaId:"",
+   st:[]},
+  {id:29, n:"Drug Honey",                    s:"서브컬쳐", i:"DH", c:"#E05C00", tax:false,
+   desc:"하라주쿠 다케시타 거리 발 고딕·펑크 브랜드. 2016년 론칭, 하라주쿠 직영점 운영.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠 다케시타",fl:"로드샵",map:"https://maps.google.com/?q=Takeshita+Street+Harajuku+Tokyo"}]},
+  {id:30, n:"HEIHEI",                        s:"서브컬쳐", i:"HH", c:"#E05C00", tax:true,
+   desc:"체크무늬와 펑크를 기반으로 한 하라주쿠 서브컬처 브랜드. 라포레 하라주쿠 B1F 입점.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://heihei.thebase.in/", globalUrl:"", xId:"@heihei_official", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:31, n:"XU",                            s:"서브컬쳐", i:"XU", c:"#E05C00", tax:true,
+   desc:"시부야109와 라포레 동시 입점한 다크 서브컬처 편집샵. NEW ROCK 등 해외 브랜드도 취급.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://pressingshop.com/", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:32, n:"OY",                            s:"서브컬쳐", i:"OY", c:"#E05C00", tax:true,
+   desc:"스트리트×서브컬처를 결합한 도쿄 하라주쿠 독립 브랜드. 과감하고 실험적인 그래픽 디자인.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:33, n:"BACKSTAGE PASS",                s:"서브컬쳐", i:"BP", c:"#E05C00", tax:true,
+   desc:"아이돌 오타쿠×패션의 독보적 브랜드. 콘서트장에서도 입을 수 있는 세련된 서브컬처 아이템.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"6F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  /* ── 비쥬얼계 고스·펑크 ── */
+  {id:34, n:"CIVARIZE",                      s:"비쥬얼계 고스·펑크", i:"CV", c:"#4A0080", tax:true,
+   desc:"시부야 기반 비주얼계 펑크 브랜드. 플레어드 데님과 비대칭 디자인이 트레이드마크.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://acrotokyo.com", globalUrl:"", xId:"@civarize_store", instaId:"",
+   st:[{city:"도쿄",mall:"시부야",fl:"로드샵",map:"https://maps.google.com/?q=Shibuya+Tokyo"}]},
+  {id:35, n:"h.NAOTO",                       s:"비쥬얼계 고스·펑크", i:"HN", c:"#4A0080", tax:true,
+   desc:"고딕·로리타·펑크의 퓨전 브랜드. 2000년 창립, 비주얼계 밴드 의상 및 가면라이더 의상으로도 유명.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://hnaoto.com/", globalUrl:"", xId:"@hnaoto_official", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:36, n:"SEX POT ReVeNGe",               s:"비쥬얼계 고스·펑크", i:"SP", c:"#4A0080", tax:true,
+   desc:"하라주쿠 발 펑크·락 패션의 아이콘. 2000년 시작, KERA 매거진 단골 브랜드로 V계의 상징.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.sexpot.jp/", globalUrl:"", xId:"@sexpot_web", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
+  {id:37, n:"ALGONQUINS",                    s:"비쥬얼계 고스·펑크", i:"AQ", c:"#4A0080", tax:false,
+   desc:"비대칭 레이어링과 패턴 믹스의 하라주쿠 펑크 아이콘. 파산 후 2020년 BASE에서 부활.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[]},
+  {id:38, n:"gouk",                          s:"비쥬얼계 고스·펑크", i:"GK", c:"#4A0080", tax:true,
+   desc:"일본 전통 문양×캐주얼 퓨전의 하라주쿠 서브컬처 브랜드. 2001년 창립의 레트로 WA 스타일.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
+  {id:39, n:"FUGA",                          s:"비쥬얼계 고스·펑크", i:"FG", c:"#4A0080", tax:true,
+   desc:"비주얼계·고딕 하라주쿠 씬의 근본 브랜드. 다크하고 아방가르드한 V계 펑크 패션.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
+  {id:40, n:"PUTUMAYO",                      s:"비쥬얼계 고스·펑크", i:"PU", c:"#4A0080", tax:true,
+   desc:"펑크 로리타의 원조. 1990년 하라주쿠 출신, 고딕·펑크·로리타를 융합한 독보적인 스타일.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
+  {id:41, n:"QOOZA",                         s:"비쥬얼계 고스·펑크", i:"QZ", c:"#4A0080", tax:false,
+   logo:"https://qooza.jp/html/user_data/top/qooza_logo01.png",
+   desc:"라포레 B1.5F의 독특한 서브컬처 편집샵. 오타쿠×패션의 세련된 교차점.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://qooza.jp/", globalUrl:"", xId:"", instaId:"@qooza_official",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  /* ── 로리타 ── */
+  {id:42, n:"BABY THE STARS SHINE BRIGHT",   s:"로리타", i:"BS", c:"#BB22CC", tax:true,
+   logo:"https://www.babyssb.co.jp/wp-content/themes/babyssbThema/inc/images/header/logo.png",
+   desc:"1988년 창립, 클래식 로리타의 전통. 이케부쿠로 P'PARCO 2F. 파리 부티크도 운영하는 세계적 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.babyssb.co.jp/", globalUrl:"", xId:"@BABY_THE_STARS", instaId:"@babythessbofficial",
+   st:[{city:"도쿄",mall:"이케부쿠로 P'PARCO",fl:"2F",map:"https://maps.google.com/?q=P+PARCO+Ikebukuro"}]},
+  {id:43, n:"Angelic Pretty",                s:"로리타", i:"AP", c:"#BB22CC", tax:true,
+   desc:"스위트 로리타의 성지. 화려한 프릴과 파스텔 컬러의 드리밍 컬렉션으로 전 세계 팬 보유.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://angelicpretty.com/", globalUrl:"", xId:"", instaId:"@angelicpretty_official",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:44, n:"Moi-même-Moitié",               s:"로리타", i:"MM", c:"#BB22CC", tax:true,
+   desc:"Mana가 런칭한 고딕 로리타(EGA/EGL)의 전설. 블랙·네이비의 우아한 귀족풍 코디.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://moi-meme-moitie.com/", globalUrl:"", xId:"@moitie_official", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:45, n:"Alice and the Pirates",         s:"로리타", i:"AA", c:"#BB22CC", tax:true,
+   desc:"BABY 산하 자매 브랜드. 해적·빅토리안 테마의 다크 스윗 로리타. 라포레 하라주쿠 입점.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://store.babyssb.co.jp/en/collections/alice-and-the-pirates", globalUrl:"", xId:"", instaId:"@alice_and_the_pirates",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:46, n:"Atelier Pierrot",               s:"로리타", i:"PT", c:"#BB22CC", tax:true,
+   desc:"라포레 하라주쿠 입점 고딕·로리타 셀렉트샵. 코르셋 드레스와 버슬 스커트 등 정통 다크 로리타.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://atelier-pierrot.jp/ko", globalUrl:"", xId:"@atelier_pierrot", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:47, n:"Sheglit",                       s:"로리타", i:"SG", c:"#BB22CC", tax:false,
+   desc:"클래식·고딕 로리타 브랜드. 아틀리에 직접 제작의 정교한 디테일. MiDiom 남성 모드 라인도 운영.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://sheglit.com/", globalUrl:"", xId:"@SheglitOfficial", instaId:"",
+   st:[]},
+  {id:48, n:"Atelier BOZ",                   s:"로리타", i:"BZ", c:"#BB22CC", tax:true,
+   desc:"고딕·아리스토크라트 로리타의 정통. 우아한 솔리드 컬러 아우터웨어로 유명한 클래식 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
+   st:[]},
+  {id:49, n:"Metamorphose temps de fille",   s:"로리타", i:"MX", c:"#BB22CC", tax:true,
+   desc:"1993년 창립, 스윗·클래식 로리타를 아우르는 장수 브랜드. 하라주쿠·신주쿠 거점.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://metamorphose.gr.jp/", globalUrl:"", xId:"@metamor_official", instaId:"",
+   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"},
+       {city:"도쿄",mall:"신주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Shinjuku+Tokyo"}]},
+  {id:50, n:"Innocent World",                s:"로리타", i:"IW", c:"#BB22CC", tax:true,
+   logo:"https://innocentworld.itembox.cloud/item/innocentworld.png?t=20260610100126",
+   desc:"클래식 로리타의 정수. 우아하고 성숙한 빅토리안 스타일의 시그니처 원피스로 전 세계 팬 보유.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://innocent-w.jp/", globalUrl:"", xId:"@innocentworld_", instaId:"",
+   st:[]},
+  {id:51, n:"Victorian Maiden",              s:"로리타", i:"VM", c:"#BB22CC", tax:true,
+   desc:"빅토리안·에드워디안 영감의 클래식 로리타. 어른스럽고 우아한 '오토나 로리타'의 대명사.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://victorianmaiden.com/", globalUrl:"", xId:"@victorian_maiden", instaId:"",
+   st:[]},
+  {id:52, n:"Juliette et Justine",           s:"로리타", i:"JJ", c:"#BB22CC", tax:true,
+   desc:"18·19세기 빅토리안·에드워디안 드레스 영감의 고딕 클래식 로리타. 마치 그림 같은 세계관.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://juliette-et-justine.com/", globalUrl:"", xId:"", instaId:"",
+   st:[]},
+  {id:53, n:"Amavel",                        s:"로리타", i:"AV", c:"#BB22CC", tax:true,
+   logo:"https://www.amavel.jp/cdn/shop/files/logo_amavel.png?v=1758161548&width=184",
+   desc:"시부야109와 우메다 HEP FIVE 입점. 로리타×양산형의 경계를 넘나드는 귀여운 프린세스 스타일.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.amavel.jp/", globalUrl:"", xId:"@_amavel_", instaId:"@amavel_official",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"오사카",mall:"우메다 HEP FIVE",fl:"3F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+  {id:54, n:"To Alice",                      s:"로리타", i:"TA", c:"#BB22CC", tax:true,
+   desc:"이케부쿠로 선샤인 B1F 입점. 이상한 나라의 앨리스 감성의 동화 같은 로리타 코디.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.toalice.co.jp/", globalUrl:"", xId:"@toalicejapan", instaId:"@toalicejapan",
+   st:[{city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"}]},
+  /* ── 잡화(가방,신발,악세) ── */
+  {id:55, n:"BUBBLES",                       s:"잡화(가방,신발,악세)", i:"BB", c:"#009966", tax:true,
+   logo:"https://bubblestokyo.com/cdn/shop/files/bubbles_logo.png?v=1712120755&width=600",
+   desc:"시부야109 6F. 통굽 로퍼와 지뢰계 의류를 함께 취급하는 멀티숍. 학교 가방 느낌의 아이템도 인기.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://sparklingmall.jp/", globalUrl:"", xId:"@bubbles_tokyo", instaId:"@bubbles_tokyo",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
+  {id:56, n:"YOSUKE",                        s:"잡화(가방,신발,악세)", i:"YS", c:"#009966", tax:true,
+   desc:"통굽·펑크 슈즈의 대명사. 이케부쿠로 파르코 B2F. 지뢰계 코디의 필수 발 아이템.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://yosuke-idocorp.com/", globalUrl:"", xId:"", instaId:"@yosuke_usa",
+   st:[{city:"도쿄",mall:"이케부쿠로 파르코",fl:"B2F",map:"https://maps.google.com/?q=Ikebukuro+Parco+Tokyo"}]},
+  {id:57, n:"NEW ROCK",                      s:"잡화(가방,신발,악세)", i:"NR", c:"#009966", tax:false,
+   logo:"https://newrock.com/cdn/shop/files/logo_newrock_1.png?v=1770287961&width=460",
+   desc:"스페인 발 사이버펑크 부츠 브랜드. XU 등 도쿄 서브컬처 셀렉트샵에서 취급. 온라인 직구 가능.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.newrock.com/", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"시부야 109 (XU 내)",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
+  {id:58, n:"Maison de FLEUR",               s:"잡화(가방,신발,악세)", i:"MF", c:"#009966", tax:true,
+   logo:"https://maisondefleur.store/cdn/shop/files/images_2_-01_250x.jpg?v=1634976849",
+   desc:"이타백부터 플라워 토트백까지. 라포레 2F·이케부쿠로·우메다 EST 입점의 잡화 인기 브랜드.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://stripe-club.com/maisondefleur/", globalUrl:"", xId:"@Maison_de_FLEUR", instaId:"@maisondefleur_press",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"2F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
+       {city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"},
+       {city:"오사카",mall:"우메다 EST",fl:"2F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:59, n:"MCM",                           s:"잡화(가방,신발,악세)", i:"MC", c:"#009966", tax:true,
+   desc:"지뢰계 코디의 교복, 징 박힌 핑크·블랙 백팩으로 유명한 독일 명품 브랜드. 서브컬처 필수 아이템.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://kr.mcmworldwide.com/", globalUrl:"", xId:"", instaId:"",
+   st:[{city:"도쿄",mall:"루미네 신주쿠",fl:"2F",map:"https://maps.google.com/?q=Lumine+Shinjuku"},
+       {city:"오사카",mall:"루쿠아 오사카",fl:"1F",map:"https://maps.google.com/?q=Lucua+Osaka"}]},
+  {id:60, n:"Samantha Vega",                 s:"잡화(가방,신발,악세)", i:"SV", c:"#009966", tax:true,
+   desc:"비쥬·크리스탈로 장식한 사만다 시리즈 가방. 시부야109 1F·우메다 EST 입점. 서브컬처 코디의 완성.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.samantha.co.jp/shop/c/cSV/", globalUrl:"", xId:"@samantha_PR_ST", instaId:"@samantha.vega_official",
+   st:[{city:"도쿄",mall:"시부야 109",fl:"1F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
+       {city:"오사카",mall:"우메다 EST",fl:"1F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
+  {id:61, n:"Vivienne Westwood",             s:"잡화(가방,신발,악세)", i:"VW", c:"#009966", tax:true,
+   desc:"라포레 하라주쿠 1F. 오브(ORB) 목걸이·킹스 로드 컬렉션은 서브컬처·로리타 코디의 필수 아이템.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://viviennewestwood.kr/shop/main", globalUrl:"", xId:"@VW_JAPAN", instaId:"",
+   st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
+  {id:62, n:"Lafary",                        s:"잡화(가방,신발,악세)", i:"LF", c:"#009966", tax:false,
+   desc:"오사카 우메다 HEP FIVE 4F. 오타쿠×지뢰계 잡화 전문점. 이타쿠라, 아크릴 굿즈 취급.",
+   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.lafary.shop/", globalUrl:"", xId:"@lafary_jp", instaId:"@lafary_jp",
+   st:[{city:"오사카",mall:"우메다 HEP FIVE",fl:"4F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
+];
+
+/* ═══════════════════════════════════
+   피드 데이터 (12개)
+═══════════════════════════════════ */
+const POSTS = [
+  {bid:8,  u:"@yuki_jiraike",     lk:842,  bgImg:"여기에_사진_링크_넣기", d:"여름 지뢰코디 🖤 새 리본 헤어핀이랑 맞춘 룩",    ca:["#FFE0EC","#FFB3CC"], h:220},
+  {bid:43, u:"@lolita_hime",      lk:1203, bgImg:"여기에_사진_링크_넣기", d:"Angelic Pretty 신상 🌸 드림 컬렉션 첫 착샷",      ca:["#F0E0FF","#D8B3FF"], h:180},
+  {bid:4,  u:"@honey_coord",      lk:654,  bgImg:"여기에_사진_링크_넣기", d:"Secret Honey 디즈니 콜라보 원피스 💕",            ca:["#FFE8F5","#FFC0E8"], h:240},
+  {bid:22, u:"@subcul_tokyo",     lk:977,  bgImg:"여기에_사진_링크_넣기", d:"REFLEM 서머드롭 ⚡ 라포레 아크로도쿄 픽업",       ca:["#F0E0FF","#D8B3FF"], h:190},
+  {bid:24, u:"@angel_mizuiro",    lk:531,  bgImg:"여기에_사진_링크_넣기", d:"ililil 신상 🩵 천사계 코디 너무 귀여워",           ca:["#FFF3E0","#FFD0A8"], h:210},
+  {bid:15, u:"@snidel_girl",      lk:788,  bgImg:"여기에_사진_링크_넣기", d:"SNIDEL 루미네 픽업 🌿 가을 스나계 준비",          ca:["#FFF5E0","#FFE0A0"], h:170},
+  {bid:2,  u:"@ankrouge_daily",   lk:1122, bgImg:"여기에_사진_링크_넣기", d:"Ank Rouge 신상 레이스 원피스 🎀 너무 좋아",      ca:["#FFE0EC","#FFB3CC"], h:230},
+  {bid:42, u:"@classical_lolita", lk:2041, bgImg:"여기에_사진_링크_넣기", d:"BABY 이케부쿠로 겟 🌹 클래식 로리타 완성",       ca:["#F8E0FF","#EEB3FF"], h:185},
+  {bid:1,  u:"@lizlisa_lover",    lk:445,  bgImg:"여기에_사진_링크_넣기", d:"LIZ LISA 플라워 원피스 봄 코디 🌸",              ca:["#FFE8F5","#FFC0E8"], h:200},
+  {bid:55, u:"@bubbles_coord",    lk:399,  bgImg:"여기에_사진_링크_넣기", d:"BUBBLES 통굽 로퍼 신착 🖤 시부야109 6F",          ca:["#E0FFF5","#B3FFE0"], h:215},
+  {bid:61, u:"@vw_harajuku",      lk:567,  bgImg:"여기에_사진_링크_넣기", d:"VW 오브 목걸이 겟 ✨ 로리타 코디 완성",          ca:["#E0FFF5","#B3FFE0"], h:175},
+  {bid:32, u:"@oy_street",        lk:831,  bgImg:"여기에_사진_링크_넣기", d:"OY 라포레 신상 그래픽 티 ⚡ 진짜 좋다",          ca:["#FFF3E0","#FFD0A8"], h:205},
+];
+
+/* ═══════════════════════════════════
+   캘린더 데이터 — 외부 JSON에서 fetch
+   로컬 fallback: 빈 배열 (로딩 중 표시)
+═══════════════════════════════════ */
+let CAL = [];
+
+async function loadCal() {
+  const el = document.getElementById("calList");
+  if (el) el.innerHTML = `<div style="text-align:center;padding:64px 20px"><div style="font-size:36px;margin-bottom:10px">⏳</div><p style="font-size:13px;color:#C4A8B0;font-family:'M PLUS Rounded 1c',sans-serif">일정 불러오는 중…</p></div>`;
+  try {
+    const res = await fetch("calendar_data.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    CAL = await res.json();
+  } catch (e) {
+    console.warn("캘린더 데이터 로드 실패:", e.message);
+    CAL = [];
+  }
+  if (document.getElementById("tCal").style.display !== "none") drawCal();
+}
+
+/* ═══════════════════════════════════
+   상태
+═══════════════════════════════════ */
+let tab = "home", filt = "전체보기", reg = "전체", mall = "전체", srch = "";
+let favs = JSON.parse(localStorage.getItem("zp_fav")||"[]");
+const KR = {
+  1:"리즈리사", 2:"앙크루즈", 3:"허니시나몬", 4:"시크릿허니", 5:"에블린",
+  6:"스완키스", 7:"멜티", 8:"로지타", 9:"노에미", 10:"제이미에에엔케이",
+  11:"마즈", 12:"잇미", 13:"디어마이러브", 14:"피움", 15:"스나이델",
+  16:"레디아젤", 17:"티티앤코", 18:"지알엘", 19:"딤모아르", 20:"아미리쥬",
+  21:"케이알와이클로딩", 22:"레플렘", 23:"트라바스도쿄", 24:"일리릴",
+  25:"아노네노네", 26:"에이씨디씨래그", 27:"리슨플레이버", 28:"니어클로딩",
+  29:"드러그허니", 30:"헤이헤이", 31:"엑스유", 32:"오와이", 33:"백스테이지패스",
+  34:"시바라이즈", 35:"에이치나오토", 36:"섹스팟리벤지", 37:"알곤퀸즈",
+  38:"고우크", 39:"후가", 40:"푸투마요", 41:"쿠자", 42:"베이비더스타즈샤인브라이트",
+  43:"앤지릭프리티", 44:"모와메므모와띠에", 45:"앨리스앤더파이리츠",
+  46:"아트리에피에로", 47:"시에그리트", 48:"아트리에보즈", 49:"메타모르포즈",
+  50:"이노센트월드", 51:"빅토리안메이든", 52:"줄리엣에쥐스틴", 53:"아마벨",
+  54:"투앨리스", 55:"버블즈", 56:"요스케", 57:"뉴락", 58:"메종드플레르",
+  59:"엠씨엠", 60:"사만다베가", 61:"비비안웨스트우드", 62:"라파리"
+};
+
+/* ═══════════════════════════════════
+   탭 전환
+═══════════════════════════════════ */
+const TABS = {home:"tHome",map:"tMap",feed:"tFeed",fav:"tFav",cal:"tCal"};
+const NAVS = {home:"nb-home",map:"nb-map",feed:"nb-feed",fav:"nb-fav",cal:"nb-cal"};
+
+function go(t) {
+  tab = t;
+  Object.entries(TABS).forEach(([k,id])=>{
+    const el = document.getElementById(id);
+    if(k===t){ el.style.display="flex"; el.style.flexDirection="column"; }
+    else el.style.display="none";
+  });
+  Object.entries(NAVS).forEach(([k,id])=>{
+    document.getElementById(id).style.color = k===t ? "#FF6FA8" : "#C4A8B0";
+  });
+  if(t==="map")  drawMap();
+  if(t==="feed") drawFeed();
+  if(t==="fav")  drawFav();
+  if(t==="cal")  drawCal();
+}
+
+/* ═══════════════════════════════════
+   드래그 스크롤
+═══════════════════════════════════ */
+function drag(el) {
+  let down=false, sx, sl;
+  el.addEventListener("mousedown",e=>{down=true;el.classList.add("on");sx=e.pageX-el.offsetLeft;sl=el.scrollLeft;});
+  el.addEventListener("mouseleave",()=>{down=false;el.classList.remove("on");});
+  el.addEventListener("mouseup",()=>{down=false;el.classList.remove("on");});
+  el.addEventListener("mousemove",e=>{if(!down)return;e.preventDefault();el.scrollLeft=sl-(e.pageX-el.offsetLeft-sx)*1.2;});
+}
+
+/* ═══════════════════════════════════
+   홈 — 필터 렌더
+═══════════════════════════════════ */
+function drawFilter() {
+  const row = document.getElementById("filterRow");
+  row.innerHTML = FILTERS.map(f=>{
+    const m = CM[f], act = f===filt;
+    const bg     = act ? m.c : "#fff";
+    const col    = act ? "#fff" : "#8D7B80";
+    const border = act ? `1.5px solid ${m.c}` : "1.5px solid #FFD6E8";
+    const sh     = act ? `0 4px 14px ${m.c}44` : "0 2px 8px rgba(255,150,180,.1)";
+    return `<button onclick="setFilt('${f}')" style="flex-shrink:0;padding:8px 15px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:${bg};color:${col};border:${border};box-shadow:${sh};font-family:'M PLUS Rounded 1c',sans-serif">${m.e} ${f}</button>`;
+  }).join("");
+  drag(row);
+}
+function setFilt(f){ filt=f; drawFilter(); drawBanner(); drawBrands(); }
+function setSearch(v){
+  srch=v;
+  const clr=document.getElementById("searchClear");
+  if(clr) clr.style.display=v?"flex":"none";
+  drawBanner(); drawBrands();
+}
+function clearSearch(){
+  srch="";
+  const sb=document.getElementById("searchBox"); if(sb) sb.value="";
+  const clr=document.getElementById("searchClear"); if(clr) clr.style.display="none";
+  drawBanner(); drawBrands();
+}
+
+/* ═══════════════════════════════════
+   이미지 유틸
+═══════════════════════════════════ */
+function isImg(url){ return !!(url && url !== "여기에_사진_링크_넣기"); }
+
+function logoEl(b, size, radius, shadow) {
+  const webUrl = b.japanUrl || b.globalUrl || "";
+  const domain = webUrl.replace(/^https?:\/\//, '').split('/')[0];
+  const sh = shadow ? `box-shadow:${shadow};` : '';
+  const fs = Math.floor(size * 0.28);
+  const pad = Math.floor(size * 0.12);
+  const src = b.logo || (domain ? `https://logo.clearbit.com/${domain}` : '');
+  return `<div style="width:${size}px;height:${size}px;border-radius:${radius}px;flex-shrink:0;position:relative;overflow:hidden;background:${b.c};${sh}display:flex;align-items:center;justify-content:center"><span style="font-weight:700;font-size:${fs}px;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif">${b.i}</span>${src?`<img src="${src}" alt="" onload="this.style.opacity=1" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:${pad}px;background:#fff;opacity:0;transition:opacity .25s"/>`:''}</div>`;
+}
+
+function mHeader(b, fv){
+  if(isImg(b.bgImg)){
+    return `
+<div style="position:relative;height:220px;overflow:hidden;background:${b.c}18">
+  <img src="${b.bgImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top"/>
+  <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(255,255,255,1) 0%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.1) 100%)"></div>
+  <div style="position:absolute;bottom:0;left:0;right:0;padding:16px 20px 18px">
+    <div style="display:flex;align-items:flex-end;gap:13px">
+      ${logoEl(b,56,18,`0 4px 16px ${b.c}66`)}
+      <div style="flex:1;min-width:0;padding-bottom:2px">
+        <h2 style="font-weight:800;color:#4A373A;font-size:19px;line-height:1.2;margin:0 0 7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</h2>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">
+          <span style="background:${b.c}22;color:${b.c};font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;border:1px solid ${b.c}44">${b.s}</span>
+          ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:11px;font-weight:600;padding:3px 11px;border-radius:100px;border:1px solid #B3FFDF">✓ 면세 가능</span>`:""}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-bottom:4px">
+        <button id="mfb" onclick="tFav(${b.id});updMFav(${b.id})" style="font-size:24px;background:none;border:none;cursor:pointer;transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
+        <span id="mlk" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="padding:14px 20px 16px">
+  <p style="font-size:13px;color:#8D7B80;margin:0;line-height:1.75">${b.desc}</p>
+</div>`;
+  }
+  return `
+<div style="padding:18px 20px 16px;background:linear-gradient(150deg,${b.c}12,transparent 55%)">
+  <div style="display:flex;align-items:flex-start;gap:13px">
+    ${logoEl(b,60,20,`0 4px 18px ${b.c}55`)}
+    <div style="flex:1;min-width:0;padding-top:2px">
+      <h2 style="font-weight:800;color:#4A373A;font-size:19px;line-height:1.2;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        <span style="background:${b.c}18;color:${b.c};font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;border:1px solid ${b.c}33">${b.s}</span>
+        ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:11px;font-weight:600;padding:3px 11px;border-radius:100px;border:1px solid #B3FFDF">✓ 면세 가능</span>`:""}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-top:2px">
+      <button id="mfb" onclick="tFav(${b.id});updMFav(${b.id})" style="font-size:24px;background:none;border:none;cursor:pointer;transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
+      <span id="mlk" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+    </div>
+  </div>
+  <p style="font-size:13px;color:#8D7B80;margin:13px 0 0;line-height:1.75">${b.desc}</p>
+</div>`;
+}
+
+/* ═══════════════════════════════════
+   홈 — 배너
+═══════════════════════════════════ */
+function drawBanner() {
+  const el = document.getElementById("banner");
+  if(srch.trim()){ el.style.display="none"; return; }
+  el.style.display="";
+  const m = CM[filt], cnt = filt==="전체보기" ? B.length : B.filter(x=>x.s===filt).length;
+  el.style.cssText = `position:relative;height:156px;border-radius:24px;overflow:hidden;background:${m.g};display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px;box-shadow:0 4px 20px rgba(255,150,180,.2)`;
+  const imgHtml = isImg(m.bgImg)
+    ? `<img src="${m.bgImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top"/>`
+    : "";
+  const overlayHtml = isImg(m.bgImg)
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(255,255,255,.9) 30%,rgba(255,255,255,.2));z-index:1"></div>`
+    : "";
+  el.innerHTML = `
+    ${imgHtml}
+    ${overlayHtml}
+    <div style="position:absolute;top:-8px;right:8px;font-size:88px;opacity:.2;pointer-events:none;line-height:1;z-index:1">${m.e}</div>
+    <div style="position:relative;z-index:2">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:20px">${m.e}</span>
+        <span style="font-size:18px;font-weight:800;color:${m.c};font-family:'M PLUS Rounded 1c',sans-serif">${filt}</span>
+        <span style="background:${m.c}22;color:${m.c};font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;border:1px solid ${m.c}44">${cnt}개</span>
+      </div>
+      <p style="color:#4A373A;font-size:12px;line-height:1.6;margin:0;font-weight:500">${m.d}</p>
+    </div>`;
+}
+
+/* ═══════════════════════════════════
+   브랜드 카드 HTML
+═══════════════════════════════════ */
+function card(b, delay){
+  const fv = favs.includes(b.id);
+  return `<div class="fu" style="animation-delay:${delay}s;background:#fff;border-radius:24px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 18px rgba(255,150,180,.14)"
+    onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 10px 30px rgba(255,150,180,.26)'"
+    onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(255,150,180,.14)'"
+    onclick="openM(${b.id})">
+    <div style="height:4px;background:${b.c}"></div>
+    <div style="padding:13px 14px;display:flex;align-items:center;gap:11px">
+      ${logoEl(b,50,16,'')}
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px">
+          <span style="font-weight:700;color:#4A373A;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</span>
+          <div style="display:flex;align-items:center;gap:1px;flex-shrink:0">
+            <span id="lk-${b.id}" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+            <button onclick="event.stopPropagation();tFav(${b.id})" style="font-size:17px;background:none;border:none;cursor:pointer;flex-shrink:0;transition:transform .1s;margin-left:3px" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">
+          <span style="background:${b.c}18;color:${b.c};font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;border:1px solid ${b.c}33">${b.s}</span>
+          ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:10px;font-weight:600;padding:2px 8px;border-radius:100px;border:1px solid #B3FFDF">✓ 면세</span>`:""}
+          ${b.st.length?`<span style="background:#FFF0F5;color:#C4A8B0;font-size:10px;padding:2px 8px;border-radius:100px">🏪 ${b.st.length}개</span>`:`<span style="background:#FFF5F8;color:#C4A8B0;font-size:10px;padding:2px 8px;border-radius:100px">🌐 온라인</span>`}
+        </div>
+        <p class="clamp2" style="font-size:11px;color:#8D7B80;line-height:1.65">${b.desc}</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════
+   홈 — 브랜드 목록
+═══════════════════════════════════ */
+function drawBrands(){
+  const q = srch.trim().toLowerCase();
+  let list = filt==="전체보기" ? B : B.filter(x=>x.s===filt);
+  if(q) list = list.filter(b=>(b.n+" "+b.s+" "+b.desc+" "+(KR[b.id]||"")).toLowerCase().includes(q));
+  const wrap = document.getElementById("homeCountWrap");
+  if(wrap) wrap.innerHTML = q
+    ? `<span style="color:#D63070;font-weight:700">${list.length}개</span> &nbsp;"${srch.trim()}" 검색 결과`
+    : `<span style="color:#4A373A;font-weight:700">${list.length}개</span> 브랜드`;
+  document.getElementById("brandList").innerHTML = list.length
+    ? list.map((b,i)=>card(b,i*.05)).join("")
+    : `<div style="text-align:center;padding:64px 20px"><div style="font-size:44px;margin-bottom:12px">🔍</div><p style="font-size:14px;font-weight:700;color:#8D7B80;margin-bottom:6px">검색 결과가 없어요</p><p style="font-size:12px;color:#C4A8B0;line-height:1.9">'<span style="color:#D63070">${srch.trim()}</span>'와 일치하는<br>브랜드를 찾을 수 없어요</p></div>`;
+}
+
+/* ═══════════════════════════════════
+   쇼핑맵
+═══════════════════════════════════ */
+const MALLS_T=["시부야 109","라포레 하라주쿠","이케부쿠로","마그넷 시부야109","루미네 신주쿠","하라주쿠"];
+const MALLS_O=["우메다 EST","우메다 HEP FIVE","루쿠아 오사카"];
+
+function drawRegionRow(){
+  const row=document.getElementById("regionRow");
+  row.innerHTML=["전체","도쿄","오사카"].map(r=>{
+    const act=r===reg;
+    return `<button onclick="setReg('${r}')" style="flex-shrink:0;padding:8px 18px;border-radius:100px;font-size:12px;font-weight:700;border:1.5px solid ${act?"#C41055":"#FFD6E8"};cursor:pointer;transition:all .2s;background:${act?"#C41055":"#fff"};color:${act?"#fff":"#8D7B80"};font-family:'M PLUS Rounded 1c',sans-serif">${r}</button>`;
+  }).join("");
+  drag(row);
+  drawMallRow();
+}
+function drawMallRow(){
+  const malls=reg==="오사카"?MALLS_O:reg==="도쿄"?MALLS_T:[...MALLS_T,...MALLS_O];
+  const row=document.getElementById("mallRow");
+  row.innerHTML=["전체",...malls].map(m=>{
+    const act=m===mall;
+    return `<button onclick="setMall('${m}')" style="flex-shrink:0;padding:5px 11px;border-radius:100px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;background:${act?"#FFE0EE":"transparent"};color:${act?"#C41055":"#C4A8B0"};border:1px solid ${act?"#FFB3CC":"#FFD6E8"}">${m}</button>`;
+  }).join("");
+  drag(row);
+}
+function setReg(r){ reg=r; mall="전체"; drawRegionRow(); drawMap(); }
+function setMall(m){ mall=m; drawMallRow(); drawMap(); }
+
+function drawMap(){
+  drawRegionRow();
+  let pairs=[];
+  B.forEach(b=>{
+    b.st.forEach(s=>{
+      if(reg!=="전체"&&s.city!==reg)return;
+      if(mall!=="전체"&&!s.mall.includes(mall.split(" ")[0]))return;
+      pairs.push({b,s});
+    });
+  });
+  const brands=new Set(pairs.map(p=>p.b.id));
+  document.getElementById("mapBrandCount").textContent=brands.size;
+  document.getElementById("mapStoreCount").textContent=pairs.length;
+  if(!pairs.length){
+    document.getElementById("mapList").innerHTML=`<div style="text-align:center;padding:60px 20px"><div style="font-size:42px;margin-bottom:12px">🗺️</div><p style="font-size:13px;color:#8D7B80">해당 지역·쇼핑몰의 매장 정보가 없어요</p></div>`;
+    return;
+  }
+  document.getElementById("mapList").innerHTML=pairs.map(({b,s},i)=>`
+<div class="fu" style="animation-delay:${i*.04}s;background:#fff;border-radius:24px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 18px rgba(255,150,180,.12)" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(255,150,180,.2)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(255,150,180,.12)'" onclick="openM(${b.id})">
+  <div style="height:4px;background:${b.c}"></div>
+  <div style="padding:13px 14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
+      ${logoEl(b,42,14,'')}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;color:#4A373A;font-size:14px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span style="background:${b.c}18;color:${b.c};font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px">${b.s}</span>
+          <span style="background:#FFF0F5;color:#8D7B80;font-size:9px;padding:2px 7px;border-radius:100px">${s.city}</span>
+          ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:9px;font-weight:600;padding:2px 7px;border-radius:100px">✓ 면세</span>`:""}
+        </div>
+      </div>
+    </div>
+    <div style="background:#FFF5F8;border-radius:16px;padding:11px 13px;display:flex;align-items:center;gap:9px;border:1px solid #FFE8F0">
+      <span style="font-size:18px;flex-shrink:0">🏪</span>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:600;color:#4A373A;font-size:13px;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.mall}</p>
+        <p style="color:${b.c};font-size:11px;font-weight:700;margin:0">${s.fl}</p>
+      </div>
+      <a href="${s.map}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="background:${b.c};color:#fff;font-size:11px;font-weight:700;padding:8px 11px;border-radius:12px;text-decoration:none;flex-shrink:0;white-space:nowrap;transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📍 지도</a>
+    </div>
+  </div>
+</div>`).join("");
+}
+
+/* ═══════════════════════════════════
+   피드
+═══════════════════════════════════ */
+function drawFeed(){
+  document.getElementById("feedGrid").innerHTML=POSTS.map((p,i)=>{
+    const b=B.find(x=>x.id===p.bid);
+    const em=b?CM[b.s]?.e||"✦":"✦";
+    return `<div class="mitem fu" style="animation-delay:${i*.04}s">
+      <div style="border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 16px rgba(255,150,180,.14)" onmouseover="this.style.transform='scale(1.01)';this.style.boxShadow='0 8px 24px rgba(255,150,180,.24)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 16px rgba(255,150,180,.14)'" onclick="openM(${b?b.id:1})">
+        <div style="height:${p.h}px;position:relative;overflow:hidden;background:linear-gradient(135deg,${p.ca[0]},${p.ca[1]})">
+          ${isImg(p.bgImg)?`<img src="${p.bgImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`:`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:.3">${em}</div>`}
+          <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 45%,rgba(255,255,255,.65))"></div>
+          <div style="position:absolute;bottom:7px;left:7px;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);padding:3px 8px;border-radius:100px;font-size:9px;font-weight:700;color:#4A373A"># ${b?b.n:""}</div>
+        </div>
+        <div style="background:#fff;padding:9px 11px">
+          <div style="font-size:11px;font-weight:700;color:#C41055;margin-bottom:3px">${p.u}</div>
+          <p class="clamp2" style="font-size:11px;color:#8D7B80;margin:0 0 5px;line-height:1.5">${p.d}</p>
+          <div style="display:flex;align-items:center;gap:3px;font-size:10px;color:#C4A8B0"><span>❤️</span><span>${p.lk.toLocaleString()}</span></div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════
+   즐겨찾기
+═══════════════════════════════════ */
+function drawFav(){
+  const list=B.filter(b=>favs.includes(b.id));
+  const el=document.getElementById("favList");
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:72px 24px"><div style="font-size:56px;margin-bottom:14px">🤍</div><p style="font-size:14px;font-weight:700;color:#8D7B80;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">아직 즐겨찾기가 없어요</p><p style="font-size:12px;line-height:1.8;color:#C4A8B0">홈에서 브랜드를 탭하고<br>하트를 눌러 저장해보세요!</p></div>`;
+    return;
+  }
+  el.innerHTML=list.map((b,i)=>card(b,i*.06)).join("");
+}
+
+/* ═══════════════════════════════════
+   캘린더
+═══════════════════════════════════ */
+function drawCal(){
+  const el = document.getElementById("calList");
+  if (!CAL.length) {
+    el.innerHTML = `<div style="text-align:center;padding:64px 20px">
+      <div style="font-size:44px;margin-bottom:12px;animation:fadeUp .5s ease both">🗓️</div>
+      <p style="font-size:14px;font-weight:700;color:#8D7B80;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">일정을 불러오는 중이에요</p>
+      <p style="font-size:12px;color:#C4A8B0;line-height:1.8">GitHub Pages에서 열면<br>자동으로 최신 일정이 표시돼요 🎀</p>
+    </div>`;
+    return;
+  }
+  const DOW=["일","월","화","수","목","금","토"];
+  const TC={
+    "신상":{bg:"#FFE0EE",c:"#C41055"},
+    "수주":{bg:"#FFF5DC",c:"#AA7020"},
+    "예약":{bg:"#FFF5DC",c:"#AA7020"},
+    "팝업":{bg:"#F0E0FF",c:"#7733BB"}
+  };
+  const sorted=[...CAL].sort((a,b)=>a.dt.localeCompare(b.dt));
+  document.getElementById("calList").innerHTML=sorted.map((it,i)=>{
+    const d=new Date(it.dt+"T00:00:00"), mm=d.getMonth()+1, dd=d.getDate(), dw=DOW[d.getDay()];
+    const tc=TC[it.tp]||{bg:"#FFF0F5",c:"#8D7B80"};
+    return `<div class="fu" style="animation-delay:${i*.04}s;display:flex;gap:10px;align-items:stretch">
+      <div style="width:50px;flex-shrink:0;background:#fff;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;gap:1px;box-shadow:0 3px 12px rgba(255,150,180,.12)">
+        <span style="font-size:9px;color:#C4A8B0;font-weight:500">${mm}월</span>
+        <span style="font-size:22px;font-weight:800;color:#4A373A;line-height:1;font-family:'M PLUS Rounded 1c',sans-serif">${dd}</span>
+        <span style="font-size:10px;font-weight:700;color:${it.c}">${dw}</span>
+      </div>
+      <div style="flex:1;background:#fff;border-radius:18px;overflow:hidden;display:flex;box-shadow:0 3px 12px rgba(255,150,180,.12)">
+        <div style="width:4px;flex-shrink:0;background:${it.c}"></div>
+        <div style="flex:1;padding:11px 13px">
+          <p style="font-weight:700;color:#4A373A;font-size:13px;margin:0 0 8px;line-height:1.4">${it.e} ${it.d}</p>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <span style="background:${it.c}18;color:${it.c};font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;border:1px solid ${it.c}33">${it.br}</span>
+            <span style="background:${tc.bg};color:${tc.c};font-size:10px;font-weight:600;padding:2px 9px;border-radius:100px">${it.tp}</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+/* ═══════════════════════════════════
+   브랜드 모달
+═══════════════════════════════════ */
+function openM(id){
+  const b=B.find(x=>x.id===id);
+  if(!b)return;
+  const fv=favs.includes(b.id);
+  document.getElementById("mBody").innerHTML=`
+<div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+<button onclick="closeModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+${mHeader(b,fv)}
+<div style="height:1px;background:#FFE8F0;margin:0 20px"></div>
+<div style="padding:15px 20px">
+  <h3 style="font-size:9px;font-weight:700;color:#C4A8B0;text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">공식 스토어</h3>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    ${b.japanUrl?`<a href="${b.japanUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#FF6FA8,#C41055);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(196,16,85,.25);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">🛒 공식 스토어 가기</a>`:""}
+    ${b.globalUrl?`<a href="${b.globalUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#7733BB,#4A0080);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(74,0,128,.22);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">✈️ 해외 직구 스토어</a>`:""}
+    <a href="https://buyee.jp/mercari/search?keyword=${encodeURIComponent(b.n)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#FF6B35,#E05000);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(224,80,0,.22);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">🔍 메루카리 매물 찾기 (Buyee)</a>
+    ${(b.xId||b.instaId)?`<div style="display:flex;gap:7px;margin-top:2px">
+      ${b.xId?`<a href="https://twitter.com/${b.xId.replace('@','')}" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 8px;background:#FFF5F8;border-radius:14px;text-decoration:none;border:1px solid #FFE8F0;transition:background .15s;font-size:11px;font-weight:700;color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif;overflow:hidden" onmouseover="this.style.background='#FFE8F2'" onmouseout="this.style.background='#FFF5F8'"><span style="font-size:14px;flex-shrink:0">𝕏</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.xId}</span></a>`:""}
+      ${b.instaId?`<a href="https://instagram.com/${b.instaId.replace('@','')}" target="_blank" rel="noopener" style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:10px 8px;background:#FFF5F8;border-radius:14px;text-decoration:none;border:1px solid #FFE8F0;transition:background .15s;font-size:11px;font-weight:700;color:#4A373A;font-family:'M PLUS Rounded 1c',sans-serif;overflow:hidden" onmouseover="this.style.background='#FFE8F2'" onmouseout="this.style.background='#FFF5F8'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" style="flex-shrink:0"><defs><radialGradient id="igG" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="5.5" fill="url(#igG)"/><rect x="4.5" y="4.5" width="15" height="15" rx="3" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="3.8" fill="none" stroke="white" stroke-width="1.5"/><circle cx="16.5" cy="7.5" r="1" fill="white"/></svg><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.instaId}</span></a>`:""}
+    </div>`:""}
+  </div>
+</div>
+${b.st.length?`
+<div style="height:1px;background:#FFE8F0;margin:0 20px"></div>
+<div style="padding:15px 20px 26px">
+  <h3 style="font-size:9px;font-weight:700;color:#C4A8B0;text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">오프라인 매장 (${b.st.length}개)</h3>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    ${b.st.map(s=>`
+    <div style="background:#FFF5F8;border-radius:16px;padding:11px 13px;border:1px solid #FFE8F0">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">
+        <span style="font-size:17px;flex-shrink:0">🏪</span>
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:600;color:#4A373A;font-size:13px;margin:0 0 2px">${s.mall}</p>
+          <div style="display:flex;gap:5px;align-items:center">
+            <span style="color:${b.c};font-size:11px;font-weight:700">${s.fl}</span>
+            <span style="color:#C4A8B0;font-size:11px">·</span>
+            <span style="color:#8D7B80;font-size:11px">${s.city}</span>
+            ${b.tax?`<span style="color:#C4A8B0;font-size:11px">·</span><span style="color:#009966;font-size:11px;font-weight:600">면세</span>`:""}
+          </div>
+        </div>
+      </div>
+      <a href="${s.map}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border-radius:14px;text-decoration:none;font-size:12px;font-weight:700;color:#fff;background:${b.c};transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📍 구글맵으로 위치 보기</a>
+    </div>`).join("")}
+  </div>
+</div>`:`
+<div style="padding:15px 20px 26px">
+  <div style="background:#FFF5F8;border-radius:16px;padding:16px;text-align:center;border:1px solid #FFE8F0">
+    <p style="font-size:22px;margin-bottom:6px">🌐</p>
+    <p style="font-size:12px;line-height:1.7;color:#8D7B80">온라인 전용 브랜드입니다<br>공식 홈페이지에서 구매하세요</p>
+  </div>
+</div>`}`;
+  const ov=document.getElementById("overlay"), sh=document.getElementById("mSheet");
+  ov.style.display="flex";
+  sh.classList.remove("su"); void sh.offsetWidth; sh.classList.add("su");
+}
+function closeModal(){ document.getElementById("overlay").style.display="none"; }
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); closeAuth(); } });
+
+/* ═══════════════════════════════════
+   네이버 OAuth 설정
+   1. https://developers.naver.com/apps 에서 앱 등록
+   2. 사용 API → 네이버 로그인 추가
+   3. 로그인 오픈 API 서비스 환경 → PC웹 추가
+   4. 서비스 URL, Callback URL 등록 (예: http://localhost:5500)
+   5. Client ID 복사 후 아래 NAVER_CLIENT_ID 에 붙여넣기
+═══════════════════════════════════ */
+const NAVER_CLIENT_ID = "여기에_네이버_클라이언트_ID_입력";
+
+let _naverLogin = null;
+
+function _initNaver(){
+  if(_naverLogin) return true;
+  if(typeof naver==="undefined"||!naver.LoginWithNaverIdOAuth) return false;
+  if(!NAVER_CLIENT_ID||NAVER_CLIENT_ID.includes("여기에")) return false;
+  _naverLogin = new naver.LoginWithNaverIdOAuth({
+    clientId: NAVER_CLIENT_ID,
+    callbackUrl: location.origin + location.pathname,
+    isPopup: false
+  });
+  _naverLogin.init();
+  return true;
+}
+
+function naverLoginBtn(){
+  if(!_initNaver()){
+    showToast(!NAVER_CLIENT_ID||NAVER_CLIENT_ID.includes("여기에")
+      ? "네이버 클라이언트 ID를 먼저 설정해주세요."
+      : "네이버 SDK 로드 실패. 인터넷 연결을 확인해주세요.");
+    return;
+  }
+  _naverLogin.authorize();
+}
+
+function checkNaverCallback(){
+  if(!location.hash.includes("access_token")) return;
+  if(!_initNaver()) return;
+  _naverLogin.getLoginStatus(function(status){
+    if(!status) return;
+    const naverId  = "naver_" + (_naverLogin.user.getId()||Date.now());
+    const nickname = _naverLogin.user.getNickName()||_naverLogin.user.getName()||"네이버 사용자";
+    const email    = _naverLogin.user.getEmail()||naverId+"@naver";
+    const profileImg = _naverLogin.user.getProfileImage()||"";
+    history.replaceState(null,"",location.pathname+location.search);
+    const users=_getUsers();
+    let user=users.find(u=>u.id===naverId);
+    if(!user){ user={id:naverId,email,pw:"",nickname,profileImg,provider:"naver"}; users.push(user); }
+    else{ user.nickname=nickname; user.profileImg=profileImg; }
+    _saveUsers(users);
+    authUser={id:naverId,email,nickname,profileImg,provider:"naver"};
+    localStorage.setItem("kaiwai_user",JSON.stringify(authUser));
+    updateAuthBtn();
+    showToast(`${nickname}님, 네이버로 로그인됐어요! 🎀`);
+  });
+}
+
+/* ═══════════════════════════════════
+   구글 OAuth 설정
+   1. https://console.cloud.google.com 접속
+   2. 새 프로젝트 생성 → API 및 서비스 → 사용자 인증 정보
+   3. OAuth 2.0 클라이언트 ID 만들기 (웹 애플리케이션)
+   4. 승인된 JavaScript 원본: http://localhost:5500
+   5. 승인된 리디렉션 URI: http://localhost:5500/index.html
+   6. 클라이언트 ID 복사 후 아래에 붙여넣기
+═══════════════════════════════════ */
+const GOOGLE_CLIENT_ID = "여기에_구글_클라이언트_ID_입력.apps.googleusercontent.com";
+
+let _googleTokenClient = null;
+
+function googleLoginBtn(){
+  if(!GOOGLE_CLIENT_ID||GOOGLE_CLIENT_ID.includes("여기에")){
+    showToast("구글 클라이언트 ID를 먼저 설정해주세요."); return;
+  }
+  if(typeof google==="undefined"||!google.accounts){
+    showToast("구글 SDK 로드 실패. 인터넷 연결을 확인해주세요."); return;
+  }
+  _googleTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: "email profile",
+    callback(tokenResponse){
+      if(tokenResponse.error){
+        if(tokenResponse.error!=="access_denied")
+          showToast("구글 로그인 실패: "+tokenResponse.error);
+        return;
+      }
+      fetch("https://www.googleapis.com/oauth2/v3/userinfo",{
+        headers:{Authorization:"Bearer "+tokenResponse.access_token}
+      })
+      .then(r=>r.json())
+      .then(info=>{
+        const googleId="google_"+info.sub;
+        const nickname=info.name||"구글 사용자";
+        const email=info.email||googleId+"@google";
+        const profileImg=info.picture||"";
+        const users=_getUsers();
+        let user=users.find(u=>u.id===googleId);
+        if(!user){ user={id:googleId,email,pw:"",nickname,profileImg,provider:"google"}; users.push(user); }
+        else{ user.nickname=nickname; user.profileImg=profileImg; }
+        _saveUsers(users);
+        authUser={id:googleId,email,nickname,profileImg,provider:"google"};
+        localStorage.setItem("kaiwai_user",JSON.stringify(authUser));
+        updateAuthBtn(); closeAuth();
+        showToast(`${nickname}님, Google로 로그인됐어요! 🎀`);
+      })
+      .catch(()=>showToast("구글 사용자 정보를 가져오지 못했어요."));
+    }
+  });
+  _googleTokenClient.requestAccessToken({prompt:"select_account"});
+}
+
+/* ═══════════════════════════════════
+   카카오 OAuth 설정
+   1. https://developers.kakao.com 에서 앱 생성
+   2. 앱 키 > JavaScript 키 복사
+   3. 아래 KAKAO_JS_KEY 에 붙여넣기
+   4. 플랫폼 > Web > 사이트 도메인 등록 (예: http://localhost:5500)
+   5. 카카오 로그인 > 활성화 ON
+   6. Redirect URI 등록 (현재 파일 URL)
+═══════════════════════════════════ */
+const KAKAO_JS_KEY = "여기에_JavaScript_키_붙여넣기";
+
+(function(){
+  if(typeof Kakao==="undefined"||!KAKAO_JS_KEY||KAKAO_JS_KEY.includes("여기에")) return;
+  if(!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
+})();
+
+/* ═══════════════════════════════════
+   인증 시스템
+═══════════════════════════════════ */
+let authUser = JSON.parse(localStorage.getItem("kaiwai_user") || "null");
+
+function _getUsers(){ return JSON.parse(localStorage.getItem("kaiwai_users")||"[]"); }
+function _saveUsers(u){ localStorage.setItem("kaiwai_users",JSON.stringify(u)); }
+function _enc(pw){ try{ return btoa(unescape(encodeURIComponent(pw))); }catch(e){ return btoa(pw); } }
+
+function openAuth(view){
+  switchAuth(authUser ? "profile" : (view||"login"));
+  const ov=document.getElementById("authOverlay"), sh=document.getElementById("authSheet");
+  ov.style.display="flex";
+  sh.classList.remove("su"); void sh.offsetWidth; sh.classList.add("su");
+}
+function closeAuth(){ document.getElementById("authOverlay").style.display="none"; }
+
+function switchAuth(v){
+  ["Login","Signup","Profile"].forEach(n=>{
+    document.getElementById("view"+n).style.display = n.toLowerCase()===v ? "block":"none";
+  });
+  if(v==="profile" && authUser){
+    document.getElementById("profAvatar").textContent = authUser.nickname[0].toUpperCase();
+    document.getElementById("profNick").textContent = authUser.nickname;
+    document.getElementById("profSub").textContent = authUser.provider
+      ? {kakao:"카카오 계정",naver:"네이버 계정",google:"Google 계정"}[authUser.provider]||authUser.provider
+      : "@"+(authUser.id||authUser.email||"");
+    document.getElementById("profFavCount").textContent = favs.length+"개 브랜드 저장 중";
+  }
+}
+
+function updateAuthBtn(){
+  const btn=document.getElementById("authBtn"); if(!btn) return;
+  if(authUser){
+    const a=authUser.nickname[0].toUpperCase();
+    const bg = authUser.provider==="kakao" ? "#FEE500"
+             : authUser.provider==="naver" ? "#03C75A"
+             : authUser.provider==="google" ? "#4285F4"
+             : "linear-gradient(135deg,#FF6FA8,#C41055)";
+    const col = authUser.provider==="kakao" ? "#191919" : "#fff";
+    btn.innerHTML=`<div style="width:32px;height:32px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;color:${col};font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif">${a}</div>`;
+    btn.style.cssText="background:none;border:none;padding:0;cursor:pointer";
+  } else {
+    btn.textContent="로그인";
+    btn.style.cssText="background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:100px;padding:7px 16px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;font-weight:700;color:#FF6FA8;transition:all .2s";
+  }
+}
+
+function _showErr(id,msg){
+  const el=document.getElementById(id); el.textContent=msg; el.style.display="block";
+  const sh=document.getElementById("authSheet");
+  sh.classList.remove("shake"); void sh.offsetWidth; sh.classList.add("shake");
+}
+function _hideErr(id){ document.getElementById(id).style.display="none"; }
+
+function doLogin(){
+  const id=document.getElementById("loginId").value.trim();
+  const pw=document.getElementById("loginPw").value;
+  _hideErr("loginErr");
+  if(!id||!pw) return _showErr("loginErr","아이디와 비밀번호를 입력해주세요.");
+  const user=_getUsers().find(u=>(u.id===id||u.email===id) && u.pw===_enc(pw));
+  if(!user) return _showErr("loginErr","아이디 또는 비밀번호가 일치하지 않아요.");
+  authUser={id:user.id,email:user.email,nickname:user.nickname};
+  localStorage.setItem("kaiwai_user",JSON.stringify(authUser));
+  updateAuthBtn(); closeAuth();
+  showToast(`${authUser.nickname}님, 환영해요! 🎀`);
+}
+
+function doRegister(){
+  const nick=document.getElementById("regNick").value.trim();
+  const id=document.getElementById("regId").value.trim();
+  const email=document.getElementById("regEmail").value.trim();
+  const pw=document.getElementById("regPw").value;
+  const pw2=document.getElementById("regPw2").value;
+  _hideErr("regErr");
+  if(!nick||!id||!email||!pw||!pw2) return _showErr("regErr","모든 항목을 입력해주세요.");
+  if(nick.length<2) return _showErr("regErr","닉네임은 2자 이상이어야 해요.");
+  if(!/^[a-zA-Z0-9]{4,20}$/.test(id)) return _showErr("regErr","아이디는 영문·숫자 조합 4~20자로 입력해주세요.");
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return _showErr("regErr","올바른 이메일 주소를 입력해주세요.");
+  if(pw.length<8) return _showErr("regErr","비밀번호는 8자 이상이어야 해요.");
+  if(pw!==pw2) return _showErr("regErr","비밀번호가 일치하지 않아요.");
+  const users=_getUsers();
+  if(users.find(u=>u.id===id)) return _showErr("regErr","이미 사용 중인 아이디예요.");
+  if(users.find(u=>u.email===email)) return _showErr("regErr","이미 사용 중인 이메일이에요.");
+  const newUser={id,email,pw:_enc(pw),nickname:nick};
+  users.push(newUser); _saveUsers(users);
+  authUser={id,email,nickname:nick};
+  localStorage.setItem("kaiwai_user",JSON.stringify(authUser));
+  updateAuthBtn(); closeAuth();
+  showToast(`${nick}님, 가입을 축하해요! 🎀`);
+}
+
+function socialLogin(provider){
+  if(provider==="kakao"){ kakaoLogin(); return; }
+  if(provider==="naver"){ naverLoginBtn(); return; }
+  if(provider==="google"){ googleLoginBtn(); return; }
+}
+
+function kakaoLogin(){
+  if(typeof Kakao==="undefined"){
+    showToast("카카오 SDK 로드 실패. 인터넷 연결을 확인해주세요."); return;
+  }
+  if(!KAKAO_JS_KEY||KAKAO_JS_KEY.includes("여기에")){
+    showToast("카카오 JavaScript 키를 먼저 설정해주세요."); return;
+  }
+  if(!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
+
+  Kakao.Auth.login({
+    success(authObj){
+      Kakao.API.request({
+        url:"/v2/user/me",
+        success(res){
+          const kakaoId="kakao_"+res.id;
+          const nickname=res.kakao_account?.profile?.nickname||"카카오 사용자";
+          const profileImg=res.kakao_account?.profile?.thumbnail_image_url||"";
+          const email=res.kakao_account?.email||kakaoId+"@kakao";
+          const users=_getUsers();
+          let user=users.find(u=>u.id===kakaoId);
+          if(!user){
+            user={id:kakaoId,email,pw:"",nickname,profileImg,provider:"kakao"};
+            users.push(user);
+          } else {
+            user.nickname=nickname; user.profileImg=profileImg;
+          }
+          _saveUsers(users);
+          authUser={id:kakaoId,email,nickname,profileImg,provider:"kakao"};
+          localStorage.setItem("kaiwai_user",JSON.stringify(authUser));
+          updateAuthBtn(); closeAuth();
+          showToast(`${nickname}님, 카카오로 로그인됐어요! 🎀`);
+        },
+        fail(err){
+          console.error("Kakao API:",err);
+          showToast("카카오 사용자 정보를 가져오지 못했어요.");
+        }
+      });
+    },
+    fail(err){
+      console.error("Kakao login:",err);
+      if(err.error==="access_denied") showToast("카카오 로그인을 취소했어요.");
+      else showToast("카카오 로그인 실패: "+(err.error_description||err.error||""));
+    }
+  });
+}
+
+function doLogout(){
+  if(authUser?.provider==="kakao" && typeof Kakao!=="undefined" && Kakao.isInitialized()){
+    try{ Kakao.Auth.logout(()=>{}); }catch(e){}
+  }
+  if(authUser?.provider==="naver" && _naverLogin){
+    try{ _naverLogin.logout(); }catch(e){}
+  }
+  if(authUser?.provider==="google" && typeof google!=="undefined" && google.accounts){
+    try{ google.accounts.id.disableAutoSelect(); }catch(e){}
+  }
+  authUser=null; localStorage.removeItem("kaiwai_user");
+  updateAuthBtn(); closeAuth();
+  showToast("로그아웃 됐어요.");
+}
+
+function showToast(msg){
+  let t=document.getElementById("kaiwaiToast");
+  if(!t){
+    t=document.createElement("div"); t.id="kaiwaiToast";
+    t.style.cssText="position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(74,55,58,.92);color:#fff;font-size:13px;font-weight:600;padding:11px 22px;border-radius:100px;z-index:100;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.18);transition:opacity .35s;pointer-events:none";
+    document.body.appendChild(t);
+  }
+  t.textContent=msg; t.style.opacity="1";
+  clearTimeout(t._to); t._to=setTimeout(()=>{ t.style.opacity="0"; },2400);
+}
+
+/* ═══════════════════════════════════
+   좋아요(찜) 시스템 — Mock DB
+   초기값: id 기반 일관된 의사난수 (100~5000)
+   증감: localStorage kaiwai_likes 에 delta 저장
+═══════════════════════════════════ */
+function _mockBase(id){ return ((id*7919+2345)%4901)+100; }
+function _likeDelta(){ return JSON.parse(localStorage.getItem("kaiwai_likes")||"{}"); }
+function getBrandLikes(id){ return _mockBase(id)+(_likeDelta()[id]||0); }
+function _setLikeDelta(id,d){
+  const m=_likeDelta(); m[id]=(m[id]||0)+d;
+  localStorage.setItem("kaiwai_likes",JSON.stringify(m));
+}
+function _animLike(elId){
+  const el=document.getElementById(elId);
+  if(!el) return;
+  el.classList.remove("like-bounce"); void el.offsetWidth; el.classList.add("like-bounce");
+}
+
+/* ═══════════════════════════════════
+   즐겨찾기 토글
+═══════════════════════════════════ */
+function tFav(id){
+  const i=favs.indexOf(id);
+  const adding=i===-1;
+  if(adding) favs.push(id); else favs.splice(i,1);
+  localStorage.setItem("zp_fav",JSON.stringify(favs));
+  _setLikeDelta(id, adding ? 1 : -1);
+  drawBrands();
+  if(tab==="fav") drawFav();
+  if(tab==="map") drawMap();
+  if(adding){
+    requestAnimationFrame(()=>{ _animLike("lk-"+id); });
+  }
+}
+function updMFav(id){
+  const btn=document.getElementById("mfb");
+  if(btn) btn.textContent=favs.includes(id)?"❤️":"🤍";
+  const lkEl=document.getElementById("mlk");
+  if(lkEl){
+    lkEl.textContent="💖 "+getBrandLikes(id).toLocaleString();
+    _animLike("mlk");
+  }
+}
+
+/* ═══════════════════════════════════
+   초기화
+═══════════════════════════════════ */
+drawFilter(); drawBanner(); drawBrands(); go("home"); updateAuthBtn();
+_initNaver(); checkNaverCallback();
+loadCal();
+</script>
+</body>
+</html>
