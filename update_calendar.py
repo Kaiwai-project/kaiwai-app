@@ -44,7 +44,7 @@ OUT_PATH    = Path(__file__).parent / "calendar_data.json"
 # Apify Actor ID
 # ─────────────────────────────────────────────────────────
 ACTOR_IG = "apify/instagram-scraper"    # Instagram 게시물 수집
-ACTOR_TW = "apify/twitter-scraper"      # Twitter/X 게시물 수집
+ACTOR_TW = "katerinahronik/twitter-scraper"      # Twitter/X 게시물 수집
 
 # Actor 1회 실행당 최대 대기 시간 (초)
 # 짧게 설정할수록 Hang 위험 감소, 단 수집량이 많으면 실패할 수 있음
@@ -119,14 +119,23 @@ EVENT_TRIGGERS = [
 # ─────────────────────────────────────────────────────────
 # 유틸 함수
 # ─────────────────────────────────────────────────────────
+import re
+from datetime import datetime, timedelta
+
 def parse_date(text: str) -> str:
-    """텍스트에서 날짜 추출. 없으면 7일 후 반환."""
+    """텍스트에서 날짜 추출. 없을 시 7일 후 반환."""
     today = datetime.now()
+    
+    # 1. 상대 시간 표현 처리 (일본 SNS 자주 사용)
+    text = text.replace("今日", today.strftime("%m/%d"))
+    text = text.replace("明日", (today + timedelta(days=1)).strftime("%m/%d"))
+    
     patterns = [
         (r'(\d{4})[./\-](\d{1,2})[./\-](\d{1,2})', "ymd"),
-        (r'(\d{1,2})月(\d{1,2})日',                  "md_jp"),
-        (r'(\d{1,2})/(\d{1,2})',                      "md_slash"),
+        (r'(\d{1,2})月(\d{1,2})日', "md_jp"),
+        (r'(\d{1,2})/(\d{1,2})', "md_slash"),
     ]
+    
     for pat, fmt in patterns:
         m = re.search(pat, text)
         if not m:
@@ -137,10 +146,15 @@ def parse_date(text: str) -> str:
                 y, mo, d = int(g[0]), int(g[1]), int(g[2])
             else:
                 mo, d = int(g[0]), int(g[1])
-                y = today.year if mo >= today.month else today.year + 1
+                # 올해/내년 구분 로직 강화: 과거 날짜면 내년으로 간주
+                target_date = datetime(today.year, mo, d)
+                y = today.year if target_date >= today.replace(hour=0, minute=0, second=0, microsecond=0) else today.year + 1
+            
             return datetime(y, mo, d).strftime("%Y-%m-%d")
         except ValueError:
             continue
+            
+    # 기본값: 7일 뒤
     return (today + timedelta(days=7)).strftime("%Y-%m-%d")
 
 
