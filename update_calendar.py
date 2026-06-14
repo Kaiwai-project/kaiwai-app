@@ -11,10 +11,9 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
 
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
-IG_COOKIE = os.environ.get("IG_COOKIE", "")
-TW_COOKIE = os.environ.get("TW_COOKIE", "")
 OUT_PATH = Path(__file__).parent / "calendar_data.json"
 
+# 공식 액터 경로 (가장 표준적인 경로)
 ACTOR_IG = "apify/instagram-scraper"
 ACTOR_TW = "katerinahronik/twitter-scraper"
 
@@ -33,33 +32,25 @@ BRANDS = [
 
 def apify_instagram(client, ig_handle):
     try:
-        run = client.actor(ACTOR_IG).call(run_input={
-            "directUrls": [f"https://www.instagram.com/{ig_handle}/"], 
-            "resultsLimit": 5,
-            "proxy": {"useApifyProxy": True},
-            "cookies": [{"name": "sessionid", "value": IG_COOKIE}] if IG_COOKIE else []
-        })
-        return [item.get("caption") or item.get("text") for item in client.dataset(run["defaultDatasetId"]).iterate_items()]
+        run = client.actor(ACTOR_IG).call(run_input={"directUrls": [f"https://www.instagram.com/{ig_handle}/"], "resultsLimit": 5})
+        # 에러 해결: 속성 접근 방식 사용 (run.default_dataset_id)
+        return [item.get("caption") or item.get("text") for item in client.dataset(run.default_dataset_id).iterate_items()]
     except Exception as e:
-        print(f"  ⚠️ IG 실패 ({ig_handle}): {e}")
+        print(f"  ⚠️ IG 에러 ({ig_handle}): {e}")
         return []
 
 def apify_twitter(client, x_handle):
     try:
-        # 트위터는 cookies 필드에 auth_token을 넘깁니다.
-        run = client.actor(ACTOR_TW).call(run_input={
-            "handles": [x_handle.lstrip("@")], 
-            "tweetsDesired": 5,
-            "cookies": [{"name": "auth_token", "value": TW_COOKIE}] if TW_COOKIE else []
-        })
-        return [item.get("text") for item in client.dataset(run["defaultDatasetId"]).iterate_items() if not item.get("text", "").startswith("RT ")]
+        run = client.actor(ACTOR_TW).call(run_input={"handles": [x_handle.lstrip("@")], "tweetsDesired": 5})
+        return [item.get("text") for item in client.dataset(run.default_dataset_id).iterate_items() if not item.get("text", "").startswith("RT ")]
     except Exception as e:
-        print(f"  ⚠️ TW 실패 (@{x_handle}): {e}")
+        print(f"  ⚠️ TW 에러 (@{x_handle}): {e}")
         return []
 
 def main():
     client = ApifyClient(APIFY_TOKEN) if APIFY_TOKEN else None
     all_events = []
+    
     for brand in BRANDS:
         print(f"▶ 수집 중: {brand['name']}")
         texts = []
@@ -68,11 +59,16 @@ def main():
             if brand["tw"]: texts.extend(apify_twitter(client, brand["tw"]))
         
         for text in texts:
-            if any(trig in text for trig in ["発売", "新作", "drop", "예약", "팝업"]):
-                all_events.append({"dt": datetime.now().strftime("%Y-%m-%d"), "br": brand["name"], "d": text[:50]})
-        time.sleep(10)
+            # 캘린더용 데이터 추출
+            all_events.append({
+                "dt": datetime.now().strftime("%Y-%m-%d"), 
+                "br": brand["name"], 
+                "d": text[:50]
+            })
+        time.sleep(15)
+
     OUT_PATH.write_text(json.dumps(all_events, ensure_ascii=False, indent=2), encoding="utf-8")
-    print("✅ 완료.")
+    print("✅ 성공적으로 수집 완료.")
 
 if __name__ == "__main__":
     main()
