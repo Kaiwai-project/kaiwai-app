@@ -1,0 +1,256 @@
+/* ============================================================
+   profile.css — KAIWAI 마이페이지
+   소프트 핑크 / 둥근 고딕 / 지뢰계·양산형 서브컬처 톤
+   ============================================================ */
+
+:root{
+  --bg:        #FFF0F5;   /* 라벤더 블러시 */
+  --bg2:       #FFE6F1;
+  --ink:       #4A373A;   /* 따뜻한 다크 */
+  --pink:      #FF6FA8;   /* 메인 포인트 */
+  --pink-deep: #E5468A;
+  --pink-soft: #FFD6E8;   /* 테두리 */
+  --pink-tint: #FFE0EE;   /* hover */
+  --muted:     #A98B95;
+  --card:      #FFFFFF;
+  --shadow:    0 18px 40px -18px rgba(255,111,168,.55);
+  --radius:    26px;
+
+  --font-round: 'M PLUS Rounded 1c', sans-serif;
+  --font-body:  'Noto Sans KR', sans-serif;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body{
+  font-family:var(--font-body);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  /* 단색 대신 분위기 있는 레이어드 그라데이션 + 하트 점묘 */
+  background:
+    radial-gradient(120% 60% at 50% -10%, #FFFFFF 0%, rgba(255,255,255,0) 55%),
+    radial-gradient(80% 50% at 100% 0%, #FFE0EE 0%, rgba(255,224,238,0) 60%),
+    radial-gradient(90% 50% at 0% 20%, #FFE9F3 0%, rgba(255,233,243,0) 55%),
+    var(--bg);
+  background-attachment:fixed;
+}
+
+/* 모바일 앱처럼 가운데 정렬 세로형 */
+.phone{
+  width:100%;
+  max-width:480px;
+  min-height:100vh;
+  padding:0 18px 40px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  opacity:0;
+  transition:opacity .35s ease;
+}
+.phone.ready{ opacity:1; }
+
+/* ── 상단 바 ───────────────────────────────────────────── */
+.topbar{
+  position:sticky; top:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 2px 12px;
+  background:linear-gradient(to bottom, var(--bg) 70%, rgba(255,240,245,0));
+  backdrop-filter:blur(8px);
+}
+.topbar__title{
+  margin:0; font-family:var(--font-round); font-weight:800;
+  font-size:19px; letter-spacing:.5px; color:var(--ink);
+}
+.topbar__btn{
+  width:38px; height:38px; display:grid; place-items:center;
+  font-size:24px; line-height:1; color:var(--pink);
+  background:#fff; border:1.5px solid var(--pink-soft); border-radius:50%;
+  text-decoration:none; font-family:var(--font-round); font-weight:700;
+  box-shadow:0 4px 12px -6px rgba(255,111,168,.5);
+  transition:transform .18s ease, background .18s ease;
+}
+.topbar__btn:active{ transform:scale(.92); }
+.topbar__btn--ghost{ background:transparent; border-color:transparent; box-shadow:none; cursor:default; }
+
+/* ── 프로필 카드 ──────────────────────────────────────── */
+.card{
+  position:relative; overflow:hidden;
+  background:
+    radial-gradient(140% 80% at 50% -30%, #fff 0%, #FFF6FB 45%, #FFEAF4 100%);
+  border:1.5px solid var(--pink-soft);
+  border-radius:var(--radius);
+  padding:30px 22px 22px;
+  text-align:center;
+  box-shadow:var(--shadow);
+}
+/* 점선 안쪽 프레임 (양산형 디테일) */
+.card::after{
+  content:""; position:absolute; inset:9px; border-radius:18px;
+  border:1.5px dashed rgba(255,111,168,.28); pointer-events:none;
+}
+.card__deco{ position:absolute; inset:0; pointer-events:none; }
+.spark{ position:absolute; color:var(--pink); opacity:.55; font-size:16px; animation:floaty 4s ease-in-out infinite; }
+.spark--1{ top:18px;  left:22px;  font-size:13px; animation-delay:.0s; }
+.spark--2{ top:60px;  right:26px; font-size:18px; color:var(--pink-deep); opacity:.4; animation-delay:.8s; }
+.spark--3{ bottom:54px; left:30px; font-size:14px; animation-delay:1.6s; }
+
+/* 아바타 */
+.avatar{ position:relative; width:120px; margin:0 auto 14px; }
+.avatar__ring{
+  width:120px; height:120px; border-radius:50%; padding:5px;
+  background:conic-gradient(from 210deg, #FFB3D1, #FF6FA8, #FFC8DF, #FF8FBC, #FFB3D1);
+  box-shadow:0 10px 26px -10px rgba(255,111,168,.8);
+  animation:spinSlow 14s linear infinite;
+}
+.avatar__img{
+  width:100%; height:100%; border-radius:50%; object-fit:cover;
+  background:#fff; border:4px solid #fff; display:block;
+  animation:spinSlow 14s linear infinite reverse; /* 링과 반대로 돌려 이미지는 정지 */
+}
+.avatar__bow{
+  position:absolute; right:-2px; bottom:-2px; font-size:30px;
+  filter:drop-shadow(0 3px 5px rgba(255,111,168,.5));
+  animation:wiggle 3.2s ease-in-out infinite;
+}
+
+.card__nick{
+  margin:4px 0 10px; font-family:var(--font-round); font-weight:800;
+  font-size:23px; line-height:1.25; color:var(--ink);
+  word-break:keep-all;
+}
+
+/* 플랫폼 뱃지 */
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 13px 6px 8px; border-radius:100px;
+  font-family:var(--font-round); font-weight:700; font-size:12px;
+  border:1.5px solid transparent; line-height:1;
+}
+.badge__ico{
+  width:18px; height:18px; border-radius:50%;
+  display:grid; place-items:center; font-size:11px; font-weight:800;
+}
+.badge--naver{ background:#03C75A; color:#fff; }
+.badge--naver .badge__ico{ background:#fff; color:#03C75A; }
+.badge--kakao{ background:#FEE500; color:#3C1E1E; }
+.badge--kakao .badge__ico{ background:#3C1E1E; color:#FEE500; }
+.badge--google{ background:#fff; color:#4A373A; border-color:#EADfe4; }
+.badge--google .badge__ico{ background:#fff; color:#4285F4; border:1px solid #eee; }
+.badge--email{ background:var(--pink-tint); color:var(--pink-deep); }
+.badge--email .badge__ico{ background:var(--pink); color:#fff; }
+
+.card__bio{
+  margin:14px auto 0; max-width:240px;
+  font-size:12.5px; line-height:1.6; color:var(--muted);
+}
+
+/* 스탯 */
+.stats{
+  margin-top:18px; padding-top:16px; border-top:1.5px dashed var(--pink-soft);
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.stats__item{ display:flex; flex-direction:column; gap:2px; min-width:64px; }
+.stats__item b{ font-family:var(--font-round); font-weight:800; font-size:18px; color:var(--pink-deep); }
+.stats__item span{ font-size:11px; color:var(--muted); }
+.stats__sep{ width:1.5px; height:26px; background:var(--pink-soft); border-radius:2px; }
+
+/* ── 활동(탭 + 그리드) ──────────────────────────────────── */
+.activity{
+  background:var(--card); border:1.5px solid var(--pink-soft);
+  border-radius:var(--radius); padding:8px; box-shadow:var(--shadow);
+}
+.tabs{
+  display:flex; gap:6px; padding:6px;
+  background:var(--bg); border-radius:18px; margin-bottom:10px;
+}
+.tab{
+  flex:1; border:none; cursor:pointer; padding:11px 8px; border-radius:14px;
+  font-family:var(--font-round); font-weight:700; font-size:13px; color:var(--muted);
+  background:transparent; transition:all .22s ease;
+  display:inline-flex; align-items:center; justify-content:center; gap:5px;
+}
+.tab__ico{ font-size:13px; }
+.tab.is-active{
+  background:#fff; color:var(--pink-deep);
+  box-shadow:0 6px 14px -8px rgba(255,111,168,.8);
+}
+
+.grid{
+  display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:4px;
+}
+.cell{
+  position:relative; aspect-ratio:1/1; border-radius:16px; overflow:hidden;
+  background:linear-gradient(135deg,#FFF4FA,#FFE7F2);
+  border:1.5px solid var(--pink-soft);
+  display:grid; place-items:center;
+  animation:pop .4s both;
+}
+.cell__ico{ font-size:24px; opacity:.45; }
+/* 스켈레톤 샤이머 */
+.cell::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.65) 50%, transparent 70%);
+  transform:translateX(-100%);
+  animation:shimmer 1.8s ease-in-out infinite;
+}
+
+.empty{
+  text-align:center; font-size:12px; color:var(--muted);
+  padding:6px 0 12px; margin:0;
+}
+
+/* ── 계정 관리 ─────────────────────────────────────────── */
+.account{ text-align:center; padding:4px 0 8px; }
+.logout{
+  width:100%; cursor:pointer; padding:15px;
+  font-family:var(--font-round); font-weight:800; font-size:15px;
+  color:#fff; border:none; border-radius:18px;
+  background:linear-gradient(135deg, var(--pink) 0%, var(--pink-deep) 100%);
+  box-shadow:0 14px 26px -12px rgba(229,70,138,.9);
+  transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+.logout:hover{ filter:brightness(1.04); box-shadow:0 18px 30px -12px rgba(229,70,138,.95); }
+.logout:active{ transform:scale(.97); }
+.logout:disabled{ filter:grayscale(.3) brightness(.95); cursor:default; }
+.account__hint{ margin:12px 0 0; font-size:11px; color:var(--muted); }
+
+/* ── 로딩 오버레이 ─────────────────────────────────────── */
+.loader{
+  position:fixed; inset:0; z-index:50;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  background:var(--bg); transition:opacity .35s ease;
+}
+.loader.hide{ opacity:0; pointer-events:none; }
+.loader__ribbon{ font-size:46px; animation:wiggle 1.1s ease-in-out infinite; }
+.loader__text{ font-family:var(--font-round); font-weight:700; color:var(--pink-deep); font-size:13px; margin:0; }
+
+/* ── 토스트 ────────────────────────────────────────────── */
+.toast{
+  position:fixed; left:50%; bottom:30px; transform:translate(-50%,20px);
+  z-index:60; max-width:300px;
+  padding:12px 20px; border-radius:100px;
+  background:rgba(74,55,58,.95); color:#fff;
+  font-family:var(--font-round); font-weight:700; font-size:13px;
+  box-shadow:0 12px 28px -10px rgba(0,0,0,.4);
+  opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s ease;
+}
+.toast.show{ opacity:1; transform:translate(-50%,0); }
+
+/* ── 등장 애니메이션 (스태거) ──────────────────────────── */
+.reveal{ opacity:0; transform:translateY(16px); animation:fadeUp .5s ease forwards; animation-delay:var(--d,0s); }
+
+@keyframes fadeUp{ to{ opacity:1; transform:translateY(0); } }
+@keyframes pop{ from{ opacity:0; transform:scale(.85); } to{ opacity:1; transform:scale(1); } }
+@keyframes shimmer{ 0%{ transform:translateX(-100%); } 60%,100%{ transform:translateX(100%); } }
+@keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-7px); } }
+@keyframes wiggle{ 0%,100%{ transform:rotate(-8deg); } 50%{ transform:rotate(8deg); } }
+@keyframes spinSlow{ to{ transform:rotate(360deg); } }
+
+/* 접근성: 모션 최소화 선호 시 정지 */
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+  .phone,.reveal{ opacity:1; transform:none; }
+}

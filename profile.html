@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>마이페이지 — KAIWAI 🎀</title>
+
+<!-- 폰트: 둥근 고딕(M PLUS Rounded 1c) + 본문(Noto Sans KR) -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+
+<!-- Supabase JS → auth.js(전역 sb 클라이언트 생성) 순서로 로드 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=2"></script>
+
+<!-- 화면 스타일 -->
+<link rel="stylesheet" href="profile.css"/>
+</head>
+
+<body>
+<!-- 로딩 오버레이 (세션·프로필 조회 동안) -->
+<div id="loader" class="loader">
+  <div class="loader__ribbon">🎀</div>
+  <p class="loader__text">불러오는 중…</p>
+</div>
+
+<main class="phone" id="page" aria-hidden="true">
+
+  <!-- ── 상단 바 ── -->
+  <header class="topbar">
+    <a class="topbar__btn" href="index.html" aria-label="홈으로">‹</a>
+    <h1 class="topbar__title">My Page</h1>
+    <span class="topbar__btn topbar__btn--ghost" aria-hidden="true">♡</span>
+  </header>
+
+  <!-- ── 프로필 카드 ── -->
+  <section class="card reveal" style="--d:.05s">
+    <div class="card__deco" aria-hidden="true">
+      <span class="spark spark--1">✦</span>
+      <span class="spark spark--2">✿</span>
+      <span class="spark spark--3">♡</span>
+    </div>
+
+    <div class="avatar">
+      <div class="avatar__ring">
+        <img id="avatarImg" class="avatar__img" alt="프로필 이미지" src=""/>
+      </div>
+      <span class="avatar__bow" aria-hidden="true">🎀</span>
+    </div>
+
+    <h2 id="nickname" class="card__nick">…</h2>
+
+    <!-- 로그인 플랫폼 뱃지 (JS가 클래스/텍스트 주입) -->
+    <span id="providerBadge" class="badge badge--email">
+      <span class="badge__ico">✉</span><span id="providerLabel">이메일</span>
+    </span>
+
+    <p class="card__bio">오늘의 코디를 기록하는 카이와이 러버 ♡</p>
+
+    <!-- 활동 뼈대: 간단 스탯 -->
+    <div class="stats">
+      <div class="stats__item"><b>0</b><span>OOTD</span></div>
+      <div class="stats__sep" aria-hidden="true"></div>
+      <div class="stats__item"><b>0</b><span>팔로워</span></div>
+      <div class="stats__sep" aria-hidden="true"></div>
+      <div class="stats__item"><b>0</b><span>팔로잉</span></div>
+    </div>
+  </section>
+
+  <!-- ── 나의 활동 (탭 + 그리드) ── -->
+  <section class="activity reveal" style="--d:.15s">
+    <div class="tabs" role="tablist">
+      <button class="tab is-active" role="tab" data-tab="ootd" aria-selected="true">
+        <span class="tab__ico">📸</span> 내 OOTD
+      </button>
+      <button class="tab" role="tab" data-tab="liked" aria-selected="false">
+        <span class="tab__ico">♡</span> 좋아요 한 코디
+      </button>
+    </div>
+
+    <!-- 3열 그리드 (더미 6칸 — JS가 탭에 맞춰 렌더) -->
+    <div id="feedGrid" class="grid" aria-live="polite"></div>
+
+    <p id="emptyHint" class="empty">아직 코디가 없어요. 첫 OOTD를 올려볼까요? ✿</p>
+  </section>
+
+  <!-- ── 하단: 계정 관리 ── -->
+  <footer class="account reveal" style="--d:.25s">
+    <button id="logoutBtn" class="logout">로그아웃</button>
+    <p class="account__hint">KAIWAI 🎀 · 안전하게 로그아웃합니다</p>
+  </footer>
+
+</main>
+
+<!-- 토스트 -->
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<noscript>
+  <p style="text-align:center;padding:24px;font-family:sans-serif;color:#4A373A">
+    이 페이지는 자바스크립트가 필요해요.
+  </p>
+</noscript>
+
+<script src="profile.js"></script>
+</body>
+</html>
