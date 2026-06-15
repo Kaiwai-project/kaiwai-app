@@ -12,6 +12,14 @@
 
   const sb = window.sb; // auth.js 가 생성·전역 노출한 클라이언트
 
+  /* 최고 관리자 화이트리스트
+     ⚠️ 앱에 실제로 로그인하는 이메일(소셜 제공자가 주는 session.user.email)과 일치해야 함.
+        다른 계정으로 로그인하면 이 값을 그 이메일로 바꿔주세요. */
+  const ADMIN_EMAILS = ["rmfjwlak114@gmail.com"];
+  function isAdminUser(user) {
+    return !!user && ADMIN_EMAILS.includes((user.email || "").toLowerCase());
+  }
+
   /* ── DOM 참조 ───────────────────────────────────────── */
   const $ = (id) => document.getElementById(id);
   const els = {
@@ -66,6 +74,25 @@
     if (!m) return false;
     const base = m[1];
     return ADJECTIVES.some((a) => base.startsWith(a) && NOUNS.includes(base.slice(a.length)));
+  }
+
+  /* 닉네임 중복 검사 — 같은 display_name 을 가진 다른 유저가 있으면 false(중복),
+     없으면 true(사용 가능). 본인(excludeId)은 검사에서 제외. */
+  async function checkNicknameUnique(name, excludeId) {
+    let q = sb.from("profiles").select("id").eq("display_name", name).limit(1);
+    if (excludeId) q = q.neq("id", excludeId);
+    const { data, error } = await q;
+    if (error) { console.warn("닉네임 중복 검사 실패:", error.message); return true; } // 검사 실패 시 통과
+    return !data || data.length === 0;
+  }
+
+  /* 중복되지 않는 카이와이 닉네임 생성 (최대 10회 재시도 후 충돌 회피 숫자 부가) */
+  async function generateUniqueNickname(excludeId) {
+    for (let i = 0; i < 10; i++) {
+      const cand = generateKawaiiNickname();
+      if (await checkNicknameUnique(cand, excludeId)) return cand;
+    }
+    return generateKawaiiNickname() + Math.floor(Math.random() * 100);
   }
 
   /* ── 2. 디폴트 아바타 (저작권 안전한 귀여운 더미) ───────
@@ -167,9 +194,22 @@
     const val = els.nickInput.value.trim();
     if (!val) { toast("닉네임을 입력해주세요"); return; }
     if (val.length > 20) { toast("닉네임은 20자 이하로 입력해주세요"); return; }
+    // 관리자 사칭 방지: 금지어 포함 시 차단 (대소문자 무시)
+    const BANNED = ["운영","운영자","관리","관리자","admin","master","kaiwai","카이와이"];
+    const low = val.toLowerCase();
+    if (!isAdminUser(currentUser) && BANNED.some((w) => low.includes(w.toLowerCase()))) {
+      toast("관리자 사칭이 우려되는 닉네임은 사용할 수 없어요 🎀");
+      return;
+    }
     if (val === currentNick) { exitEditMode(); return; }     // 변경 없음
 
     els.nickSave.disabled = true;
+    // 중복 검사 (본인 제외) — 금지어 필터 통과 후
+    if (!(await checkNicknameUnique(val, currentUser.id))) {
+      els.nickSave.disabled = false;
+      toast("이미 다른 천사님이 사용 중인 닉네임이에요 🎀 다른 이름을 지어주세요!");
+      return;
+    }
     const { data: updated, error } = await sb
       .from("profiles")
       .update({ display_name: val })
@@ -208,8 +248,9 @@
     let nickname = profile?.display_name?.trim();
     // '전부 카이와이로 교체': 카이와이 형식이 아니면(실명/소셜 닉 등) 한 번 교체 후 저장.
     //   카이와이 닉네임은 패턴을 통과 → 이후엔 안 바뀌고 안정적으로 유지됨.
-    if (!nickname || !isKawaiiNickname(nickname)) {
-      nickname = generateKawaiiNickname();
+    //   단, 관리자(Admin)는 어떤 닉네임이든 자동 생성/덮어쓰기를 원천 차단('운영자' 유지).
+    if (!isAdminUser(user) && (!nickname || !isKawaiiNickname(nickname))) {
+      nickname = await generateUniqueNickname(user.id);   // 중복 안 되는 닉네임으로
       const { data: updated, error: uErr } = await sb
         .from("profiles")
         .update({ display_name: nickname })
@@ -226,6 +267,7 @@
     }
 
     // (d) 화면 그리기
+    nickname = nickname || (isAdminUser(user) ? "관리자" : "익명천사");  // 빈 값 방어
     currentUser = user;
     currentNick = nickname;
     render(user, profile, nickname);

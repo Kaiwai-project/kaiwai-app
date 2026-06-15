@@ -235,7 +235,25 @@
         <p id="profFavCount" style="font-size:20px;font-weight:800;color:#C41055;margin:0;font-family:'M PLUS Rounded 1c',sans-serif"></p>
       </div>
       <button onclick="location.href='profile.html'" style="width:100%;padding:14px;border-radius:14px;border:none;cursor:pointer;background:linear-gradient(135deg,#FF6FA8,#C41055);font-weight:800;font-size:14px;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:10px;box-shadow:0 10px 20px -10px rgba(196,16,85,.8);transition:filter .15s" onmouseover="this.style.filter='brightness(1.05)'" onmouseout="this.style.filter='none'">마이페이지 ✿</button>
+      <!-- 메뉴 리스트 -->
+      <div style="background:#FFF5F8;border-radius:16px;padding:6px;margin-bottom:16px;border:1px solid #FFE8F0">
+        <button onclick="openMenu('notice')" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;background:none;border:none;cursor:pointer;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;color:#4A373A;transition:background .15s" onmouseover="this.style.background='#FFE8F0'" onmouseout="this.style.background='none'">
+          <span>📢 공지사항 / 업데이트</span><span style="color:#C4A8B0;font-size:16px">›</span>
+        </button>
+        <button onclick="openMenu('terms')" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;background:none;border:none;cursor:pointer;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;color:#4A373A;transition:background .15s" onmouseover="this.style.background='#FFE8F0'" onmouseout="this.style.background='none'">
+          <span>📜 이용약관 및 정책</span><span style="color:#C4A8B0;font-size:16px">›</span>
+        </button>
+        <button onclick="openMenu('contact')" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 14px;background:none;border:none;cursor:pointer;border-radius:12px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:500;color:#4A373A;transition:background .15s" onmouseover="this.style.background='#FFE8F0'" onmouseout="this.style.background='none'">
+          <span>💌 KAIWAI에 문의하기</span><span style="color:#C4A8B0;font-size:16px">›</span>
+        </button>
+      </div>
+
       <button onclick="doLogout()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid #FFD6E8;cursor:pointer;background:#fff;font-weight:700;font-size:14px;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;transition:background .15s" onmouseover="this.style.background='#FFF5F8'" onmouseout="this.style.background='#fff'">로그아웃</button>
+
+      <!-- 회원탈퇴 (실수 방지: 작고 옅은 텍스트 버튼) -->
+      <div style="text-align:center;margin-top:16px">
+        <button onclick="deleteAccount()" style="background:none;border:none;cursor:pointer;font-size:12px;color:#C4A8B0;text-decoration:underline;font-family:'Noto Sans KR',sans-serif;padding:4px 8px">회원탈퇴</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1460,6 +1478,35 @@ function doLogout(){
   authUser=null; localStorage.removeItem("kaiwai_user");
   updateAuthBtn(); closeAuth();
   showToast("로그아웃 됐어요.");
+}
+
+/* 마이페이지 메뉴 — 추후 각 페이지/시트 연결 (현재는 플레이스홀더) */
+function openMenu(type){
+  // TODO: notice / terms / contact 별 화면 연결
+  showToast("곧 준비될 메뉴예요 🎀");
+}
+
+/* 회원탈퇴 — 2단계 확인 후 처리 (실제 계정 삭제는 service_role 필요 → Edge Function 권장) */
+async function deleteAccount(){
+  // Step 1
+  if(!confirm("정말로 KAIWAI를 떠나시겠어요? 😢 저장된 OOTD와 즐겨찾기가 모두 삭제됩니다.")) return;
+  // Step 2
+  if(!confirm("탈퇴 후에는 데이터를 복구할 수 없습니다. 정말 탈퇴하시겠습니까?")) return;
+
+  try{
+    // TODO: 실제 auth.users 삭제는 클라이언트 anon 키로 불가 →
+    //       Edge Function(delete-account, service_role)에서 auth.admin.deleteUser + 데이터 정리.
+    //       지금은 뼈대: 세션 종료 + 로컬 정리.
+    if(window.sb) await window.sb.auth.signOut();
+  }catch(e){ console.warn("signOut 경고:", e); }
+
+  authUser=null; currentUserId=null;
+  localStorage.removeItem("kaiwai_user");
+  localStorage.removeItem("zp_fav");
+  favs=[]; myLikes=new Set();
+  updateAuthBtn(); closeAuth(); drawBrands();
+  if(tab==="fav") drawFav();
+  showToast('회원탈퇴가 완료되었습니다. 그동안 감사했어요 🎀');
 }
 
 function showToast(msg){
