@@ -78,7 +78,7 @@ SNS 게시물:
 
     try:
         resp = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash",
             contents=prompt,
         )
         raw = resp.text.strip()
@@ -120,12 +120,12 @@ def fetch_instagram(apify: ApifyClient, handle: str) -> list[str]:
 def fetch_twitter(apify: ApifyClient, handle: str) -> list[str]:
     try:
         run = apify.actor(ACTOR_TW).call(run_input={
-            "handles": [handle.lstrip("@")],
-            "tweetsDesired": 5,
+            "startUrls": [{"url": f"https://x.com/{handle.lstrip('@')}"}],
+            "maxItems": 5,
             "cookies": [{"name": "auth_token", "value": TW_COOKIE}] if TW_COOKIE else [],
         })
         return [
-            item.get("text") or ""
+            item.get("text") or item.get("full_text") or ""
             for item in apify.dataset(run.default_dataset_id).iterate_items()
             if not (item.get("text") or "").startswith("RT ")
         ]
