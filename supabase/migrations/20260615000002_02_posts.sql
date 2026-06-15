@@ -2,7 +2,7 @@
 -- 02_posts.sql  —  OOTD 피드 (이미지 다중 대비: text[] 1~10장)
 -- ============================================================
 create table public.posts (
-  id         uuid        primary key default uuid_generate_v4(),
+  id         uuid        primary key default gen_random_uuid(),
   author_id  uuid        not null references public.profiles(id) on delete cascade,
   caption    text,
   image_urls text[]      not null check (array_length(image_urls, 1) between 1 and 10),

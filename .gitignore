@@ -1,0 +1,8 @@
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# 환경변수 / 시크릿
+.env
+.env.local
+.env.*.local

@@ -7,16 +7,28 @@
    ============================================================ */
 
 /* ── 1. 설정값 (anon key / URL 은 공개되어도 안전) ───────────── */
-const SUPABASE_URL      = "https://여기에_프로젝트.supabase.co";
-const SUPABASE_ANON_KEY = "여기에_ANON_KEY";
+const SUPABASE_URL = "https://iwrkpwmpfhlyfvutlnuy.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3cmtwd21wZmhseWZ2dXRsbnV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NjMzNDIsImV4cCI6MjA5NzAzOTM0Mn0.8FsCButTXhjftuGjA6v0IbzI3aCUXKykHYmJDV8aI5E";
 
 // Naver 개발자센터에 등록한 값과 동일해야 함
-const NAVER_CLIENT_ID   = "여기에_네이버_클라이언트_ID";
-// Naver 콘솔의 Callback URL 과 정확히 일치해야 함 (배포 시 실제 도메인으로 교체)
-const NAVER_REDIRECT_URI = window.location.origin + "/auth/callback.html";
+const NAVER_CLIENT_ID = "SFbCj79tPEnzTzc0b2qU";
 
-/* 공통 콜백 URL (Supabase Redirect URLs 허용목록 + Naver 콘솔 Callback 에 등록) */
-const AUTH_REDIRECT = window.location.origin + "/auth/callback.html";
+/* ── 공통 콜백(redirect) URL ──────────────────────────────────
+   ⚠️ 이 값은 아래 세 곳에 "글자 하나까지 동일"하게 등록되어야 함:
+     1) Naver 개발자센터 → 애플리케이션 → Callback URL
+     2) Supabase 대시보드 → Authentication → URL Configuration → Redirect URLs 허용목록
+     3) 카카오/구글 콘솔의 Redirect URI (해당 시)
+   로컬 개발: 반드시 http 서버로 실행할 것 (file:// 로 열면 origin 이 "null" → 실패).
+     예) npx serve  →  http://localhost:3000/auth/callback.html
+   배포 시: REDIRECT_URI 를 실제 도메인으로 고정 교체 권장.        */
+const REDIRECT_URI = window.location.origin + "/auth/callback.html";
+// 로컬 테스트 등 고정값으로 강제하려면 위 줄 대신 아래처럼 직접 지정:
+//   const REDIRECT_URI = "http://localhost:3000/auth/callback.html";
+
+// 네이버 인증 페이지로 넘기는 redirect_uri (네이버 콘솔 Callback 과 일치)
+const NAVER_REDIRECT_URI = REDIRECT_URI;
+// 카카오/구글 등 Supabase 네이티브 OAuth 가 돌아올 곳 (Supabase 허용목록과 일치)
+const AUTH_REDIRECT = REDIRECT_URI;
 
 /* ── 2. Supabase 클라이언트 (전역 1개) ──────────────────────── */
 //  detectSessionInUrl:false → 콜백에서 수동 코드 교환 (네이버 커스텀 흐름과 충돌 방지)
@@ -56,7 +68,7 @@ function startNaverLogin() {
 //   callback.html 에서 호출. 성공 시 홈으로 리다이렉트.
 async function handleNaverCallback() {
   const params = new URLSearchParams(window.location.search);
-  const code  = params.get("code");
+  const code = params.get("code");
   const state = params.get("state");
   const error = params.get("error");
 
@@ -77,8 +89,7 @@ async function handleNaverCallback() {
 
   // ② token_hash 로 세션 확립
   const { error: otpErr } = await sb.auth.verifyOtp({
-    email: data.email,
-    token_hash: data.token_hash,
+    token_hash: data.token_hash,   // token_hash 사용 시 email/phone 동봉 금지
     type: "email",
   });
   if (otpErr) throw new Error("세션 확립 실패: " + otpErr.message);
