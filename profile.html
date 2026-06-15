@@ -49,11 +49,27 @@
       <span class="avatar__bow" aria-hidden="true">🎀</span>
     </div>
 
-    <h2 id="nickname" class="card__nick">…</h2>
+    <div class="nick-row" id="nickRow">
+      <h2 id="nickname" class="card__nick">…</h2>
+      <button id="editNickBtn" class="nick-edit" aria-label="닉네임 수정" title="닉네임 수정">✏️</button>
+    </div>
+
+    <!-- 닉네임 편집 모드 -->
+    <form id="nickEdit" class="nick-edit-form" hidden>
+      <div class="nick-input-row">
+        <input id="nickInput" class="nick-input" type="text" maxlength="20"
+               autocomplete="off" placeholder="닉네임 입력"/>
+        <button type="button" id="nickDice" class="nick-dice" title="랜덤 생성" aria-label="랜덤 생성">🎲</button>
+      </div>
+      <div class="nick-edit-actions">
+        <button type="submit" id="nickSave" class="nick-btn nick-btn--save">저장</button>
+        <button type="button" id="nickCancel" class="nick-btn nick-btn--cancel">취소</button>
+      </div>
+    </form>
 
     <!-- 로그인 플랫폼 뱃지 (JS가 클래스/텍스트 주입) -->
-    <span id="providerBadge" class="badge badge--email">
-      <span class="badge__ico">✉</span><span id="providerLabel">이메일</span>
+    <span id="providerBadge" class="badge badge--default">
+      <span class="badge__ico">♡</span><span id="providerLabel">KAIWAI 계정</span>
     </span>
 
     <p class="card__bio">오늘의 코디를 기록하는 카이와이 러버 ♡</p>

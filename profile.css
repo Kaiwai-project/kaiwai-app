@@ -122,6 +122,48 @@ body{
   word-break:keep-all;
 }
 
+/* 닉네임 + 수정 버튼 */
+.nick-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin:4px 0 10px; }
+.nick-row .card__nick{ margin:0; }
+.nick-edit{
+  width:30px; height:30px; flex-shrink:0; border-radius:50%; cursor:pointer;
+  border:1.5px solid var(--pink-soft); background:#fff; font-size:13px; line-height:1;
+  display:grid; place-items:center; box-shadow:0 4px 10px -6px rgba(255,111,168,.6);
+  transition:transform .15s ease, background .15s ease;
+}
+.nick-edit:hover{ background:var(--pink-tint); }
+.nick-edit:active{ transform:scale(.88); }
+
+/* 편집 모드 */
+.nick-edit-form{ margin:4px auto 12px; max-width:280px; display:flex; flex-direction:column; gap:10px; }
+.nick-edit-form[hidden]{ display:none; }
+.nick-input-row{ display:flex; gap:8px; align-items:center; }
+.nick-input{
+  flex:1; min-width:0; text-align:center;
+  font-family:var(--font-round); font-weight:800; font-size:19px; color:var(--ink);
+  padding:9px 12px; border:1.5px solid var(--pink-soft); border-radius:14px;
+  outline:none; background:#fff; transition:border-color .2s, box-shadow .2s;
+}
+.nick-input::placeholder{ color:#D9B9C6; font-weight:500; }
+.nick-input:focus{ border-color:var(--pink); box-shadow:0 0 0 3px rgba(255,111,168,.15); }
+.nick-dice{
+  width:42px; height:42px; flex-shrink:0; border-radius:13px; cursor:pointer;
+  border:1.5px solid var(--pink-soft); background:var(--bg); font-size:18px;
+  display:grid; place-items:center; transition:transform .15s ease, background .15s ease;
+}
+.nick-dice:hover{ background:var(--pink-tint); }
+.nick-dice:active{ transform:rotate(-18deg) scale(.92); }
+.nick-edit-actions{ display:flex; gap:8px; justify-content:center; }
+.nick-btn{
+  cursor:pointer; border:none; border-radius:100px; padding:9px 22px;
+  font-family:var(--font-round); font-weight:700; font-size:13px;
+  transition:filter .15s ease, transform .15s ease;
+}
+.nick-btn:active{ transform:scale(.95); }
+.nick-btn:disabled{ filter:grayscale(.3) brightness(.97); cursor:default; }
+.nick-btn--save{ background:linear-gradient(135deg, var(--pink), var(--pink-deep)); color:#fff; box-shadow:0 8px 16px -8px rgba(229,70,138,.8); }
+.nick-btn--cancel{ background:#fff; color:var(--muted); border:1.5px solid var(--pink-soft); }
+
 /* 플랫폼 뱃지 */
 .badge{
   display:inline-flex; align-items:center; gap:6px;
@@ -141,6 +183,9 @@ body{
 .badge--google .badge__ico{ background:#fff; color:#4285F4; border:1px solid #eee; }
 .badge--email{ background:var(--pink-tint); color:var(--pink-deep); }
 .badge--email .badge__ico{ background:var(--pink); color:#fff; }
+/* provider 를 못 읽었거나 일반 가입 — KAIWAI 기본 뱃지 */
+.badge--default{ background:var(--pink-tint); color:var(--pink-deep); }
+.badge--default .badge__ico{ background:var(--pink); color:#fff; }
 
 .card__bio{
   margin:14px auto 0; max-width:240px;

@@ -1023,7 +1023,12 @@ function switchAuth(v){
     document.getElementById("view"+n).style.display = n.toLowerCase()===v ? "block":"none";
   });
   if(v==="profile" && authUser){
-    document.getElementById("profAvatar").textContent = authUser.nickname[0].toUpperCase();
+    const _av = document.getElementById("profAvatar");
+    if(authUser.profileImg){
+      _av.innerHTML = `<img src="${authUser.profileImg}" alt="프로필" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+    } else {
+      _av.textContent = authUser.nickname[0].toUpperCase();
+    }
     document.getElementById("profNick").textContent = authUser.nickname;
     document.getElementById("profSub").textContent = authUser.provider
       ? {kakao:"카카오 계정",naver:"네이버 계정",google:"Google 계정"}[authUser.provider]||authUser.provider
@@ -1035,13 +1040,21 @@ function switchAuth(v){
 function updateAuthBtn(){
   const btn=document.getElementById("authBtn"); if(!btn) return;
   if(authUser){
-    const a=authUser.nickname[0].toUpperCase();
-    const bg = authUser.provider==="kakao" ? "#FEE500"
-             : authUser.provider==="naver" ? "#03C75A"
-             : authUser.provider==="google" ? "#4285F4"
-             : "linear-gradient(135deg,#FF6FA8,#C41055)";
-    const col = authUser.provider==="kakao" ? "#191919" : "#fff";
-    btn.innerHTML=`<div style="width:32px;height:32px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;color:${col};font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif">${a}</div>`;
+    const ring = authUser.provider==="kakao" ? "#FEE500"
+               : authUser.provider==="naver" ? "#03C75A"
+               : authUser.provider==="google" ? "#4285F4"
+               : "#FF6FA8";
+    if(authUser.profileImg){
+      btn.innerHTML=`<img src="${authUser.profileImg}" alt="프로필" style="width:34px;height:34px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid #fff;box-shadow:0 0 0 2px ${ring}">`;
+    } else {
+      const a=authUser.nickname[0].toUpperCase();
+      const bg = authUser.provider==="kakao" ? "#FEE500"
+               : authUser.provider==="naver" ? "#03C75A"
+               : authUser.provider==="google" ? "#4285F4"
+               : "linear-gradient(135deg,#FF6FA8,#C41055)";
+      const col = authUser.provider==="kakao" ? "#191919" : "#fff";
+      btn.innerHTML=`<div style="width:32px;height:32px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;color:${col};font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif">${a}</div>`;
+    }
     btn.style.cssText="background:none;border:none;padding:0;cursor:pointer";
   } else {
     btn.textContent="로그인";
@@ -1175,20 +1188,53 @@ drawFilter(); drawBanner(); drawBrands(); go("home"); updateAuthBtn();
    네이버(리다이렉트) 로그인으로 확립된 Supabase 세션을 기존 UI에 반영.
    카카오/구글/이메일(localStorage mock)은 기존 그대로 동작.
 ═══════════════════════════════════ */
+/* 현재 세션의 로그인 플랫폼 판별 — profile.js 와 동일 로직.
+   app_metadata.provider 는 계정 병합 시 첫 가입값으로 고정되므로,
+   identities 의 가장 최근 last_sign_in_at 을 우선 사용한다. */
+function detectLoginProvider(user){
+  const ids = Array.isArray(user?.identities) ? user.identities : [];
+  if(ids.length){
+    const latest = ids.reduce((a,b)=>
+      new Date(b?.last_sign_in_at||0) >= new Date(a?.last_sign_in_at||0) ? b : a);
+    const p = (latest?.provider||"").toLowerCase();
+    if(p==="kakao"||p==="google"||p==="naver") return p;
+    if(p==="email" && user?.user_metadata?.provider==="naver") return "naver"; // 우리 네이버
+  }
+  const ap = (user?.app_metadata?.provider||"").toLowerCase();
+  if(ap==="kakao"||ap==="google"||ap==="naver") return ap;
+  if(user?.user_metadata?.provider==="naver") return "naver";
+  return "email";
+}
+
+/* 마이페이지(profile.js)와 동일한 디폴트 아바타 — 같은 시드(user.id)면 같은 이미지 */
+function kawaiiAvatar(seed){
+  return `https://api.dicebear.com/9.x/fun-emoji/svg?seed=${encodeURIComponent(seed)}&backgroundColor=ffd6e8,ffc0cb,ffe0ee,fbb1d3&radius=50`;
+}
+
 async function initSupabaseAuth(){
   if(!window.sb) return;  // auth.js 미로드 시 무시
   try{
     const { data:{ user } } = await window.sb.auth.getUser();
     if(user){
       const m = user.user_metadata || {};
-      // provider: 네이버(커스텀)는 user_metadata.provider, 카카오/구글은 app_metadata.provider
-      const provider = m.provider || user.app_metadata?.provider || "email";
+      // provider: 가장 최근 로그인한 identity 기준 (계정 병합돼도 정확)
+      const provider = detectLoginProvider(user);
+      // profiles 에서 카이와이 닉네임/아바타 조회 (마이페이지와 동일 소스)
+      let displayName = "", avatarUrl = "";
+      try {
+        const { data: prof } = await window.sb
+          .from("profiles").select("display_name, avatar_url").eq("id", user.id).maybeSingle();
+        displayName = prof?.display_name?.trim() || "";
+        avatarUrl   = prof?.avatar_url?.trim() || "";
+      } catch(_){ /* 조회 실패 시 메타데이터/디폴트로 폴백 */ }
       authUser = {
         id: user.id,
         email: user.email,
-        nickname: m.full_name || m.name || m.user_name || m.nickname
+        nickname: displayName
+                  || m.full_name || m.name || m.user_name || m.nickname
                   || (user.email||"").split("@")[0] || "사용자",
-        profileImg: m.avatar_url || m.picture || m.profile_image || "",
+        // 아바타: DB avatar_url 우선 → 없으면 마이페이지와 같은 DiceBear
+        profileImg: avatarUrl || kawaiiAvatar(user.id),
         provider,
       };
       localStorage.setItem("kaiwai_user", JSON.stringify(authUser));
