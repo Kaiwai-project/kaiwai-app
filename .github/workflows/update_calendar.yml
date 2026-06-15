@@ -31,7 +31,7 @@ jobs:
       - name: 📦 의존성 설치
         run: |
           python -m pip install --upgrade pip
-          pip install apify-client google-generativeai
+          pip install apify-client google-genai
 
       # ④ 스크래퍼 실행
       - name: 🔍 캘린더 데이터 수집

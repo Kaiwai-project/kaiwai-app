@@ -5,7 +5,7 @@ import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from apify_client import ApifyClient
-import google.generativeai as genai
+from google import genai
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -17,7 +17,7 @@ TW_COOKIE = os.environ.get("TW_COOKIE", "")
 OUT_PATH = Path(__file__).parent / "calendar_data.json"
 
 ACTOR_IG = "apify/instagram-scraper"
-ACTOR_TW = "katerinahronik/twitter-scraper"
+ACTOR_TW = "apify/twitter-scraper"
 
 BRANDS_GROUPS = {
     0: [
@@ -57,9 +57,11 @@ SYSTEM_PROMPT = """당신은 일본 서브컬처 패션 브랜드의 SNS 게시�
 응답 형식: JSON 한 줄 또는 null (다른 텍스트 없이)"""
 
 
-def analyze_post(model: genai.GenerativeModel, brand_name: str, text: str, today: datetime) -> dict | None:
+def analyze_post(client: genai.Client, brand_name: str, text: str, today: datetime) -> dict | None:
     """Gemini로 SNS 게시물에서 이벤트를 추출. 이벤트 없으면 None 반환."""
-    prompt = f"""오늘: {today.strftime("%Y년 %m월 %d일")}
+    prompt = f"""{SYSTEM_PROMPT}
+
+오늘: {today.strftime("%Y년 %m월 %d일")}
 브랜드: {brand_name}
 
 SNS 게시물:
@@ -75,7 +77,10 @@ SNS 게시물:
 - 날짜 파악 불가 시 null 반환"""
 
     try:
-        resp = model.generate_content(prompt)
+        resp = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt,
+        )
         raw = resp.text.strip()
 
         if raw.lower() == "null" or not raw:
@@ -105,7 +110,7 @@ def fetch_instagram(apify: ApifyClient, handle: str) -> list[str]:
         })
         return [
             item.get("caption") or item.get("text") or ""
-            for item in apify.dataset(run["defaultDatasetId"]).iterate_items()
+            for item in apify.dataset(run.default_dataset_id).iterate_items()
         ]
     except Exception as e:
         print(f"    IG 오류 ({handle}): {e}")
@@ -121,7 +126,7 @@ def fetch_twitter(apify: ApifyClient, handle: str) -> list[str]:
         })
         return [
             item.get("text") or ""
-            for item in apify.dataset(run["defaultDatasetId"]).iterate_items()
+            for item in apify.dataset(run.default_dataset_id).iterate_items()
             if not (item.get("text") or "").startswith("RT ")
         ]
     except Exception as e:
@@ -133,13 +138,7 @@ def main():
     today = datetime.now()
     apify = ApifyClient(APIFY_TOKEN) if APIFY_TOKEN else None
 
-    model = None
-    if GEMINI_API_KEY:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=SYSTEM_PROMPT,
-        )
+    gemini = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
 
     group_idx = today.day % 3
     brands = BRANDS_GROUPS.get(group_idx, [])
@@ -171,8 +170,8 @@ def main():
             if not text or not text.strip():
                 continue
 
-            if model:
-                result = analyze_post(model, brand["name"], text, today)
+            if gemini:
+                result = analyze_post(gemini, brand["name"], text, today)
                 if result:
                     print(f"  ✅ [{result['date']}] {result['description']}")
                     events.append({

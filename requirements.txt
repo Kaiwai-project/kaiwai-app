@@ -1,2 +1,2 @@
 apify-client
-google-generativeai
+google-genai
