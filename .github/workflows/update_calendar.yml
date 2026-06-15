@@ -27,16 +27,17 @@ jobs:
           python-version: "3.11"
           cache: "pip"
 
-      # ③ 의존성 설치 (googletrans 포함 전체 설치)
+      # ③ 의존성 설치
       - name: 📦 의존성 설치
         run: |
           python -m pip install --upgrade pip
-          pip install apify-client googletrans==4.0.0-rc1
+          pip install apify-client anthropic
 
       # ④ 스크래퍼 실행
       - name: 🔍 캘린더 데이터 수집
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           IG_COOKIE: ${{ secrets.IG_COOKIE }}
           TW_COOKIE: ${{ secrets.TW_COOKIE }}
         run: python update_calendar.py
