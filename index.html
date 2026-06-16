@@ -166,6 +166,18 @@
   </div>
 </div>
 
+<!-- ══ 메뉴(공지/약관/문의) 모달 ══ -->
+<div id="menuOverlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;background:rgba(74,55,58,.4);z-index:55;align-items:flex-end;justify-content:center">
+  <div id="menuSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:88vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeMenu()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:22px 24px 40px">
+      <h2 id="menuTitle" style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:21px;color:#4A373A;margin:6px 0 18px"></h2>
+      <div id="menuBody" style="font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#6B5B5F;line-height:1.75"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 인증 모달 ══ -->
 <div id="authOverlay" onclick="closeAuth()" style="display:none;position:fixed;inset:0;background:rgba(74,55,58,.4);z-index:50;align-items:flex-end;justify-content:center">
   <div id="authSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
@@ -423,149 +435,136 @@ const B = [
    desc:"체크무늬와 펑크를 기반으로 한 하라주쿠 서브컬처 브랜드. 라포레 하라주쿠 B1F 입점.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://heihei.thebase.in/", globalUrl:"", xId:"@heihei_official", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:31, n:"XU",                            s:"서브컬쳐", i:"XU", c:"#E05C00", tax:true,
-   desc:"시부야109와 라포레 동시 입점한 다크 서브컬처 편집샵. NEW ROCK 등 해외 브랜드도 취급.",
-   bgImg:"여기에_사진_링크_넣기", japanUrl:"https://pressingshop.com/", globalUrl:"", xId:"", instaId:"",
-   st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
-       {city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:32, n:"OY",                            s:"서브컬쳐", i:"OY", c:"#E05C00", tax:true,
+  {id:31, n:"OY",                            s:"서브컬쳐", i:"OY", c:"#E05C00", tax:true,
    desc:"스트리트×서브컬처를 결합한 도쿄 하라주쿠 독립 브랜드. 과감하고 실험적인 그래픽 디자인.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:33, n:"BACKSTAGE PASS",                s:"서브컬쳐", i:"BP", c:"#E05C00", tax:true,
+  {id:32, n:"BACKSTAGE PASS",                s:"서브컬쳐", i:"BP", c:"#E05C00", tax:true,
    desc:"아이돌 오타쿠×패션의 독보적 브랜드. 콘서트장에서도 입을 수 있는 세련된 서브컬처 아이템.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
        {city:"오사카",mall:"우메다 HEP FIVE",fl:"6F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
   /* ── 비쥬얼계 고스·펑크 ── */
-  {id:34, n:"CIVARIZE",                      s:"비쥬얼계 고스·펑크", i:"CV", c:"#4A0080", tax:true,
+  {id:33, n:"CIVARIZE",                      s:"비쥬얼계 고스·펑크", i:"CV", c:"#4A0080", tax:true,
    desc:"시부야 기반 비주얼계 펑크 브랜드. 플레어드 데님과 비대칭 디자인이 트레이드마크.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://acrotokyo.com", globalUrl:"", xId:"@civarize_store", instaId:"",
    st:[{city:"도쿄",mall:"시부야",fl:"로드샵",map:"https://maps.google.com/?q=Shibuya+Tokyo"}]},
-  {id:35, n:"h.NAOTO",                       s:"비쥬얼계 고스·펑크", i:"HN", c:"#4A0080", tax:true,
+  {id:34, n:"h.NAOTO",                       s:"비쥬얼계 고스·펑크", i:"HN", c:"#4A0080", tax:true,
    desc:"고딕·로리타·펑크의 퓨전 브랜드. 2000년 창립, 비주얼계 밴드 의상 및 가면라이더 의상으로도 유명.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://hnaoto.com/", globalUrl:"", xId:"@hnaoto_official", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:36, n:"SEX POT ReVeNGe",               s:"비쥬얼계 고스·펑크", i:"SP", c:"#4A0080", tax:true,
+  {id:35, n:"SEX POT ReVeNGe",               s:"비쥬얼계 고스·펑크", i:"SP", c:"#4A0080", tax:true,
    desc:"하라주쿠 발 펑크·락 패션의 아이콘. 2000년 시작, KERA 매거진 단골 브랜드로 V계의 상징.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.sexpot.jp/", globalUrl:"", xId:"@sexpot_web", instaId:"",
    st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
-  {id:37, n:"ALGONQUINS",                    s:"비쥬얼계 고스·펑크", i:"AQ", c:"#4A0080", tax:false,
+  {id:36, n:"ALGONQUINS",                    s:"비쥬얼계 고스·펑크", i:"AQ", c:"#4A0080", tax:false,
    desc:"비대칭 레이어링과 패턴 믹스의 하라주쿠 펑크 아이콘. 파산 후 2020년 BASE에서 부활.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
    st:[]},
-  {id:38, n:"gouk",                          s:"비쥬얼계 고스·펑크", i:"GK", c:"#4A0080", tax:true,
-   desc:"일본 전통 문양×캐주얼 퓨전의 하라주쿠 서브컬처 브랜드. 2001년 창립의 레트로 WA 스타일.",
-   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
-   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
-  {id:39, n:"FUGA",                          s:"비쥬얼계 고스·펑크", i:"FG", c:"#4A0080", tax:true,
+  {id:37, n:"FUGA",                          s:"비쥬얼계 고스·펑크", i:"FG", c:"#4A0080", tax:true,
    desc:"비주얼계·고딕 하라주쿠 씬의 근본 브랜드. 다크하고 아방가르드한 V계 펑크 패션.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
    st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
-  {id:40, n:"PUTUMAYO",                      s:"비쥬얼계 고스·펑크", i:"PU", c:"#4A0080", tax:true,
-   desc:"펑크 로리타의 원조. 1990년 하라주쿠 출신, 고딕·펑크·로리타를 융합한 독보적인 스타일.",
-   bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
-   st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"}]},
-  {id:41, n:"QOOZA",                         s:"비쥬얼계 고스·펑크", i:"QZ", c:"#4A0080", tax:false,
+  {id:38, n:"QOOZA",                         s:"비쥬얼계 고스·펑크", i:"QZ", c:"#4A0080", tax:false,
    logo:"https://qooza.jp/html/user_data/top/qooza_logo01.png",
    desc:"라포레 B1.5F의 독특한 서브컬처 편집샵. 오타쿠×패션의 세련된 교차점.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://qooza.jp/", globalUrl:"", xId:"", instaId:"@qooza_official",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
   /* ── 로리타 ── */
-  {id:42, n:"BABY THE STARS SHINE BRIGHT",   s:"로리타", i:"BS", c:"#BB22CC", tax:true,
+  {id:39, n:"BABY THE STARS SHINE BRIGHT",   s:"로리타", i:"BS", c:"#BB22CC", tax:true,
    logo:"https://www.babyssb.co.jp/wp-content/themes/babyssbThema/inc/images/header/logo.png",
    desc:"1988년 창립, 클래식 로리타의 전통. 이케부쿠로 P'PARCO 2F. 파리 부티크도 운영하는 세계적 브랜드.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.babyssb.co.jp/", globalUrl:"", xId:"@BABY_THE_STARS", instaId:"@babythessbofficial",
    st:[{city:"도쿄",mall:"이케부쿠로 P'PARCO",fl:"2F",map:"https://maps.google.com/?q=P+PARCO+Ikebukuro"}]},
-  {id:43, n:"Angelic Pretty",                s:"로리타", i:"AP", c:"#BB22CC", tax:true,
+  {id:40, n:"Angelic Pretty",                s:"로리타", i:"AP", c:"#BB22CC", tax:true,
    desc:"스위트 로리타의 성지. 화려한 프릴과 파스텔 컬러의 드리밍 컬렉션으로 전 세계 팬 보유.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://angelicpretty.com/", globalUrl:"", xId:"", instaId:"@angelicpretty_official",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:44, n:"Moi-même-Moitié",               s:"로리타", i:"MM", c:"#BB22CC", tax:true,
+  {id:41, n:"Moi-même-Moitié",               s:"로리타", i:"MM", c:"#BB22CC", tax:true,
    desc:"Mana가 런칭한 고딕 로리타(EGA/EGL)의 전설. 블랙·네이비의 우아한 귀족풍 코디.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://moi-meme-moitie.com/", globalUrl:"", xId:"@moitie_official", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:45, n:"Alice and the Pirates",         s:"로리타", i:"AA", c:"#BB22CC", tax:true,
+  {id:42, n:"Alice and the Pirates",         s:"로리타", i:"AA", c:"#BB22CC", tax:true,
    desc:"BABY 산하 자매 브랜드. 해적·빅토리안 테마의 다크 스윗 로리타. 라포레 하라주쿠 입점.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://store.babyssb.co.jp/en/collections/alice-and-the-pirates", globalUrl:"", xId:"", instaId:"@alice_and_the_pirates",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1.5F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:46, n:"Atelier Pierrot",               s:"로리타", i:"PT", c:"#BB22CC", tax:true,
+  {id:43, n:"Atelier Pierrot",               s:"로리타", i:"PT", c:"#BB22CC", tax:true,
    desc:"라포레 하라주쿠 입점 고딕·로리타 셀렉트샵. 코르셋 드레스와 버슬 스커트 등 정통 다크 로리타.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://atelier-pierrot.jp/ko", globalUrl:"", xId:"@atelier_pierrot", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"B1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:47, n:"Sheglit",                       s:"로리타", i:"SG", c:"#BB22CC", tax:false,
+  {id:44, n:"Sheglit",                       s:"로리타", i:"SG", c:"#BB22CC", tax:false,
    desc:"클래식·고딕 로리타 브랜드. 아틀리에 직접 제작의 정교한 디테일. MiDiom 남성 모드 라인도 운영.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://sheglit.com/", globalUrl:"", xId:"@SheglitOfficial", instaId:"",
    st:[]},
-  {id:48, n:"Atelier BOZ",                   s:"로리타", i:"BZ", c:"#BB22CC", tax:true,
+  {id:45, n:"Atelier BOZ",                   s:"로리타", i:"BZ", c:"#BB22CC", tax:true,
    desc:"고딕·아리스토크라트 로리타의 정통. 우아한 솔리드 컬러 아우터웨어로 유명한 클래식 브랜드.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"", globalUrl:"", xId:"", instaId:"",
    st:[]},
-  {id:49, n:"Metamorphose temps de fille",   s:"로리타", i:"MX", c:"#BB22CC", tax:true,
+  {id:46, n:"Metamorphose temps de fille",   s:"로리타", i:"MX", c:"#BB22CC", tax:true,
    desc:"1993년 창립, 스윗·클래식 로리타를 아우르는 장수 브랜드. 하라주쿠·신주쿠 거점.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://metamorphose.gr.jp/", globalUrl:"", xId:"@metamor_official", instaId:"",
    st:[{city:"도쿄",mall:"하라주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Harajuku+Tokyo"},
        {city:"도쿄",mall:"신주쿠",fl:"로드샵",map:"https://maps.google.com/?q=Shinjuku+Tokyo"}]},
-  {id:50, n:"Innocent World",                s:"로리타", i:"IW", c:"#BB22CC", tax:true,
+  {id:47, n:"Innocent World",                s:"로리타", i:"IW", c:"#BB22CC", tax:true,
    logo:"https://innocentworld.itembox.cloud/item/innocentworld.png?t=20260610100126",
    desc:"클래식 로리타의 정수. 우아하고 성숙한 빅토리안 스타일의 시그니처 원피스로 전 세계 팬 보유.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://innocent-w.jp/", globalUrl:"", xId:"@innocentworld_", instaId:"",
    st:[]},
-  {id:51, n:"Victorian Maiden",              s:"로리타", i:"VM", c:"#BB22CC", tax:true,
+  {id:48, n:"Victorian Maiden",              s:"로리타", i:"VM", c:"#BB22CC", tax:true,
    desc:"빅토리안·에드워디안 영감의 클래식 로리타. 어른스럽고 우아한 '오토나 로리타'의 대명사.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://victorianmaiden.com/", globalUrl:"", xId:"@victorian_maiden", instaId:"",
    st:[]},
-  {id:52, n:"Juliette et Justine",           s:"로리타", i:"JJ", c:"#BB22CC", tax:true,
+  {id:49, n:"Juliette et Justine",           s:"로리타", i:"JJ", c:"#BB22CC", tax:true,
    desc:"18·19세기 빅토리안·에드워디안 드레스 영감의 고딕 클래식 로리타. 마치 그림 같은 세계관.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://juliette-et-justine.com/", globalUrl:"", xId:"", instaId:"",
    st:[]},
-  {id:53, n:"Amavel",                        s:"로리타", i:"AV", c:"#BB22CC", tax:true,
+  {id:50, n:"Amavel",                        s:"로리타", i:"AV", c:"#BB22CC", tax:true,
    logo:"https://www.amavel.jp/cdn/shop/files/logo_amavel.png?v=1758161548&width=184",
    desc:"시부야109와 우메다 HEP FIVE 입점. 로리타×양산형의 경계를 넘나드는 귀여운 프린세스 스타일.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.amavel.jp/", globalUrl:"", xId:"@_amavel_", instaId:"@amavel_official",
    st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
        {city:"오사카",mall:"우메다 HEP FIVE",fl:"3F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
-  {id:54, n:"To Alice",                      s:"로리타", i:"TA", c:"#BB22CC", tax:true,
+  {id:51, n:"To Alice",                      s:"로리타", i:"TA", c:"#BB22CC", tax:true,
    desc:"이케부쿠로 선샤인 B1F 입점. 이상한 나라의 앨리스 감성의 동화 같은 로리타 코디.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.toalice.co.jp/", globalUrl:"", xId:"@toalicejapan", instaId:"@toalicejapan",
    st:[{city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"}]},
   /* ── 잡화(가방,신발,악세) ── */
-  {id:55, n:"BUBBLES",                       s:"잡화(가방,신발,악세)", i:"BB", c:"#009966", tax:true,
+  {id:52, n:"BUBBLES",                       s:"잡화(가방,신발,악세)", i:"BB", c:"#009966", tax:true,
    logo:"https://bubblestokyo.com/cdn/shop/files/bubbles_logo.png?v=1712120755&width=600",
    desc:"시부야109 6F. 통굽 로퍼와 지뢰계 의류를 함께 취급하는 멀티숍. 학교 가방 느낌의 아이템도 인기.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://sparklingmall.jp/", globalUrl:"", xId:"@bubbles_tokyo", instaId:"@bubbles_tokyo",
    st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
-  {id:56, n:"YOSUKE",                        s:"잡화(가방,신발,악세)", i:"YS", c:"#009966", tax:true,
+  {id:53, n:"YOSUKE",                        s:"잡화(가방,신발,악세)", i:"YS", c:"#009966", tax:true,
    desc:"통굽·펑크 슈즈의 대명사. 이케부쿠로 파르코 B2F. 지뢰계 코디의 필수 발 아이템.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://yosuke-idocorp.com/", globalUrl:"", xId:"", instaId:"@yosuke_usa",
    st:[{city:"도쿄",mall:"이케부쿠로 파르코",fl:"B2F",map:"https://maps.google.com/?q=Ikebukuro+Parco+Tokyo"}]},
-  {id:57, n:"NEW ROCK",                      s:"잡화(가방,신발,악세)", i:"NR", c:"#009966", tax:false,
+  {id:54, n:"NEW ROCK",                      s:"잡화(가방,신발,악세)", i:"NR", c:"#009966", tax:false,
    logo:"https://newrock.com/cdn/shop/files/logo_newrock_1.png?v=1770287961&width=460",
-   desc:"스페인 발 사이버펑크 부츠 브랜드. XU 등 도쿄 서브컬처 셀렉트샵에서 취급. 온라인 직구 가능.",
+   desc:"스페인 발 사이버펑크 부츠 브랜드. 도쿄 서브컬처 셀렉트샵에서 취급. 온라인 직구 가능.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.newrock.com/", globalUrl:"", xId:"", instaId:"",
-   st:[{city:"도쿄",mall:"시부야 109 (XU 내)",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
-  {id:58, n:"Maison de FLEUR",               s:"잡화(가방,신발,악세)", i:"MF", c:"#009966", tax:true,
+   st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"}]},
+  {id:55, n:"Maison de FLEUR",               s:"잡화(가방,신발,악세)", i:"MF", c:"#009966", tax:true,
    logo:"https://maisondefleur.store/cdn/shop/files/images_2_-01_250x.jpg?v=1634976849",
    desc:"이타백부터 플라워 토트백까지. 라포레 2F·이케부쿠로·우메다 EST 입점의 잡화 인기 브랜드.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://stripe-club.com/maisondefleur/", globalUrl:"", xId:"@Maison_de_FLEUR", instaId:"@maisondefleur_press",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"2F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
        {city:"도쿄",mall:"이케부쿠로 선샤인 파르코",fl:"B1F",map:"https://maps.google.com/?q=Sunshine+City+Ikebukuro"},
        {city:"오사카",mall:"우메다 EST",fl:"2F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
-  {id:59, n:"MCM",                           s:"잡화(가방,신발,악세)", i:"MC", c:"#009966", tax:true,
+  {id:56, n:"MCM",                           s:"잡화(가방,신발,악세)", i:"MC", c:"#009966", tax:true,
    desc:"지뢰계 코디의 교복, 징 박힌 핑크·블랙 백팩으로 유명한 독일 명품 브랜드. 서브컬처 필수 아이템.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://kr.mcmworldwide.com/", globalUrl:"", xId:"", instaId:"",
    st:[{city:"도쿄",mall:"루미네 신주쿠",fl:"2F",map:"https://maps.google.com/?q=Lumine+Shinjuku"},
        {city:"오사카",mall:"루쿠아 오사카",fl:"1F",map:"https://maps.google.com/?q=Lucua+Osaka"}]},
-  {id:60, n:"Samantha Vega",                 s:"잡화(가방,신발,악세)", i:"SV", c:"#009966", tax:true,
+  {id:57, n:"Samantha Vega",                 s:"잡화(가방,신발,악세)", i:"SV", c:"#009966", tax:true,
    desc:"비쥬·크리스탈로 장식한 사만다 시리즈 가방. 시부야109 1F·우메다 EST 입점. 서브컬처 코디의 완성.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.samantha.co.jp/shop/c/cSV/", globalUrl:"", xId:"@samantha_PR_ST", instaId:"@samantha.vega_official",
    st:[{city:"도쿄",mall:"시부야 109",fl:"1F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
        {city:"오사카",mall:"우메다 EST",fl:"1F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
-  {id:61, n:"Vivienne Westwood",             s:"잡화(가방,신발,악세)", i:"VW", c:"#009966", tax:true,
+  {id:58, n:"Vivienne Westwood",             s:"잡화(가방,신발,악세)", i:"VW", c:"#009966", tax:true,
    desc:"라포레 하라주쿠 1F. 오브(ORB) 목걸이·킹스 로드 컬렉션은 서브컬처·로리타 코디의 필수 아이템.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://viviennewestwood.kr/shop/main", globalUrl:"", xId:"@VW_JAPAN", instaId:"",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"1F",map:"https://maps.google.com/?q=Laforet+Harajuku"}]},
-  {id:62, n:"Lafary",                        s:"잡화(가방,신발,악세)", i:"LF", c:"#009966", tax:false,
+  {id:59, n:"Lafary",                        s:"잡화(가방,신발,악세)", i:"LF", c:"#009966", tax:false,
    desc:"오사카 우메다 HEP FIVE 4F. 오타쿠×지뢰계 잡화 전문점. 이타쿠라, 아크릴 굿즈 취급.",
    bgImg:"여기에_사진_링크_넣기", japanUrl:"https://www.lafary.shop/", globalUrl:"", xId:"@lafary_jp", instaId:"@lafary_jp",
    st:[{city:"오사카",mall:"우메다 HEP FIVE",fl:"4F",map:"https://maps.google.com/?q=HEP+FIVE+Umeda+Osaka"}]},
@@ -609,16 +608,14 @@ const KR = {
   6:"스완키스", 7:"멜티", 8:"로지타", 9:"노에미", 10:"제이미에에엔케이",
   11:"마즈", 12:"잇미", 13:"디어마이러브", 14:"피움", 15:"스나이델",
   16:"레디아젤", 17:"티티앤코", 18:"지알엘", 19:"딤모아르", 20:"아미리쥬",
-  21:"케이알와이클로딩", 22:"레플렘", 23:"트라바스도쿄", 24:"일리릴",
-  25:"아노네노네", 26:"에이씨디씨래그", 27:"리슨플레이버", 28:"니어클로딩",
-  29:"드러그허니", 30:"헤이헤이", 31:"엑스유", 32:"오와이", 33:"백스테이지패스",
-  34:"시바라이즈", 35:"에이치나오토", 36:"섹스팟리벤지", 37:"알곤퀸즈",
-  38:"고우크", 39:"후가", 40:"푸투마요", 41:"쿠자", 42:"베이비더스타즈샤인브라이트",
-  43:"앤지릭프리티", 44:"모와메므모와띠에", 45:"앨리스앤더파이리츠",
-  46:"아트리에피에로", 47:"시에그리트", 48:"아트리에보즈", 49:"메타모르포즈",
-  50:"이노센트월드", 51:"빅토리안메이든", 52:"줄리엣에쥐스틴", 53:"아마벨",
-  54:"투앨리스", 55:"버블즈", 56:"요스케", 57:"뉴락", 58:"메종드플레르",
-  59:"엠씨엠", 60:"사만다베가", 61:"비비안웨스트우드", 62:"라파리"
+  21:"케이알와이클로딩", 22:"레플렘", 23:"트라바스도쿄", 24:"일리릴", 25:"아노네노네",
+  26:"에이씨디씨래그", 27:"리슨플레이버", 28:"니어클로딩", 29:"드러그허니", 30:"헤이헤이",
+  31:"오와이", 32:"백스테이지패스", 33:"시바라이즈", 34:"에이치나오토", 35:"섹스팟리벤지",
+  36:"알곤퀸즈", 37:"후가", 38:"쿠자", 39:"베이비더스타즈샤인브라이트", 40:"앤지릭프리티",
+  41:"모와메므모와띠에", 42:"앨리스앤더파이리츠", 43:"아트리에피에로", 44:"시에그리트", 45:"아트리에보즈",
+  46:"메타모르포즈", 47:"이노센트월드", 48:"빅토리안메이든", 49:"줄리엣에쥐스틴", 50:"아마벨",
+  51:"투앨리스", 52:"버블즈", 53:"요스케", 54:"뉴락", 55:"메종드플레르",
+  56:"엠씨엠", 57:"사만다베가", 58:"비비안웨스트우드", 59:"라파리"
 };
 
 /* ═══════════════════════════════════
@@ -1317,6 +1314,24 @@ function previewUpload(e){
 }
 
 /* 피드에 공유 — Storage 업로드 + posts insert */
+/* profiles 행 보장 — 없으면 본인 id 로 보충 생성 (FK 위반 방어).
+   13_profiles_insert_policy 의 self-insert 정책이 있어야 동작. */
+async function ensureProfile(user){
+  if(!user || !window.sb) return;
+  const { data: prof } = await window.sb.from("profiles").select("id").eq("id", user.id).maybeSingle();
+  if(prof) return;  // 이미 존재 (트리거가 생성한 정상 케이스)
+  const meta = user.user_metadata || {};
+  const uname = "user_" + user.id.replace(/-/g,"").slice(0,12);
+  const { error } = await window.sb.from("profiles").insert({
+    id: user.id,
+    username: uname,
+    display_name: null,  // UNIQUE 인덱스 충돌 회피 — 닉네임은 마이페이지에서 별도 설정
+    avatar_url: meta.avatar_url || meta.picture || meta.profile_image || null,
+  });
+  // 23505 = 동시 생성 경합(이미 존재) → 무시하고 진행
+  if(error && error.code !== "23505") throw error;
+}
+
 async function submitPost(){
   const fileInput=document.getElementById("uploadFile");
   const file=fileInput && fileInput.files && fileInput.files[0];
@@ -1337,6 +1352,11 @@ async function submitPost(){
   if(btn){ btn.disabled=true; btn.style.filter="grayscale(.3)"; btn.textContent="업로드 중…"; }
 
   try{
+    // 0) profiles 행 보장 — 가입 트리거 이전 계정은 프로필이 없어 posts.author_id FK 위반 가능.
+    //    display_name 은 UNIQUE 인덱스 충돌을 피하려 null 로 두고(닉네임은 마이페이지에서 설정),
+    //    username 은 트리거 폴백과 동일한 결정적 값(user_+uid 12자리)으로 형식·유일성 충족.
+    await ensureProfile(session.user);
+
     // 1) Storage 업로드 — 경로는 uid/타임스탬프.확장자 (RLS 폴더 규칙: 첫 폴더 = uid)
     const ext=(file.name.split('.').pop()||'jpg').toLowerCase();
     const path=`${userId}/${Date.now()}.${ext}`;
@@ -1480,26 +1500,96 @@ function doLogout(){
   showToast("로그아웃 됐어요.");
 }
 
-/* 마이페이지 메뉴 — 추후 각 페이지/시트 연결 (현재는 플레이스홀더) */
+/* 마이페이지 메뉴 — 공지/약관/문의 콘텐츠 시트 */
+const MENU_CONTENT = {
+  notice: {
+    title: "📢 공지사항 / 업데이트",
+    html: `
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div style="background:#FFF5F8;border:1px solid #FFE8F0;border-radius:14px;padding:14px 16px">
+          <p style="margin:0 0 4px;font-weight:700;color:#C41055">🎀 OOTD 피드 오픈</p>
+          <p style="margin:0 0 6px;font-size:11px;color:#C4A8B0">2026.06.16</p>
+          <p style="margin:0">오늘의 코디를 사진으로 공유하고, 다른 천사님들의 OOTD에 좋아요를 눌러보세요. 마음에 드는 게시물은 실시간으로 반응이 반영돼요.</p>
+        </div>
+        <div style="background:#FFF5F8;border:1px solid #FFE8F0;border-radius:14px;padding:14px 16px">
+          <p style="margin:0 0 4px;font-weight:700;color:#C41055">✨ 닉네임 · 프로필 개편</p>
+          <p style="margin:0 0 6px;font-size:11px;color:#C4A8B0">2026.06.15</p>
+          <p style="margin:0">카이와이 감성 자동 닉네임과 마이페이지가 추가됐어요. 마이페이지에서 닉네임을 직접 편집할 수도 있어요.</p>
+        </div>
+        <div style="background:#FFF5F8;border:1px solid #FFE8F0;border-radius:14px;padding:14px 16px">
+          <p style="margin:0 0 4px;font-weight:700;color:#C41055">💖 소셜 로그인 지원</p>
+          <p style="margin:0 0 6px;font-size:11px;color:#C4A8B0">2026.06.14</p>
+          <p style="margin:0">카카오 · 네이버 · Google 계정으로 간편하게 시작할 수 있어요.</p>
+        </div>
+      </div>`,
+  },
+  terms: {
+    title: "📜 이용약관 및 정책",
+    html: `
+      <p style="font-weight:700;color:#4A373A;margin:0 0 6px">제1조 (목적)</p>
+      <p style="margin:0 0 14px">본 약관은 KAIWAI(이하 '서비스')가 제공하는 일본 서브컬쳐 패션 디렉토리 및 OOTD 커뮤니티 이용에 관한 조건을 규정합니다.</p>
+      <p style="font-weight:700;color:#4A373A;margin:0 0 6px">제2조 (게시물과 책임)</p>
+      <p style="margin:0 0 14px">회원이 업로드한 사진·글의 저작권과 책임은 작성자 본인에게 있습니다. 타인의 권리를 침해하거나 부적절한 콘텐츠는 사전 통지 없이 삭제될 수 있어요.</p>
+      <p style="font-weight:700;color:#4A373A;margin:0 0 6px">제3조 (금지 행위)</p>
+      <p style="margin:0 0 14px">관리자 사칭, 욕설·혐오 표현, 무단 광고·도배, 타인 정보 도용은 금지되며 이용이 제한될 수 있습니다.</p>
+      <p style="font-weight:700;color:#4A373A;margin:0 0 6px">개인정보 처리방침</p>
+      <p style="margin:0 0 14px">서비스는 로그인에 필요한 최소한의 정보(이메일·닉네임·프로필 이미지)만 수집하며, 마케팅 목적으로 제3자에게 판매하지 않습니다. 회원탈퇴 시 작성한 게시물과 즐겨찾기·좋아요 데이터는 모두 삭제됩니다.</p>
+      <p style="font-size:11px;color:#C4A8B0;margin:0">최종 개정일 2026.06.16 · 본 약관은 서비스 정식 출시 전 시범 버전입니다.</p>`,
+  },
+  contact: {
+    title: "💌 KAIWAI에 문의하기",
+    html: `
+      <p style="margin:0 0 16px">서비스 이용 중 불편한 점, 브랜드 추가 제안, 제휴 문의가 있다면 언제든 알려주세요. 천사님들의 의견으로 KAIWAI가 자라요 🌸</p>
+      <a href="mailto:rmfjwlak114@gmail.com?subject=%5BKAIWAI%20%EB%AC%B8%EC%9D%98%5D"
+         style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;box-sizing:border-box;padding:14px;border-radius:14px;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;font-weight:700;font-size:14px;text-decoration:none;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 10px 20px -10px rgba(196,16,85,.8)">
+        ✉️ 메일로 문의하기
+      </a>
+      <p style="text-align:center;font-size:12px;color:#C4A8B0;margin:14px 0 0">rmfjwlak114@gmail.com</p>`,
+  },
+};
 function openMenu(type){
-  // TODO: notice / terms / contact 별 화면 연결
-  showToast("곧 준비될 메뉴예요 🎀");
+  const m = MENU_CONTENT[type];
+  if(!m){ showToast("곧 준비될 메뉴예요 🎀"); return; }
+  document.getElementById("menuTitle").textContent = m.title;
+  document.getElementById("menuBody").innerHTML = m.html;
+  const ov=document.getElementById("menuOverlay"), sh=document.getElementById("menuSheet");
+  ov.style.display="flex";
+  sh.scrollTop=0;
+  sh.classList.remove("su"); void sh.offsetWidth; sh.classList.add("su");  // 슬라이드업
 }
+function closeMenu(){ document.getElementById("menuOverlay").style.display="none"; }
 
-/* 회원탈퇴 — 2단계 확인 후 처리 (실제 계정 삭제는 service_role 필요 → Edge Function 권장) */
+/* 회원탈퇴 — 2단계 확인 후 처리.
+   소셜 세션이면 delete-account Edge Function(service_role)으로 auth.users 삭제
+   → profiles ON DELETE CASCADE 로 posts/좋아요/팔로우/즐겨찾기·Storage 이미지 정리.
+   로컬(localStorage) 계정은 서버에 없으므로 로컬 정리만 수행. */
 async function deleteAccount(){
   // Step 1
   if(!confirm("정말로 KAIWAI를 떠나시겠어요? 😢 저장된 OOTD와 즐겨찾기가 모두 삭제됩니다.")) return;
   // Step 2
   if(!confirm("탈퇴 후에는 데이터를 복구할 수 없습니다. 정말 탈퇴하시겠습니까?")) return;
 
+  // 서버 세션 여부 확인 (소셜 로그인 등 Supabase 세션)
+  let session=null;
   try{
-    // TODO: 실제 auth.users 삭제는 클라이언트 anon 키로 불가 →
-    //       Edge Function(delete-account, service_role)에서 auth.admin.deleteUser + 데이터 정리.
-    //       지금은 뼈대: 세션 종료 + 로컬 정리.
-    if(window.sb) await window.sb.auth.signOut();
-  }catch(e){ console.warn("signOut 경고:", e); }
+    if(window.sb) ({ data:{ session } } = await window.sb.auth.getSession());
+  }catch(e){ console.warn("세션 조회 경고:", e?.message||e); }
 
+  if(session){
+    // 서버 계정: Edge Function 으로 실제 삭제
+    try{
+      const { data, error } = await window.sb.functions.invoke("delete-account");
+      if(error) throw error;
+      if(data?.error) throw new Error(data.error + (data.detail ? " / "+data.detail : ""));
+    }catch(e){
+      console.error("회원탈퇴 실패:", e);
+      showToast('회원탈퇴 처리에 실패했어요. 잠시 후 다시 시도해 주세요.');
+      return;
+    }
+    try{ await window.sb.auth.signOut(); }catch(e){ console.warn("signOut 경고:", e); }
+  }
+
+  // 로컬 상태 정리 (서버/로컬 계정 공통)
   authUser=null; currentUserId=null;
   localStorage.removeItem("kaiwai_user");
   localStorage.removeItem("zp_fav");

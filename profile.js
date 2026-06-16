@@ -99,6 +99,19 @@
     return generateKawaiiNickname() + Math.floor(Math.random() * 100);
   }
 
+  /* Postgres/PostgREST 에러 → 사용자 친화 메시지 매핑.
+     23505=UNIQUE 위반(닉네임 중복 등), 23514=CHECK 위반, 23503=FK 위반.
+     매핑되지 않으면 일반 안내 (원문은 콘솔에만). */
+  function friendlyDbError(error, fallback = "잠시 후 다시 시도해 주세요.") {
+    if (!error) return fallback;
+    const code = error.code || "";
+    if (code === "23505") return "이미 사용 중이에요. 다른 값을 입력해 주세요.";
+    if (code === "23514") return "입력 형식이 올바르지 않아요.";
+    if (code === "23503") return "관련 정보를 찾을 수 없어요. 새로고침 후 다시 시도해 주세요.";
+    if (code === "42501" || error.status === 403) return "권한이 없어요. 다시 로그인해 주세요.";
+    return fallback;
+  }
+
   /* ── 2. 디폴트 아바타 (저작권 안전한 귀여운 더미) ───────
      실제 산리오 이미지는 저작권 이슈 → DiceBear 로 유저별 고정 캐릭터 생성  */
   function defaultAvatar(seed) {
@@ -221,7 +234,14 @@
       .select("id");                  // 실제로 갱신됐는지(행 존재) 확인
     els.nickSave.disabled = false;
 
-    if (error) { toast("저장 실패: " + error.message); return; }
+    if (error) {
+      console.warn("닉네임 저장 실패:", error.code, error.message);
+      // 동시 저장 등으로 인한 UNIQUE 경합은 '중복' 안내로 명확히 매핑
+      toast(error.code === "23505"
+        ? "이미 다른 천사님이 사용 중인 닉네임이에요 🎀 다른 이름을 지어주세요!"
+        : friendlyDbError(error, "저장에 실패했어요. 잠시 후 다시 시도해 주세요."));
+      return;
+    }
     if (!updated || updated.length === 0) { toast("프로필을 찾을 수 없어요 😢"); return; }
 
     currentNick = val;
