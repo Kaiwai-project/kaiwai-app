@@ -6,3 +6,11 @@ supabase/.branches/
 .env
 .env.local
 .env.*.local
+
+# Python (로고/이미지 수집 스크립트 캐시)
+__pycache__/
+*.pyc
+
+# 수집 이미지 (git 미추적 — repo 경량화. 배포 시 Supabase Storage 사용)
+logos/
+backgrounds/
