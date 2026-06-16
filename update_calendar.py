@@ -2,10 +2,23 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from apify_client import ApifyClient
-from google import genai
+
+try:
+    from apify_client import ApifyClient
+except ImportError:
+    ApifyClient = None
+try:
+    from google import genai
+except ImportError:
+    genai = None
+
+# 한국 표준시(KST). 슬롯/날짜는 한국 기준으로 계산한다.
+KST = timezone(timedelta(hours=9))
+
+# 하루를 8시간씩 3등분한 일정 슬롯 (0시 / 8시 / 16시)
+SLOT_TIMES = ["00:00", "08:00", "16:00"]
 
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
     sys.stdout.reconfigure(encoding="utf-8")
@@ -134,19 +147,62 @@ def fetch_twitter(apify: ApifyClient, handle: str) -> list[str]:
         return []
 
 
+# 시드(데모) 일정 설명 템플릿 — type(tp), 설명 포맷
+SEED_TEMPLATES = [
+    ("신상",   "신작 컬렉션 입고 예정 {e}"),
+    ("예약",   "선행 예약 오픈 {e}"),
+    ("팝업",   "팝업 스토어 안내 {e}"),
+    ("수주",   "수주 기간 진행 중 {e}"),
+    ("이벤트", "한정 이벤트 진행 {e}"),
+]
+
+
+def build_seed_schedule(today: datetime, days: int = 14) -> list[dict]:
+    """스크래퍼 키가 없을 때 캘린더를 채우는 데모 스케줄.
+    오늘부터 days일간 '하루 3건(0/8/16시), 매일' 고르게 브랜드를 순환 배치한다."""
+    roster = [b for group in BRANDS_GROUPS.values() for b in group]
+    out, k = [], 0
+    for d in range(days):
+        date = (today + timedelta(days=d)).strftime("%Y-%m-%d")
+        for tm in SLOT_TIMES:                       # 하루 3번, 8시간 간격
+            b = roster[k % len(roster)]
+            tp, tmpl = SEED_TEMPLATES[k % len(SEED_TEMPLATES)]
+            out.append({
+                "dt": date,
+                "tm": tm,
+                "br": b["name"],
+                "d":  tmpl.format(e=b["emoji"]),
+                "c":  b["color"],
+                "e":  b["emoji"],
+                "tp": tp,
+                "seed": True,                        # 실제 수집 시 교체될 데모 데이터 표시
+            })
+            k += 1
+    return out
+
+
 def main():
-    today = datetime.now()
-    apify = ApifyClient(APIFY_TOKEN) if APIFY_TOKEN else None
+    today = datetime.now(KST)
+    apify = ApifyClient(APIFY_TOKEN) if (APIFY_TOKEN and ApifyClient) else None
+    gemini = genai.Client(api_key=GEMINI_API_KEY) if (GEMINI_API_KEY and genai) else None
 
-    gemini = genai.Client(api_key=GEMINI_API_KEY) if GEMINI_API_KEY else None
+    # 스크래퍼 키가 없으면(로컬/테스트) 데모 시드 스케줄로 캘린더를 채우고 종료
+    if not apify:
+        events = build_seed_schedule(today)
+        OUT_PATH.write_text(json.dumps(events, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"⚠️ APIFY_TOKEN 없음 → 데모 시드 {len(events)}개 생성 (하루 3건·8시간 간격·매일)")
+        return
 
-    group_idx = today.day % 3
-    brands = BRANDS_GROUPS.get(group_idx, [])
-    print(f"그룹 {group_idx} ({len(brands)}개 브랜드) 수집 시작")
+    # 하루 3번(8시간 슬롯) 기준으로 그룹 분할: 0~7시→0, 8~15시→1, 16~23시→2
+    # (기존 today.day % 3 = 3일에 걸쳐 [3,3,4] 처리하던 방식에서 변경)
+    slot = today.hour // 8
+    brands = BRANDS_GROUPS.get(slot, [])
+    print(f"슬롯 {slot} ({today.hour}시, {len(brands)}개 브랜드) 수집 시작")
 
     existing = json.loads(OUT_PATH.read_text(encoding="utf-8")) if OUT_PATH.exists() else []
     processing_names = {b["name"] for b in brands}
-    events = [e for e in existing if e["br"] not in processing_names]
+    # 시드(데모) 이벤트는 실제 수집 시 제거, 현재 그룹 외 실제 이벤트는 유지
+    events = [e for e in existing if not e.get("seed") and e.get("br") not in processing_names]
 
     for brand in brands:
         print(f"\n▶ {brand['name']}")

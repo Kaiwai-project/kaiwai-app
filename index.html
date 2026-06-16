@@ -1228,7 +1228,7 @@ function drawCal(){
     "팝업":{bg:"#F0E0FF",c:"#7733BB"},
     "이벤트":{bg:"#FFF0F5",c:"#8D7B80"}
   };
-  const sorted=[...CAL].sort((a,b)=>a.dt.localeCompare(b.dt));
+  const sorted=[...CAL].sort((a,b)=>(a.dt+"T"+(a.tm||"00:00")).localeCompare(b.dt+"T"+(b.tm||"00:00")));
   document.getElementById("calList").innerHTML=sorted.map((it,i)=>{
     const d=new Date(it.dt+"T00:00:00"), mm=d.getMonth()+1, dd=d.getDate(), dw=DOW[d.getDay()];
     const tp=it.tp||"이벤트";
@@ -1246,6 +1246,7 @@ function drawCal(){
           <div style="display:flex;gap:5px;flex-wrap:wrap">
             <span style="background:${it.c}18;color:${it.c};font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px;border:1px solid ${it.c}33">${it.br}</span>
             <span style="background:${tc.bg};color:${tc.c};font-size:10px;font-weight:600;padding:2px 9px;border-radius:100px">${tp}</span>
+            ${it.tm?`<span style="background:#EEEAFB;color:#8B7BC0;font-size:10px;font-weight:600;padding:2px 9px;border-radius:100px">🕒 ${it.tm}</span>`:""}
           </div>
         </div>
       </div>
