@@ -416,7 +416,7 @@ const B = [
    st:[{city:"도쿄",mall:"시부야 109",fl:"6F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
        {city:"도쿄",mall:"라포레 하라주쿠",fl:"5F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
        {city:"오사카",mall:"우메다 EST",fl:"B1F",map:"https://maps.google.com/?q=Umeda+EST+Osaka"}]},
-  {id:2,  n:"Ank Rouge",                     s:"양산형", i:"AR", c:"#E5468A", tax:true,
+  {id:2,  n:"Ank Rouge",                     s:"양산형", i:"AR", c:"#E5468A", tax:true, affiliate_url:"https://google.com",
    desc:"달콤한 레이스와 빈티지 디테일. 지뢰계와 양산형 사이의 완벽한 밸런스.",
    logo:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/logo/2.jpg", logoBgColor:"#7B4E3B", bgImg:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/bg/2.webp", japanUrl:"https://ailand-store.jp/ankrouge/", globalUrl:"", xId:"@AnkRouge", instaId:"@ankrouge_official",
    st:[{city:"도쿄",mall:"라포레 하라주쿠",fl:"4F",map:"https://maps.google.com/?q=Laforet+Harajuku"},
@@ -448,7 +448,7 @@ const B = [
    desc:"프렌치 가리 감성이 섞인 부드러운 양산형. 달콤하고 여성스러운 일상 코디를 제안하는 온라인 브랜드.",
    logo:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/logo/7.jpg", logoBgColor:"#FFFFFF", bgImg:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/bg/7.webp", japanUrl:"https://meltie.jp/", globalUrl:"", xId:"", instaId:"",
    st:[]},
-  {id:8,  n:"ROJITA",                        s:"지뢰계", i:"RJ", c:"#7E3AA8", tax:true,
+  {id:8,  n:"ROJITA",                        s:"지뢰계", i:"RJ", c:"#7E3AA8", tax:true, affiliate_url:"https://google.com",
    desc:"지뢰계 패션의 대표 주자. 블랙×핑크 레이스 원피스와 리본 머리핀이 아이콘.",
    logo:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/logo/8.jpg", logoBgColor:"#D1BACA", bgImg:"https://iwrkpwmpfhlyfvutlnuy.supabase.co/storage/v1/object/public/brand-assets/bg/8.webp", japanUrl:"https://rlab-store.jp", globalUrl:"", xId:"@ROJITA__jp", instaId:"@rojita__official",
    st:[{city:"도쿄",mall:"시부야 109",fl:"7F",map:"https://maps.google.com/?q=Shibuya+109+Tokyo"},
@@ -1465,6 +1465,7 @@ ${mHeader(b,fv,th.dark)}
 <div style="padding:15px 20px">
   <h3 style="font-size:13px;font-weight:800;color:${hC};letter-spacing:.5px;margin:0 0 12px">공식 스토어</h3>
   <div style="display:flex;flex-direction:column;gap:8px">
+    ${b.affiliate_url?`<button onclick="window.open('${b.affiliate_url}','_blank','noopener')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:15px;border:none;cursor:pointer;background:linear-gradient(to right,#EC4899,#A855F7);border-radius:9999px;font-size:15px;font-weight:800;color:#fff;box-shadow:0 10px 22px -8px rgba(168,85,247,.7);font-family:'M PLUS Rounded 1c',sans-serif;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">🛍️ 이 브랜드 직구하러 가기</button>`:""}
     ${b.japanUrl?`<a href="${b.japanUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#FF6FA8,#C41055);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(196,16,85,.25);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">🛒 공식 스토어 가기</a>`:""}
     ${b.globalUrl?`<a href="${b.globalUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#7733BB,#4A0080);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(74,0,128,.22);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">✈️ 해외 직구 스토어</a>`:""}
     <a href="https://buyee.jp/mercari/search?keyword=${encodeURIComponent(b.n)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#FF6B35,#E05000);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(224,80,0,.22);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">🔍 메루카리 매물 찾기 (Buyee)</a>
@@ -1663,16 +1664,19 @@ function renderQuizResult(){
   // 글래스모피즘 브랜드 카드 (풀사이즈 일러스트 위에 떠 보이게)
   const glass = "background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3)";
   const brandsHtml = picks.length ? picks.map(b=>`
-    <button onclick="quizOpenBrand(${b.id})"
-      style="display:flex;align-items:center;gap:11px;width:100%;margin-bottom:9px;padding:11px 13px;border-radius:16px;${glass};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:transform .15s var(--jelly);text-align:left"
+    <div role="button" tabindex="0" onclick="quizOpenBrand(${b.id})"
+      style="width:100%;margin-bottom:9px;padding:11px 13px;border-radius:16px;${glass};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:transform .15s var(--jelly)"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-      ${logoEl(b,40,12,'')}
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
+      <div style="display:flex;align-items:center;gap:11px;text-align:left">
+        ${logoEl(b,40,12,'')}
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
+        </div>
+        <span style="font-size:18px;color:rgba(255,255,255,.85);flex-shrink:0">›</span>
       </div>
-      <span style="font-size:18px;color:rgba(255,255,255,.85);flex-shrink:0">›</span>
-    </button>`).join("") : `<p style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">추천 브랜드를 준비 중이에요 🎀</p>`;
+      ${b.affiliate_url?`<button onclick="event.stopPropagation();window.open('${b.affiliate_url}','_blank','noopener')" style="margin-top:9px;width:100%;padding:8px;border:1px solid rgba(255,255,255,.5);border-radius:9999px;background:rgba(255,255,255,.2);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 3px rgba(0,0,0,.5);transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.34)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">🛒 보러가기</button>`:""}
+    </div>`).join("") : `<p style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">추천 브랜드를 준비 중이에요 🎀</p>`;
   document.getElementById("quizBody").innerHTML = `
     <div style="position:relative;min-height:100%;flex:1;display:flex;flex-direction:column;background:url('${r.img}') center/cover no-repeat,${r.bg}">
       <!-- 가독성용 다크 그라데이션 오버레이 -->
