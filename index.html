@@ -1566,22 +1566,22 @@ const QUIZ = [
 const RESULT_ORDER = ["ryousan","jirai","subcul","suna","lolita","punk"];
 /* cat = 실제 DB(B[].s) 카테고리 → 결과창에서 해당 카테고리 브랜드를 랜덤 추천 */
 const RESULTS = {
-  ryousan:{ emoji:"🎀🍰🧸", cat:"양산형", name:"인간 벚꽃 🎀 사랑받기 위해 태어난 아이돌 덕후",
+  ryousan:{ emoji:"🎀🍰🧸", cat:"양산형", img:"./일러스트/ryousan.png", name:"인간 벚꽃 🎀 사랑받기 위해 태어난 아이돌 덕후",
     desc:"덕질에 인생을 배팅한 당신! 예쁜 카페와 핑크색을 사랑하며, 겉으로는 늘 방긋방긋 웃는 완벽한 공주님입니다. 하지만 은근히 주변 눈치를 많이 보는 외강내유 스타일!",
     bg:"#FCE7F3", fg:"#3A2B30", sub:"#8A6B74" },
-  jirai:{ emoji:"🖤🔪💊", cat:"지뢰계", name:"취급주의! 🖤 멘탈 붕괴 직전의 다크 큐티돌",
+  jirai:{ emoji:"🖤🔪💊", cat:"지뢰계", img:"./일러스트/jirai.png", name:"취급주의! 🖤 멘탈 붕괴 직전의 다크 큐티돌",
     desc:"겉보기엔 인형 같지만 속은 꽤나 곪아있는(?) 다크 카와이의 정석. 애정결핍과 독점욕이 조금 있는 편! 통굽 구두와 가터벨트로 무장하고 오늘 밤도 번화가를 배회합니다.",
     bg:"#27272A", fg:"#FFFFFF", sub:"#C9C4CE" },
-  subcul:{ emoji:"👼🎧💻", cat:"서브컬쳐", name:"현실 로그아웃 🩵 방구석 인터넷 엔젤",
+  subcul:{ emoji:"👼🎧💻", cat:"서브컬쳐", img:"./일러스트/tenshi.png", name:"현실 로그아웃 🩵 방구석 인터넷 엔젤",
     desc:"\"현실 사람보단 2D가 편해...\" 헤드폰과 루즈삭스는 당신의 방어구! 인간관계에 지쳐있으며, 인터넷 세상에서 가장 활발한 당신은 네오 사이버 무드의 천사입니다.",
     bg:"#E0F2FE", fg:"#23323A", sub:"#5E7480" },
-  suna:{ emoji:"🥂🩰🤍", cat:"스나계", name:"분위기 여신 🥂 성숙하고 차분한 어른의 여유",
+  suna:{ emoji:"🥂🩰🤍", cat:"스나계", img:"./일러스트/suna.png", name:"분위기 여신 🥂 성숙하고 차분한 어른의 여유",
     desc:"요란한 치장보다는 실루엣과 감성으로 승부하는 으른 언니! 인간관계에서도 선을 잘 지키고, 무채색과 베이지 톤을 사랑하는 세련된 프렌치 걸리시 무드의 소유자입니다.",
     bg:"#F5F5F4", fg:"#3A332B", sub:"#857C6F" },
-  lolita:{ emoji:"👗☕️🪞", cat:"로리타", name:"현대판 귀족 👗 일상을 동화로 만드는 아티스트",
+  lolita:{ emoji:"👗☕️🪞", cat:"로리타", img:"./일러스트/lolita.png", name:"현대판 귀족 👗 일상을 동화로 만드는 아티스트",
     desc:"패션은 곧 예술! 남들의 시선 따위 가볍게 무시하고 자신만의 확고한 미학을 밀고 나가는 자존감 만렙. 정교한 레이스와 파니에로 무장한 당신은 이 구역의 주인공입니다.",
     bg:"#FAE8FF", fg:"#3A2B38", sub:"#86708A" },
-  punk:{ emoji:"⛓️🎸☠️", cat:"비쥬얼계 고스·펑크", name:"반항심 100% ⛓️ 거칠고 자유로운 록스타",
+  punk:{ emoji:"⛓️🎸☠️", cat:"비쥬얼계 고스·펑크", img:"./일러스트/punk.png", name:"반항심 100% ⛓️ 거칠고 자유로운 록스타",
     desc:"세상의 규칙? 가볍게 무시! 체인과 피어싱, 올블랙 코디로 세상에 반항하는 마이웨이 끝판왕. 겉은 까칠해 보여도 자기가 좋아하는 것엔 엄청난 열정을 쏟는 타입.",
     bg:"#F3E8FF", fg:"#332B3A", sub:"#7C6E86" },
 };
@@ -1661,38 +1661,43 @@ function quizOpenBrand(id){ closeQuiz(); openM(id); }
 
 function renderQuizResult(){
   const key=quizTopKey(), r=RESULTS[key];
-  const dark = key==="jirai";
-  const circleBg = dark ? "rgba(255,255,255,.1)" : "#fff";
   const picks = _pickBrands(r.cat, 3);
+  // 글래스모피즘 브랜드 카드 (풀사이즈 일러스트 위에 떠 보이게)
+  const glass = "background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3)";
   const brandsHtml = picks.length ? picks.map(b=>`
     <button onclick="quizOpenBrand(${b.id})"
-      style="display:flex;align-items:center;gap:11px;width:100%;margin-bottom:9px;padding:11px 13px;border:none;border-radius:16px;background:${dark?'rgba(255,255,255,.12)':'#fff'};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.07);transition:transform .15s var(--jelly);text-align:left"
+      style="display:flex;align-items:center;gap:11px;width:100%;margin-bottom:9px;padding:11px 13px;border-radius:16px;${glass};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:transform .15s var(--jelly);text-align:left"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
       ${logoEl(b,40,12,'')}
       <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:15px;color:${dark?'#fff':'#3A2B30'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
-        <div style="font-size:11px;color:${dark?'#C9C4CE':'#8D7B80'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
+        <div style="font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
       </div>
-      <span style="font-size:16px;color:${dark?'#C9C4CE':'#C4A8B0'};flex-shrink:0">›</span>
-    </button>`).join("") : `<p style="font-size:13px;color:${r.sub}">추천 브랜드를 준비 중이에요 🎀</p>`;
+      <span style="font-size:18px;color:rgba(255,255,255,.85);flex-shrink:0">›</span>
+    </button>`).join("") : `<p style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">추천 브랜드를 준비 중이에요 🎀</p>`;
   document.getElementById("quizBody").innerHTML = `
-    <div style="background:${r.bg};min-height:100%;flex:1;padding:26px 20px 40px;display:flex;flex-direction:column;align-items:center">
-      <div style="width:100%;display:flex;justify-content:flex-end">
-        <button onclick="closeQuiz()" style="width:32px;height:32px;border-radius:50%;background:${dark?'rgba(255,255,255,.15)':'#ffffffcc'};border:none;color:${r.fg};cursor:pointer;font-size:14px;line-height:1">✕</button>
-      </div>
-      <p style="font-size:12px;font-weight:700;letter-spacing:1px;color:${r.sub};margin:4px 0 16px">나의 서브컬쳐 패션 유형은</p>
-      <div style="width:148px;height:148px;border-radius:50%;background:${circleBg};display:flex;align-items:center;justify-content:center;box-shadow:0 12px 34px rgba(0,0,0,.14);margin-bottom:20px;border:3px solid ${dark?'rgba(255,255,255,.25)':'#fff'}">
-        <span style="font-size:60px;line-height:1">${r.emoji}</span>
-      </div>
-      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:21px;color:${r.fg};text-align:center;line-height:1.4;margin:0 0 16px;word-break:keep-all">${r.name}</h2>
-      <p style="font-size:14px;font-weight:500;line-height:1.8;color:${r.fg};opacity:.92;text-align:center;margin:0 0 28px;word-break:keep-all">${r.desc}</p>
-      <div style="width:100%">
-        <p style="font-size:13px;font-weight:800;color:${r.fg};margin:0 0 12px;font-family:'M PLUS Rounded 1c',sans-serif">💝 당신에게 추천하는 브랜드</p>
-        ${brandsHtml}
-      </div>
-      <div style="display:flex;gap:10px;width:100%;margin-top:22px">
-        <button onclick="startQuiz()" style="flex:1;padding:15px;border-radius:16px;border:none;cursor:pointer;background:${dark?'rgba(255,255,255,.16)':'#ffffffcc'};color:${r.fg};font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif">🔄 다시하기</button>
-        <button onclick="closeQuiz()" style="flex:1.4;padding:15px;border-radius:16px;border:none;cursor:pointer;background:linear-gradient(120deg,#FF6FA8,#C41055);color:#fff;font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 8px 20px -8px rgba(196,16,85,.7)">브랜드 둘러보기 →</button>
+    <div style="position:relative;min-height:100%;flex:1;display:flex;flex-direction:column;background:url('${r.img}') center/cover no-repeat,${r.bg}">
+      <!-- 가독성용 다크 그라데이션 오버레이 -->
+      <div style="position:absolute;inset:0;z-index:0;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.55) 50%,rgba(0,0,0,.4) 100%)"></div>
+      <!-- 콘텐츠 -->
+      <div style="position:relative;z-index:1;flex:1;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center">
+        <div style="width:100%;display:flex;justify-content:flex-end">
+          <button onclick="closeQuiz()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;font-size:14px;line-height:1">✕</button>
+        </div>
+        <p style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.9);margin:6px 0 16px;text-shadow:0 1px 4px rgba(0,0,0,.6)">나의 서브컬쳐 패션 유형은</p>
+        <div style="width:130px;height:130px;border-radius:50%;${glass};display:flex;align-items:center;justify-content:center;box-shadow:0 14px 36px rgba(0,0,0,.4);margin-bottom:20px">
+          <span style="font-size:54px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))">${r.emoji}</span>
+        </div>
+        <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#fff;text-align:center;line-height:1.4;margin:0 0 16px;word-break:keep-all;text-shadow:0 2px 10px rgba(0,0,0,.7)">${r.name}</h2>
+        <p style="font-size:14px;font-weight:600;line-height:1.8;color:#fff;text-align:center;margin:0 0 28px;word-break:keep-all;text-shadow:0 1px 8px rgba(0,0,0,.8)">${r.desc}</p>
+        <div style="width:100%">
+          <p style="font-size:13px;font-weight:800;color:#fff;margin:0 0 12px;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.7)">💝 당신에게 추천하는 브랜드</p>
+          ${brandsHtml}
+        </div>
+        <div style="display:flex;gap:10px;width:100%;margin-top:22px">
+          <button onclick="startQuiz()" style="flex:1;padding:15px;border-radius:16px;cursor:pointer;${glass};color:#fff;font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.5)">🔄 다시하기</button>
+          <button onclick="closeQuiz()" style="flex:1.4;padding:15px;border-radius:16px;border:none;cursor:pointer;background:linear-gradient(120deg,#FF6FA8,#C41055);color:#fff;font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 8px 20px -8px rgba(196,16,85,.9)">브랜드 둘러보기 →</button>
+        </div>
       </div>
     </div>`;
 }
