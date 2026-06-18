@@ -980,6 +980,8 @@ function card(b, delay){
     <!-- 사진 영역 -->
     <div style="position:relative;height:158px;background:${b.c}14">
       ${imgArea}
+      <!-- 은은한 그라데이션: 사진 하단을 흰 텍스트 영역으로 부드럽게 연결 -->
+      <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(to top,rgba(255,255,255,.6) 0%,rgba(255,255,255,0) 38%)"></div>
       <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${b.c}"></div>
       <div style="position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:6px">
         <span id="lk-${b.id}" style="font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.42);padding:4px 9px;border-radius:100px;backdrop-filter:blur(3px);font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
