@@ -988,42 +988,42 @@ function _applyBgStyle(el, css){
    상단 edge 모티프 하나만 그리고 4방향 회전 복제(rotate)해 사방 프레임 구성, repeat:round 로 균일 반복. */
 const CARD_FRAME = (function(){
   const F = {};
-  // edge = 80폭 상단(밴드 y0~16)에 그린 모티프 / slice·width = border-image 슬라이스·테두리 두께
+  // edge = 96폭 상단(밴드 y0~22)에 그린 큰 모티프 / slice 22, width 16~20 (모티프가 밴드를 거의 꽉 채움)
   function frame(edge, slice, width, extra){
-    const g = `<g>${edge}</g><g transform='rotate(90 40 40)'>${edge}</g><g transform='rotate(180 40 40)'>${edge}</g><g transform='rotate(270 40 40)'>${edge}</g>`;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>${g}</svg>`;
+    const g = `<g>${edge}</g><g transform='rotate(90 48 48)'>${edge}</g><g transform='rotate(180 48 48)'>${edge}</g><g transform='rotate(270 48 48)'>${edge}</g>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'>${g}</svg>`;
     return `border-style:solid;border-width:${width}px;border-image:url("data:image/svg+xml,${encodeURIComponent(svg)}") ${slice} round${extra||""}`;
   }
   // 🎀 양산형 — 프릴(스캘럽) 레이스, 베이비핑크
-  let frill = "<path d='M0 14"; for(let i=0;i<8;i++) frill += " q5 -11 10 0";
-  frill += "' fill='none' stroke='#F4A9CE' stroke-width='2'/>";
-  F["양산형"] = frame(frill, 16, 13);
+  let frill = "<path d='M0 21"; for(let i=0;i<8;i++) frill += " q6 -18 12 0";
+  frill += "' fill='none' stroke='#F2A2C8' stroke-width='2.6'/>";
+  F["양산형"] = frame(frill, 22, 18);
   // 🖤 지뢰계 — 미니 해골 띠, 다크 그레이
-  let sk = "<path d='M0 13H80' stroke='#52525B' stroke-width='1.4'/>";
-  [10,30,50,70].forEach(x=>{ sk += `<circle cx='${x}' cy='7' r='4.4' fill='#3F3F46'/><rect x='${x-3}' y='10' width='6' height='3.4' rx='1' fill='#3F3F46'/><circle cx='${x-1.7}' cy='6.7' r='1.05' fill='#E4E4E7'/><circle cx='${x+1.7}' cy='6.7' r='1.05' fill='#E4E4E7'/>`; });
-  F["지뢰계"] = frame(sk, 17, 14);
-  // 🩵 서브컬쳐 — 반짝이 스파클 + 픽셀하트 도트, 스카이 + 글로우
+  let sk = "<path d='M0 20H96' stroke='#52525B' stroke-width='1.6'/>";
+  [12,36,60,84].forEach(x=>{ sk += `<circle cx='${x}' cy='9' r='7.4' fill='#3F3F46'/><rect x='${x-4.5}' y='14.5' width='9' height='6' rx='2' fill='#3F3F46'/><circle cx='${x-2.7}' cy='8.4' r='1.7' fill='#E4E4E7'/><circle cx='${x+2.7}' cy='8.4' r='1.7' fill='#E4E4E7'/>`; });
+  F["지뢰계"] = frame(sk, 22, 20);
+  // 🩵 서브컬쳐 — 반짝이 스파클 + 도트, 스카이 + 글로우
   let sp = "";
-  [10,30,50,70].forEach(x=>{ sp += `<path d='M${x} 1.5 Q${x+0.8} ${7-0.8} ${x+5} 7 Q${x+0.8} ${7+0.8} ${x} 12.5 Q${x-0.8} ${7+0.8} ${x-5} 7 Q${x-0.8} ${7-0.8} ${x} 1.5Z' fill='#38BDF8'/>`; });
-  [0,20,40,60,80].forEach(x=>{ sp += `<circle cx='${x}' cy='7' r='1.5' fill='#7DD3FC'/>`; });
-  F["서브컬쳐"] = frame(sp, 15, 13, ";box-shadow:0 0 13px rgba(125,211,252,.65)");
+  [12,36,60,84].forEach(x=>{ sp += `<path d='M${x} 1 Q${x+1.2} ${11-1.2} ${x+9} 11 Q${x+1.2} ${11+1.2} ${x} 21 Q${x-1.2} ${11+1.2} ${x-9} 11 Q${x-1.2} ${11-1.2} ${x} 1Z' fill='#38BDF8'/>`; });
+  [0,24,48,72,96].forEach(x=>{ sp += `<circle cx='${x}' cy='11' r='2.1' fill='#7DD3FC'/>`; });
+  F["서브컬쳐"] = frame(sp, 22, 18, ";box-shadow:0 0 14px rgba(125,211,252,.7)");
   // ⛓️ 비쥬얼계 — 쇠사슬, 퍼플 × 실버
   let ch = "";
-  for(let x=2;x<82;x+=12){ ch += `<ellipse cx='${x}' cy='7' rx='5' ry='3' fill='none' stroke='#6D28D9' stroke-width='2'/><ellipse cx='${x+6}' cy='7' rx='3' ry='5' fill='none' stroke='#A8A29E' stroke-width='2'/>`; }
-  F["비쥬얼계 고스·펑크"] = frame(ch, 16, 14);
+  for(let x=2;x<98;x+=14){ ch += `<ellipse cx='${x}' cy='11' rx='6' ry='3.6' fill='none' stroke='#6D28D9' stroke-width='2.4'/><ellipse cx='${x+7}' cy='11' rx='3.6' ry='6' fill='none' stroke='#A8A29E' stroke-width='2.4'/>`; }
+  F["비쥬얼계 고스·펑크"] = frame(ch, 22, 20);
   // 🥂 스나계 — 진주 목걸이, 크림/골드
   let pe = "";
-  for(let x=3;x<=80;x+=6.4){ pe += `<circle cx='${x}' cy='8' r='2.7' fill='#D8C089'/><circle cx='${x-0.8}' cy='7.2' r='0.9' fill='#FBF4DE'/>`; }
-  F["스나계"] = frame(pe, 16, 12);
+  for(let x=4;x<=96;x+=8.4){ pe += `<circle cx='${x}' cy='11' r='3.6' fill='#D8C089'/><circle cx='${x-1}' cy='10' r='1.2' fill='#FBF4DE'/>`; }
+  F["스나계"] = frame(pe, 22, 16);
   // 👗 로리타 — 장미 넝쿨, 자홍/와인
-  let rv = "<path d='M0 10 q5 -7 10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0' fill='none' stroke='#9D174D' stroke-width='1.6'/>";
-  [8,24,40,56,72].forEach(x=>{ rv += `<circle cx='${x}' cy='6' r='3' fill='#C026D3'/><circle cx='${x}' cy='6' r='1.2' fill='#9D174D'/>`; });
-  [16,32,48,64].forEach(x=>{ rv += `<path d='M${x} 12 q3 -2.5 5.5 1 q-3 2.5 -5.5 -1Z' fill='#86198F'/>`; });
-  F["로리타"] = frame(rv, 15, 13);
+  let rv = "<path d='M0 13 q6 -9 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0' fill='none' stroke='#9D174D' stroke-width='2'/>";
+  [10,30,50,70,90].forEach(x=>{ rv += `<circle cx='${x}' cy='8' r='4' fill='#C026D3'/><circle cx='${x}' cy='8' r='1.6' fill='#9D174D'/>`; });
+  [20,40,60,80].forEach(x=>{ rv += `<path d='M${x} 16 q4 -3 7 1.5 q-4 3 -7 -1.5Z' fill='#86198F'/>`; });
+  F["로리타"] = frame(rv, 22, 18);
   // 👜 잡화 — 두꺼운 지그재그 스티치, 모래/브라운
-  let st = "<path d='M0 5"; for(let x=0;x<80;x+=8){ st += ` L${x+4} 12 L${x+8} 5`; }
-  st += "' fill='none' stroke='#A1724A' stroke-width='2' stroke-dasharray='5 2' stroke-linejoin='round'/>";
-  F["잡화(가방,신발,악세)"] = frame(st, 15, 12);
+  let st = "<path d='M0 5"; for(let x=0;x<96;x+=10){ st += ` L${x+5} 18 L${x+10} 5`; }
+  st += "' fill='none' stroke='#9C6B43' stroke-width='2.4' stroke-dasharray='6 2.5' stroke-linejoin='round'/>";
+  F["잡화(가방,신발,악세)"] = frame(st, 22, 16);
   return F;
 })();
 function cardFrame(cat){ return CARD_FRAME[cat] || ""; }
