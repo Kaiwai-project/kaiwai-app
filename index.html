@@ -986,44 +986,34 @@ function _applyBgStyle(el, css){
 /* 카테고리별 '일러스트 액자 프레임' — 직접 그린 SVG 를 Data URI 로 border-image 에 주입.
    border-width 가 안쪽 여백을 만들어 사진이 프레임 안에 들어가는 "액자 속 사진" 효과.
    상단 edge 모티프 하나만 그리고 4방향 회전 복제(rotate)해 사방 프레임 구성, repeat:round 로 균일 반복. */
+/* 카테고리별 '일러스트 액자 프레임' — 오버레이 div 의 배경 타일로 사방 테두리를 그림.
+   border-image 의 슬라이스 스케일 뭉갬을 피하려 모티프를 px 고정 타일로 깔아 또렷하게 보이게 함.
+   카드는 padding(밴드 두께)으로 사진을 안쪽으로 밀고, 오버레이가 그 여백 위에 프레임을 그린다. */
+const FRAME_BAND = 22;   // 프레임 밴드(=카드 padding) 두께 px
 const CARD_FRAME = (function(){
   const F = {};
-  // edge = 96폭 상단(밴드 y0~22)에 그린 큰 모티프 / slice 22, width 16~20 (모티프가 밴드를 거의 꽉 채움)
-  function frame(edge, slice, width, extra){
-    const g = `<g>${edge}</g><g transform='rotate(90 48 48)'>${edge}</g><g transform='rotate(180 48 48)'>${edge}</g><g transform='rotate(270 48 48)'>${edge}</g>`;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'>${g}</svg>`;
-    return `border-style:solid;border-width:${width}px;border-image:url("data:image/svg+xml,${encodeURIComponent(svg)}") ${slice} round${extra||""}`;
-  }
-  // 🎀 양산형 — 프릴(스캘럽) 레이스, 베이비핑크
-  let frill = "<path d='M0 21"; for(let i=0;i<8;i++) frill += " q6 -18 12 0";
-  frill += "' fill='none' stroke='#F2A2C8' stroke-width='2.6'/>";
-  F["양산형"] = frame(frill, 22, 18);
-  // 🖤 지뢰계 — 미니 해골 띠, 다크 그레이
-  let sk = "<path d='M0 20H96' stroke='#52525B' stroke-width='1.6'/>";
-  [12,36,60,84].forEach(x=>{ sk += `<circle cx='${x}' cy='9' r='7.4' fill='#3F3F46'/><rect x='${x-4.5}' y='14.5' width='9' height='6' rx='2' fill='#3F3F46'/><circle cx='${x-2.7}' cy='8.4' r='1.7' fill='#E4E4E7'/><circle cx='${x+2.7}' cy='8.4' r='1.7' fill='#E4E4E7'/>`; });
-  F["지뢰계"] = frame(sk, 22, 20);
-  // 🩵 서브컬쳐 — 반짝이 스파클 + 도트, 스카이 + 글로우
-  let sp = "";
-  [12,36,60,84].forEach(x=>{ sp += `<path d='M${x} 1 Q${x+1.2} ${11-1.2} ${x+9} 11 Q${x+1.2} ${11+1.2} ${x} 21 Q${x-1.2} ${11+1.2} ${x-9} 11 Q${x-1.2} ${11-1.2} ${x} 1Z' fill='#38BDF8'/>`; });
-  [0,24,48,72,96].forEach(x=>{ sp += `<circle cx='${x}' cy='11' r='2.1' fill='#7DD3FC'/>`; });
-  F["서브컬쳐"] = frame(sp, 22, 18, ";box-shadow:0 0 14px rgba(125,211,252,.7)");
+  const tile = (inner, w, h) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='0 0 ${w} ${h}'>${inner}</svg>`)}")`;
+  // 같은 타일을 상·하(가로반복)·좌·우(세로반복) 4겹으로 깔아 액자 테두리 구성
+  const frame = (t, extra) =>
+    `background-image:${t},${t},${t},${t};` +
+    `background-position:top center,bottom center,left center,right center;` +
+    `background-repeat:repeat-x,repeat-x,repeat-y,repeat-y;` +
+    `background-size:auto ${FRAME_BAND}px,auto ${FRAME_BAND}px,${FRAME_BAND}px auto,${FRAME_BAND}px auto${extra||""}`;
+
+  // 🎀 양산형 — 프릴(스캘럽), 베이비핑크
+  F["양산형"] = frame(tile("<path d='M0 19 q6.5 -15 13 0' fill='none' stroke='#F2A2C8' stroke-width='2.6'/><circle cx='6.5' cy='20.5' r='1.1' fill='#F2A2C8'/>", 13, 22));
+  // 🖤 지뢰계 — 미니 해골, 다크 그레이
+  F["지뢰계"] = frame(tile("<circle cx='11' cy='9' r='7' fill='#3F3F46'/><rect x='6.5' y='14' width='9' height='6' rx='2' fill='#3F3F46'/><circle cx='8.3' cy='8.4' r='1.7' fill='#E4E4E7'/><circle cx='13.7' cy='8.4' r='1.7' fill='#E4E4E7'/>", 24, 22));
+  // 🩵 서브컬쳐 — 반짝이 스파클, 스카이 + 글로우
+  F["서브컬쳐"] = frame(tile("<path d='M12 1 Q13.2 9.8 21 11 Q13.2 12.2 12 21 Q10.8 12.2 3 11 Q10.8 9.8 12 1Z' fill='#38BDF8'/>", 24, 22), ";filter:drop-shadow(0 0 4px rgba(125,211,252,.85))");
   // ⛓️ 비쥬얼계 — 쇠사슬, 퍼플 × 실버
-  let ch = "";
-  for(let x=2;x<98;x+=14){ ch += `<ellipse cx='${x}' cy='11' rx='6' ry='3.6' fill='none' stroke='#6D28D9' stroke-width='2.4'/><ellipse cx='${x+7}' cy='11' rx='3.6' ry='6' fill='none' stroke='#A8A29E' stroke-width='2.4'/>`; }
-  F["비쥬얼계 고스·펑크"] = frame(ch, 22, 20);
-  // 🥂 스나계 — 진주 목걸이, 크림/골드
-  let pe = "";
-  for(let x=4;x<=96;x+=8.4){ pe += `<circle cx='${x}' cy='11' r='3.6' fill='#D8C089'/><circle cx='${x-1}' cy='10' r='1.2' fill='#FBF4DE'/>`; }
-  F["스나계"] = frame(pe, 22, 16);
+  F["비쥬얼계 고스·펑크"] = frame(tile("<ellipse cx='8' cy='11' rx='6' ry='3.6' fill='none' stroke='#6D28D9' stroke-width='2.4'/><ellipse cx='16' cy='11' rx='3.6' ry='6' fill='none' stroke='#A8A29E' stroke-width='2.4'/>", 24, 22));
+  // 🥂 스나계 — 진주, 크림/골드
+  F["스나계"] = frame(tile("<circle cx='6' cy='11' r='4' fill='#D8C089'/><circle cx='4.8' cy='9.8' r='1.3' fill='#FBF4DE'/>", 12, 22));
   // 👗 로리타 — 장미 넝쿨, 자홍/와인
-  let rv = "<path d='M0 13 q6 -9 12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0 t12 0' fill='none' stroke='#9D174D' stroke-width='2'/>";
-  [10,30,50,70,90].forEach(x=>{ rv += `<circle cx='${x}' cy='8' r='4' fill='#C026D3'/><circle cx='${x}' cy='8' r='1.6' fill='#9D174D'/>`; });
-  [20,40,60,80].forEach(x=>{ rv += `<path d='M${x} 16 q4 -3 7 1.5 q-4 3 -7 -1.5Z' fill='#86198F'/>`; });
-  F["로리타"] = frame(rv, 22, 18);
-  // 👜 잡화 — 두꺼운 지그재그 스티치, 모래/브라운
-  let st = "<path d='M0 5"; for(let x=0;x<96;x+=10){ st += ` L${x+5} 18 L${x+10} 5`; }
-  st += "' fill='none' stroke='#9C6B43' stroke-width='2.4' stroke-dasharray='6 2.5' stroke-linejoin='round'/>";
-  F["잡화(가방,신발,악세)"] = frame(st, 22, 16);
+  F["로리타"] = frame(tile("<path d='M0 13 q5 -7 10 0 t10 0' fill='none' stroke='#9D174D' stroke-width='2'/><circle cx='10' cy='8' r='4' fill='#C026D3'/><circle cx='10' cy='8' r='1.6' fill='#9D174D'/>", 20, 22));
+  // 👜 잡화 — 지그재그 스티치, 브라운
+  F["잡화(가방,신발,악세)"] = frame(tile("<path d='M0 4 L8 18 L16 4' fill='none' stroke='#9C6B43' stroke-width='2.6' stroke-linejoin='round'/>", 16, 22));
   return F;
 })();
 function cardFrame(cat){ return CARD_FRAME[cat] || ""; }
@@ -1036,7 +1026,9 @@ function card(b, delay){
   const imgArea = hasImg
     ? `<img src="${b.bgImg}" alt="${b.n}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top" onerror="this.style.display='none'"/>`
     : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,${b.c},${b.c}AA);display:flex;align-items:center;justify-content:center;font-size:42px;opacity:.55">🎀</div>`;
-  return `<div class="fu kw-bcard overflow-hidden" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer;${cardFrame(b.s)}" onclick="openM(${b.id})">
+  return `<div class="fu kw-bcard overflow-hidden" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer;position:relative;padding:${FRAME_BAND}px" onclick="openM(${b.id})">
+    <!-- 일러스트 액자 프레임 (여백 위에 모티프 타일) -->
+    <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:5;${cardFrame(b.s)}"></div>
     <!-- 사진 영역 -->
     <div style="position:relative;height:158px;background:${b.c}14">
       ${imgArea}
