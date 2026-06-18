@@ -971,32 +971,32 @@ function _applyBgStyle(el, css){
 function card(b, delay){
   const fv = favs.includes(b.id);
   // 카드 배경 = 브랜드 대표 이미지(cover). 없으면 브랜드색 그라데이션 폴백.
+  // 카드 배경 = 브랜드 대표 이미지(세로 사진). 카드를 키워 사진이 제대로 보이게 하고
+  // 텍스트는 하단 그라데이션 위에 올린다 (사진 중앙부가 윗쪽에 그대로 노출됨).
   const hasImg = isImg(b.bgImg);
   const bgLayer = hasImg
     ? `background:url("${b.bgImg}") center/cover no-repeat !important`
     : `background:linear-gradient(135deg,${b.c},${b.c}D0) !important`;
-  return `<div class="fu kawaii-card" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer;position:relative;${bgLayer}"
+  return `<div class="fu kawaii-card" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer;position:relative;min-height:172px;display:flex;flex-direction:column;justify-content:flex-end;${bgLayer}"
     onclick="openM(${b.id})">
-    <!-- 가독성용 그라데이션 오버레이 (사진이 보이도록 옅게, 글자 영역만 살짝 더 어둡게) -->
-    <div style="position:absolute;inset:0;z-index:0;background:linear-gradient(to right,rgba(0,0,0,.48),rgba(0,0,0,.2) 58%,rgba(0,0,0,.06))"></div>
-    <div style="height:4px;background:${b.c};position:relative;z-index:1"></div>
-    <div style="padding:13px 14px;display:flex;align-items:center;gap:11px;position:relative;z-index:1">
-      ${logoEl(b,50,16,'0 4px 12px rgba(0,0,0,.4)')}
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:5px">
-          <span style="font-weight:800;color:#fff;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 10px rgba(0,0,0,.6)">${b.n}</span>
-          <div style="display:flex;align-items:center;gap:1px;flex-shrink:0">
-            <span id="lk-${b.id}" style="font-size:10px;font-weight:700;color:#FFD0E0;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.5)">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
-            <button onclick="event.stopPropagation();tFav(${b.id})" style="font-size:17px;background:none;border:none;cursor:pointer;flex-shrink:0;transition:transform .1s;margin-left:3px" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px">
-          <span style="background:rgba(255,255,255,.22);color:#fff;border:1px solid rgba(255,255,255,.4);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;backdrop-filter:blur(2px)">${b.s}</span>
-          ${b.tax?`<span style="background:rgba(224,255,245,.95);color:#00875A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">✓ 면세</span>`:""}
-          ${b.st.length?`<span style="background:rgba(238,234,251,.95);color:#6E5AA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">🏪 ${b.st.length}개</span>`:`<span style="background:rgba(238,234,251,.95);color:#6E5AA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">🌐 온라인</span>`}
-        </div>
-        <p class="clamp2" style="font-size:11px;color:rgba(255,255,255,.96);line-height:1.65;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 8px rgba(0,0,0,.7)">${b.desc}</p>
+    <div style="position:absolute;top:0;left:0;right:0;height:4px;background:${b.c};z-index:2"></div>
+    <!-- 우상단: 좋아요 수 + 하트 -->
+    <div style="position:absolute;top:11px;right:11px;z-index:2;display:flex;align-items:center;gap:6px">
+      <span id="lk-${b.id}" style="font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.42);padding:4px 9px;border-radius:100px;backdrop-filter:blur(3px);font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+      <button onclick="event.stopPropagation();tFav(${b.id})" style="font-size:18px;background:rgba(0,0,0,.34);border:none;border-radius:50%;width:34px;height:34px;cursor:pointer;backdrop-filter:blur(3px);transition:transform .1s;line-height:34px;padding:0" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
+    </div>
+    <!-- 하단 그라데이션 + 콘텐츠 (윗부분엔 사진이 그대로 보임) -->
+    <div style="position:relative;z-index:1;padding:40px 14px 13px;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.62) 42%,rgba(0,0,0,0) 100%)">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+        ${logoEl(b,40,13,'0 2px 8px rgba(0,0,0,.55)')}
+        <span style="font-weight:800;color:#fff;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.95)">${b.n}</span>
       </div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">
+        <span style="background:rgba(255,255,255,.24);color:#fff;border:1px solid rgba(255,255,255,.42);font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;backdrop-filter:blur(2px)">${b.s}</span>
+        ${b.tax?`<span style="background:rgba(224,255,245,.96);color:#00875A;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">✓ 면세</span>`:""}
+        ${b.st.length?`<span style="background:rgba(238,234,251,.96);color:#6E5AA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">🏪 ${b.st.length}개</span>`:`<span style="background:rgba(238,234,251,.96);color:#6E5AA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px">🌐 온라인</span>`}
+      </div>
+      <p class="clamp2" style="font-size:11px;color:rgba(255,255,255,.95);line-height:1.55;text-shadow:0 1px 3px rgba(0,0,0,.95)">${b.desc}</p>
     </div>
   </div>`;
 }
