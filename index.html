@@ -1476,80 +1476,70 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ closeModal(); clo
    서브컬쳐 패션 취향 진단 테스트
 ═══════════════════════════════════ */
 const QUIZ = [
-  { q:"주말에 약속이 없다면 당신의 행동 패턴은?", opts:[
-    { t:"예쁜 카페에 가서 디저트 사진 찍고 쇼핑하기", a:["ryousan","suna"] },
-    { t:"해가 질 때쯤 일어나 번화가(홍대·가부키초)로 밤 외출", a:["jirai"] },
-    { t:"침대에서 한 발짝도 안 나가고 유튜브·트위치·게임 섭렵", a:["subcul"] },
-    { t:"라이브 클럽 공연을 보거나 빈티지 샵 구경하기", a:["punk"] },
-    { t:"좋아하는 홍차를 세팅하고 동화 같은 방에서 영화 보기", a:["lolita"] },
+  { q:"스트레스가 극에 달한 금요일 밤, 나의 해소법은?", opts:[
+    { t:"예쁜 디저트 왕창 사서 넷플릭스·유튜브 보며 당충전 🎀", a:["ryousan"] },
+    { t:"트위터 비계(우울계)에 의미심장한 뻘글 폭주 🖤", a:["jirai"] },
+    { t:"방 불 다 끄고 몬스터 마시며 게임·버튜버 방송 몰입 🩵", a:["subcul"] },
+    { t:"조용하고 감성적인 공간에서 혼자만의 여유 즐기기 🥂", a:["suna"] },
+    { t:"좋아하는 밴드 음악을 터질 듯이 크게 틀어놓기 ⛓️", a:["punk"] },
   ]},
-  { q:"나의 SNS(인스타·트위터) 사용 스타일은?", opts:[
-    { t:"내 예쁜 OOTD나 최애(오시) 사진을 공들여 꾸며 올린다", a:["ryousan","lolita"] },
-    { t:"감정 기복이 심해 우울한 감정·뻘글을 자주 쏟아낸다", a:["jirai"] },
-    { t:"현실 사진보단 애니·게임·밈 짤을 올리거나 눈팅만 한다", a:["subcul"] },
-    { t:"남 시선 신경 안 쓰고 내 취향 음악·거친 데일리룩 공유", a:["punk"] },
-    { t:"피드 톤앤매너를 매우 깔끔하고 우아하게 맞춘다", a:["suna"] },
+  { q:"솔직히 내 방 상태를 묘사하자면?", opts:[
+    { t:"산리오(마이멜로디) 인형과 핑크 템들로 꾸민 카와이 룸", a:["ryousan"] },
+    { t:"쿠로미와 지뢰계 템이 가득... 조금(많이) 어질러진 방", a:["jirai"] },
+    { t:"LED 조명 번쩍! 피규어와 모니터가 지배하는 사이버룸", a:["subcul"] },
+    { t:"무채색·우드톤으로 깔끔하게 정돈된 인스타 감성룸", a:["suna"] },
+    { t:"동화책에서 튀어나온 듯한 레이스 커튼과 앤틱 가구", a:["lolita"] },
   ]},
-  { q:"코디할 때 절대 포기할 수 없는 '나만의 무기'는?", opts:[
-    { t:"풍성한 프릴, 예쁜 리본, 반짝이는 비즈", a:["ryousan"] },
-    { t:"절대적인 높이의 통굽 구두와 가터벨트", a:["jirai"] },
-    { t:"고양이 귀 헤드폰, 레그워머, 크고 헐렁한 져지", a:["subcul"] },
-    { t:"바디라인을 예쁘게 살려주는 스커트나 오프숄더", a:["suna"] },
-    { t:"치마를 부풀려주는 파니에와 화려한 헤드드레스", a:["lolita"] },
-    { t:"은장 체인, 가죽 초커, 주렁주렁한 피어싱", a:["punk"] },
+  { q:"내 지갑(알바비)이 가장 많이 털리는 곳은?", opts:[
+    { t:"최애(오시) 굿즈, 생일 카페, 콜라보 팝업스토어", a:["ryousan"] },
+    { t:"주기적으로 엎는 네일아트와 통굽 구두, 메이크업 템", a:["jirai"] },
+    { t:"스팀 게임, 현질, 전자기기, 아니면 애니 굿즈", a:["subcul"] },
+    { t:"한 번 살 때 제대로 된 퀄리티의 디자이너 브랜드 옷", a:["suna"] },
+    { t:"피어싱, 실버 악세사리, 타투, 밴드 굿즈", a:["punk"] },
   ]},
-  { q:"내가 가장 끌리는 색상 조합은?", opts:[
-    { t:"화이트 & 베이비 핑크", a:["ryousan"] },
-    { t:"블랙 & 다크 핑크/레드", a:["jirai"] },
-    { t:"라이트 블루(수색) & 화이트", a:["subcul"] },
-    { t:"베이비 블루 / 아이보리 / 더스티 로즈", a:["suna"] },
-    { t:"클래식 브라운 / 보르도 / 네이비", a:["lolita"] },
-    { t:"올 블랙 & 메탈/네온 포인트", a:["punk"] },
+  { q:"인스타·틱톡·숏츠에서 무심코 멈추게 되는 영상은?", opts:[
+    { t:"\"다이소 신상 산리오깡!\" 귀여운 소품 하울 영상", a:["ryousan","lolita"] },
+    { t:"화려한 변신! 지뢰계 메이크업 튜토리얼", a:["jirai"] },
+    { t:"우타이테 커버곡이나 애니메이션 매드 무비", a:["subcul"] },
+    { t:"하라주쿠 빈티지샵 투어나 길거리 스냅", a:["punk"] },
+    { t:"예쁜 카페 투어나 호캉스 브이로그", a:["suna"] },
   ]},
-  { q:"나에게 '패션'이란 어떤 의미인가요?", opts:[
-    { t:"좋아하는 것을 응원(덕질)하고 사랑받기 위한 마법", a:["ryousan"] },
-    { t:"세상으로부터 나를 지키고 우울함을 뽐내는 전투복", a:["jirai"] },
-    { t:"현실을 벗어나 좋아하는 2D·가상 세계에 동화되는 것", a:["subcul"] },
-    { t:"성숙함과 여성스러운 매력을 자연스럽게 보여주는 것", a:["suna"] },
-    { t:"일상을 한 편의 예술·동화로 만들어주는 수단", a:["lolita"] },
-    { t:"억눌린 규칙을 깨부수고 거친 로큰롤 영혼을 표현", a:["punk"] },
+  { q:"누군가 나에게 \"너 좀 특이하다\"라고 한다면 속마음은?", opts:[
+    { t:"(상처) 앗... 나 좀 튀나? 남들처럼 입어야 하나...", a:["ryousan","suna"] },
+    { t:"(희열) 당연하지. 난 평범한 게 제일 싫어.", a:["jirai","punk"] },
+    { t:"(무관심) 어쩌라고... 내 알 바 아님. (헤드폰 볼륨 업)", a:["subcul"] },
+    { t:"(자부심) 내 예술적인 취향을 몰라주다니 안타깝네.", a:["lolita"] },
   ]},
-  { q:"나의 인간관계 성향을 한 줄로 요약한다면?", opts:[
-    { t:"모두에게 친절하려 노력하지만 가끔 피곤해", a:["ryousan","suna"] },
-    { t:"한 번 마음 연 사람에겐 다 퍼주고 집착해", a:["jirai"] },
-    { t:"현실 사람보단 온라인 지인·2D 캐릭터가 편해", a:["subcul"] },
-    { t:"나만의 좁고 깊은 세계를 이해하는 소수만 있으면 돼", a:["lolita","punk"] },
-  ]},
-  { q:"사람들에게 가장 듣고 싶은 나의 첫인상은?", opts:[
-    { t:"\"진짜 인형 같다! 너무 귀엽고 사랑스러워\"", a:["ryousan"] },
-    { t:"\"뭔가 사연 있어 보이고 묘하게 끌려\"", a:["jirai"] },
-    { t:"\"투명하고 신비로워... 현실 사람 안 같아\"", a:["subcul"] },
-    { t:"\"분위기 진짜 예쁘다. 어른스럽고 세련됐어\"", a:["suna"] },
-    { t:"\"동화 속에서 금방 걸어 나온 공주님 같아\"", a:["lolita"] },
-    { t:"\"스타일 엄청 힙하고 포스 장난 아니다\"", a:["punk"] },
+  { q:"나의 멘탈 상태(유리멘탈 vs 강철멘탈)는?", opts:[
+    { t:"애정결핍이 좀 있어.. 누가 나만 쳐다보고 사랑해 줬으면", a:["jirai"] },
+    { t:"사람한테 상처받기 싫어서 아예 현실 사람을 잘 안 만나", a:["subcul"] },
+    { t:"기본적으로 친절하지만, 선 넘는 건 절대 못 참아", a:["suna"] },
+    { t:"멘탈 강함! 남들이 뭐라든 내 갈 길 가는 마이웨이", a:["punk","lolita"] },
+    { t:"겉으론 밝은 척하지만 사실 속으론 꽤 눈치를 많이 봐", a:["ryousan"] },
   ]},
 ];
 
 const RESULT_ORDER = ["ryousan","jirai","subcul","suna","lolita","punk"];
+/* cat = 실제 DB(B[].s) 카테고리 → 결과창에서 해당 카테고리 브랜드를 랜덤 추천 */
 const RESULTS = {
-  ryousan:{ emoji:"🎀🌸", name:"영원한 사랑을 꿈꾸는 핑크빛 공주님 🎀",
-    desc:"덕질과 귀여움에 진심인 당신! 프릴과 리본으로 무장하고 예쁜 카페와 라이브 회장을 누비는 사랑스러운 공주님입니다. 누구에게나 호감을 주는 정석 카와이 스타일!",
-    brands:["Ank Rouge","Honey Cinnamon","Secret Honey"], bg:"#FCE7F3", fg:"#3A2B30", sub:"#8A6B74" },
-  jirai:{ emoji:"🖤🔪", name:"취급주의! 달콤살벌한 매력의 다크돌 🖤",
-    desc:"겉보기엔 귀엽지만 속엔 강렬한 감정과 딥한 매력을 숨긴 당신. 블랙과 핑크의 조합, 아찔한 통굽 구두로 세상에 맞서는 묘하게 사람을 홀리는 지뢰계의 정석!",
-    brands:["ROJITA","pium","MA*RS"], bg:"#27272A", fg:"#FFFFFF", sub:"#C9C4CE" },
-  subcul:{ emoji:"👼🎧", name:"현실 로그아웃! 방구석 인터넷 엔젤 🩵",
-    desc:"\"현실보단 인터넷이 편해...\" 오버사이즈 져지와 헤드폰 뒤에 숨어 나만의 세계를 유영하는 당신. 하늘색과 하얀색이 교차하는 네오 사이버 무드를 가장 잘 소화하는 천사입니다.",
-    brands:["DimMoire","REFLEM","ililil"], bg:"#E0F2FE", fg:"#23323A", sub:"#5E7480" },
-  suna:{ emoji:"🥂✨", name:"여유롭고 우아한 어른의 티타임 🥂",
-    desc:"과한 장식보다 실루엣과 분위기로 승부하는 세련된 언니 스타일! 차분한 베이지 톤과 머메이드 스커트를 사랑하며 성숙하고 우아한 프렌치 걸리시 무드를 뿜어냅니다.",
-    brands:["SNIDEL","REDYAZEL","titty&Co."], bg:"#F5F5F4", fg:"#3A332B", sub:"#857C6F" },
-  lolita:{ emoji:"👗🫖", name:"동화 속에서 걸어 나온 다과회의 주인공 👗",
-    desc:"패션을 넘어 하나의 예술을 입는 당신! 풍성하게 부풀린 파니에와 정교한 레이스를 사랑하며 일상을 동화책 속 한 페이지처럼 완벽하게 연출하는 클래식의 귀족입니다.",
-    brands:["Amavel","To Alice","Axes femme"], bg:"#FAE8FF", fg:"#3A2B38", sub:"#86708A" },
-  punk:{ emoji:"⛓️🎸", name:"반항심 100%, 거칠고 자유로운 록스타 ⛓️",
-    desc:"남들의 시선 따위 신경 쓰지 않는 힙스터! 체인, 피어싱, 올블랙 코디로 세상의 규칙에 반항하며 나만의 거친 록 스피릿을 패션으로 뿜어내는 마이웨이의 표본입니다.",
-    brands:["LISTEN FLAVOR","ACDC RAG","HELLCATPUNKS"], bg:"#F3E8FF", fg:"#332B3A", sub:"#7C6E86" },
+  ryousan:{ emoji:"🎀🍰🧸", cat:"양산형", name:"인간 벚꽃 🎀 사랑받기 위해 태어난 아이돌 덕후",
+    desc:"덕질에 인생을 배팅한 당신! 예쁜 카페와 핑크색을 사랑하며, 겉으로는 늘 방긋방긋 웃는 완벽한 공주님입니다. 하지만 은근히 주변 눈치를 많이 보는 외강내유 스타일!",
+    bg:"#FCE7F3", fg:"#3A2B30", sub:"#8A6B74" },
+  jirai:{ emoji:"🖤🔪💊", cat:"지뢰계", name:"취급주의! 🖤 멘탈 붕괴 직전의 다크 큐티돌",
+    desc:"겉보기엔 인형 같지만 속은 꽤나 곪아있는(?) 다크 카와이의 정석. 애정결핍과 독점욕이 조금 있는 편! 통굽 구두와 가터벨트로 무장하고 오늘 밤도 번화가를 배회합니다.",
+    bg:"#27272A", fg:"#FFFFFF", sub:"#C9C4CE" },
+  subcul:{ emoji:"👼🎧💻", cat:"서브컬쳐", name:"현실 로그아웃 🩵 방구석 인터넷 엔젤",
+    desc:"\"현실 사람보단 2D가 편해...\" 헤드폰과 루즈삭스는 당신의 방어구! 인간관계에 지쳐있으며, 인터넷 세상에서 가장 활발한 당신은 네오 사이버 무드의 천사입니다.",
+    bg:"#E0F2FE", fg:"#23323A", sub:"#5E7480" },
+  suna:{ emoji:"🥂🩰🤍", cat:"스나계", name:"분위기 여신 🥂 성숙하고 차분한 어른의 여유",
+    desc:"요란한 치장보다는 실루엣과 감성으로 승부하는 으른 언니! 인간관계에서도 선을 잘 지키고, 무채색과 베이지 톤을 사랑하는 세련된 프렌치 걸리시 무드의 소유자입니다.",
+    bg:"#F5F5F4", fg:"#3A332B", sub:"#857C6F" },
+  lolita:{ emoji:"👗☕️🪞", cat:"로리타", name:"현대판 귀족 👗 일상을 동화로 만드는 아티스트",
+    desc:"패션은 곧 예술! 남들의 시선 따위 가볍게 무시하고 자신만의 확고한 미학을 밀고 나가는 자존감 만렙. 정교한 레이스와 파니에로 무장한 당신은 이 구역의 주인공입니다.",
+    bg:"#FAE8FF", fg:"#3A2B38", sub:"#86708A" },
+  punk:{ emoji:"⛓️🎸☠️", cat:"비쥬얼계 고스·펑크", name:"반항심 100% ⛓️ 거칠고 자유로운 록스타",
+    desc:"세상의 규칙? 가볍게 무시! 체인과 피어싱, 올블랙 코디로 세상에 반항하는 마이웨이 끝판왕. 겉은 까칠해 보여도 자기가 좋아하는 것엔 엄청난 열정을 쏟는 타입.",
+    bg:"#F3E8FF", fg:"#332B3A", sub:"#7C6E86" },
 };
 
 let quizScores = {}, quizIdx = 0;
@@ -1617,30 +1607,30 @@ function quizTopKey(){
   return best;
 }
 
-/* 추천 브랜드명 → DB 브랜드 매칭 (공백·점·기호 무시, 부분 일치 허용) */
-function _findBrandByName(name){
-  const n = name.toLowerCase().replace(/[\s.]/g,"");
-  return B.find(x=>{ const bn=x.n.toLowerCase().replace(/[\s.]/g,""); return bn===n || bn.startsWith(n) || n.startsWith(bn); });
+/* 결과 카테고리(cat)와 일치하는 DB 브랜드를 셔플해 최대 n개 추천 (매번 랜덤) */
+function _pickBrands(cat, n){
+  const pool=B.filter(x=>x.s===cat);
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0, n||3);
 }
-function quizBrand(name){
-  const b=_findBrandByName(name);
-  if(b){ closeQuiz(); openM(b.id); }
-  else { window.open("https://buyee.jp/item/search/query/"+encodeURIComponent(name), "_blank", "noopener"); }
-}
+function quizOpenBrand(id){ closeQuiz(); openM(id); }
 
 function renderQuizResult(){
   const key=quizTopKey(), r=RESULTS[key];
   const dark = key==="jirai";
   const circleBg = dark ? "rgba(255,255,255,.1)" : "#fff";
-  const brandsHtml = r.brands.map(name=>{
-    const b=_findBrandByName(name);
-    const tag = b ? `<span style="font-size:10px;color:${dark?'#C9C4CE':'#8D7B80'}">앱에서 보기 ›</span>` : `<span style="font-size:10px;color:${dark?'#C9C4CE':'#8D7B80'}">직구 검색 ↗</span>`;
-    return `<button onclick="quizBrand('${name.replace(/'/g,"\\'")}')"
-      style="display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:9px;padding:14px 16px;border:none;border-radius:16px;background:${dark?'rgba(255,255,255,.12)':'#fff'};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.06);transition:transform .15s var(--jelly)"
+  const picks = _pickBrands(r.cat, 3);
+  const brandsHtml = picks.length ? picks.map(b=>`
+    <button onclick="quizOpenBrand(${b.id})"
+      style="display:flex;align-items:center;gap:11px;width:100%;margin-bottom:9px;padding:11px 13px;border:none;border-radius:16px;background:${dark?'rgba(255,255,255,.12)':'#fff'};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 4px 14px rgba(0,0,0,.07);transition:transform .15s var(--jelly);text-align:left"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-      <span style="font-weight:800;font-size:15px;color:${dark?'#fff':'#3A2B30'}">${name}</span>${tag}
-    </button>`;
-  }).join("");
+      ${logoEl(b,40,12,'')}
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:800;font-size:15px;color:${dark?'#fff':'#3A2B30'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
+        <div style="font-size:11px;color:${dark?'#C9C4CE':'#8D7B80'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
+      </div>
+      <span style="font-size:16px;color:${dark?'#C9C4CE':'#C4A8B0'};flex-shrink:0">›</span>
+    </button>`).join("") : `<p style="font-size:13px;color:${r.sub}">추천 브랜드를 준비 중이에요 🎀</p>`;
   document.getElementById("quizBody").innerHTML = `
     <div style="background:${r.bg};min-height:100%;flex:1;padding:26px 20px 40px;display:flex;flex-direction:column;align-items:center">
       <div style="width:100%;display:flex;justify-content:flex-end">
