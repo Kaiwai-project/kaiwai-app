@@ -27,6 +27,8 @@ APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 IG_COOKIE = os.environ.get("IG_COOKIE", "")
 TW_COOKIE = os.environ.get("TW_COOKIE", "")
+# 슬롯(시간대) 무시하고 전 브랜드를 한 번에 수집 (workflow_dispatch 수동 강제 갱신용)
+FORCE_ALL = os.environ.get("FORCE_ALL", "").lower() == "true"
 OUT_PATH = Path(__file__).parent / "calendar_data.json"
 
 ACTOR_IG = "apify/instagram-scraper"
@@ -269,11 +271,16 @@ def main():
         print(f"⚠️ APIFY_TOKEN 없음 → 데모 시드 {len(events)}개 생성 (하루 3건·8시간 간격·매일)")
         return
 
-    # 하루 3번(8시간 슬롯) 기준으로 그룹 분할: 0~7시→0, 8~15시→1, 16~23시→2
-    # (기존 today.day % 3 = 3일에 걸쳐 [3,3,4] 처리하던 방식에서 변경)
-    slot = today.hour // 8
-    brands = BRANDS_GROUPS.get(slot, [])
-    print(f"슬롯 {slot} ({today.hour}시, {len(brands)}개 브랜드) 수집 시작")
+    # FORCE_ALL(수동 강제 갱신): 슬롯 무시하고 전 브랜드를 한 번에 수집
+    if FORCE_ALL:
+        brands = [b for group in BRANDS_GROUPS.values() for b in group]
+        print(f"⚡ 강제 전체 수집: {len(brands)}개 브랜드 (슬롯 무시)")
+    else:
+        # 하루 3번(8시간 슬롯) 기준으로 그룹 분할: 0~7시→0, 8~15시→1, 16~23시→2
+        # (기존 today.day % 3 = 3일에 걸쳐 [3,3,4] 처리하던 방식에서 변경)
+        slot = today.hour // 8
+        brands = BRANDS_GROUPS.get(slot, [])
+        print(f"슬롯 {slot} ({today.hour}시, {len(brands)}개 브랜드) 수집 시작")
 
     existing = json.loads(OUT_PATH.read_text(encoding="utf-8")) if OUT_PATH.exists() else []
     processing_names = {b["name"] for b in brands}

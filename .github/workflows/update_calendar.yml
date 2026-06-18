@@ -8,6 +8,11 @@ on:
 
   # ─── GitHub Actions 탭에서 수동 실행 가능 ───
   workflow_dispatch:
+    inputs:
+      force_all:
+        description: "전체 브랜드 강제 수집 (슬롯 무시)"
+        type: boolean
+        default: false
 
 jobs:
   update-calendar:
@@ -41,6 +46,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           IG_COOKIE: ${{ secrets.IG_COOKIE }}
           TW_COOKIE: ${{ secrets.TW_COOKIE }}
+          FORCE_ALL: ${{ inputs.force_all }}
         run: python update_calendar.py
 
       # ⑤ 변경된 calendar_data.json 커밋 & 푸시
