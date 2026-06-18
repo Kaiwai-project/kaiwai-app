@@ -983,18 +983,50 @@ function _applyBgStyle(el, css){
   css.split(";").forEach(d=>{ const i = d.indexOf(":"); if(i>0) el.style.setProperty(d.slice(0,i).trim(), d.slice(i+1).trim()); });
 }
 
-/* 카테고리별 카드 테두리·모서리·그림자 (Tailwind 클래스). 카드 최상위 div 에 붙음.
-   .kawaii-card 가 아닌 .kw-bcard(테두리 !important 없음) 위에 적용돼 그대로 먹힘. */
-const CAT_BORDER = {
-  "양산형":               "border-double border-4 border-pink-300 rounded-[2rem]",
-  "지뢰계":               "border-dashed border-2 border-zinc-500 rounded-sm",
-  "서브컬쳐":             "border border-sky-300 shadow-[0_0_12px_rgba(186,230,253,0.6)] rounded-xl",
-  "비쥬얼계 고스·펑크":   "border-2 border-purple-900 border-b-[5px] border-r-[5px] rounded-none",
-  "스나계":               "border border-stone-300 border-b-[3px] rounded-lg",
-  "로리타":               "border-2 border-fuchsia-300 rounded-tl-3xl rounded-br-3xl rounded-tr-md rounded-bl-md",
-  "잡화(가방,신발,악세)": "border-dotted border-2 border-amber-400 rounded-lg",
-};
-function catBorder(cat){ return CAT_BORDER[cat] || "border border-pink-200 rounded-2xl"; }
+/* 카테고리별 '일러스트 액자 프레임' — 직접 그린 SVG 를 Data URI 로 border-image 에 주입.
+   border-width 가 안쪽 여백을 만들어 사진이 프레임 안에 들어가는 "액자 속 사진" 효과.
+   상단 edge 모티프 하나만 그리고 4방향 회전 복제(rotate)해 사방 프레임 구성, repeat:round 로 균일 반복. */
+const CARD_FRAME = (function(){
+  const F = {};
+  // edge = 80폭 상단(밴드 y0~16)에 그린 모티프 / slice·width = border-image 슬라이스·테두리 두께
+  function frame(edge, slice, width, extra){
+    const g = `<g>${edge}</g><g transform='rotate(90 40 40)'>${edge}</g><g transform='rotate(180 40 40)'>${edge}</g><g transform='rotate(270 40 40)'>${edge}</g>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'>${g}</svg>`;
+    return `border-style:solid;border-width:${width}px;border-image:url("data:image/svg+xml,${encodeURIComponent(svg)}") ${slice} round${extra||""}`;
+  }
+  // 🎀 양산형 — 프릴(스캘럽) 레이스, 베이비핑크
+  let frill = "<path d='M0 14"; for(let i=0;i<8;i++) frill += " q5 -11 10 0";
+  frill += "' fill='none' stroke='#F4A9CE' stroke-width='2'/>";
+  F["양산형"] = frame(frill, 16, 13);
+  // 🖤 지뢰계 — 미니 해골 띠, 다크 그레이
+  let sk = "<path d='M0 13H80' stroke='#52525B' stroke-width='1.4'/>";
+  [10,30,50,70].forEach(x=>{ sk += `<circle cx='${x}' cy='7' r='4.4' fill='#3F3F46'/><rect x='${x-3}' y='10' width='6' height='3.4' rx='1' fill='#3F3F46'/><circle cx='${x-1.7}' cy='6.7' r='1.05' fill='#E4E4E7'/><circle cx='${x+1.7}' cy='6.7' r='1.05' fill='#E4E4E7'/>`; });
+  F["지뢰계"] = frame(sk, 17, 14);
+  // 🩵 서브컬쳐 — 반짝이 스파클 + 픽셀하트 도트, 스카이 + 글로우
+  let sp = "";
+  [10,30,50,70].forEach(x=>{ sp += `<path d='M${x} 1.5 Q${x+0.8} ${7-0.8} ${x+5} 7 Q${x+0.8} ${7+0.8} ${x} 12.5 Q${x-0.8} ${7+0.8} ${x-5} 7 Q${x-0.8} ${7-0.8} ${x} 1.5Z' fill='#38BDF8'/>`; });
+  [0,20,40,60,80].forEach(x=>{ sp += `<circle cx='${x}' cy='7' r='1.5' fill='#7DD3FC'/>`; });
+  F["서브컬쳐"] = frame(sp, 15, 13, ";box-shadow:0 0 13px rgba(125,211,252,.65)");
+  // ⛓️ 비쥬얼계 — 쇠사슬, 퍼플 × 실버
+  let ch = "";
+  for(let x=2;x<82;x+=12){ ch += `<ellipse cx='${x}' cy='7' rx='5' ry='3' fill='none' stroke='#6D28D9' stroke-width='2'/><ellipse cx='${x+6}' cy='7' rx='3' ry='5' fill='none' stroke='#A8A29E' stroke-width='2'/>`; }
+  F["비쥬얼계 고스·펑크"] = frame(ch, 16, 14);
+  // 🥂 스나계 — 진주 목걸이, 크림/골드
+  let pe = "";
+  for(let x=3;x<=80;x+=6.4){ pe += `<circle cx='${x}' cy='8' r='2.7' fill='#D8C089'/><circle cx='${x-0.8}' cy='7.2' r='0.9' fill='#FBF4DE'/>`; }
+  F["스나계"] = frame(pe, 16, 12);
+  // 👗 로리타 — 장미 넝쿨, 자홍/와인
+  let rv = "<path d='M0 10 q5 -7 10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0 t10 0' fill='none' stroke='#9D174D' stroke-width='1.6'/>";
+  [8,24,40,56,72].forEach(x=>{ rv += `<circle cx='${x}' cy='6' r='3' fill='#C026D3'/><circle cx='${x}' cy='6' r='1.2' fill='#9D174D'/>`; });
+  [16,32,48,64].forEach(x=>{ rv += `<path d='M${x} 12 q3 -2.5 5.5 1 q-3 2.5 -5.5 -1Z' fill='#86198F'/>`; });
+  F["로리타"] = frame(rv, 15, 13);
+  // 👜 잡화 — 두꺼운 지그재그 스티치, 모래/브라운
+  let st = "<path d='M0 5"; for(let x=0;x<80;x+=8){ st += ` L${x+4} 12 L${x+8} 5`; }
+  st += "' fill='none' stroke='#A1724A' stroke-width='2' stroke-dasharray='5 2' stroke-linejoin='round'/>";
+  F["잡화(가방,신발,악세)"] = frame(st, 15, 12);
+  return F;
+})();
+function cardFrame(cat){ return CARD_FRAME[cat] || ""; }
 
 function card(b, delay){
   const fv = favs.includes(b.id);
@@ -1004,7 +1036,7 @@ function card(b, delay){
   const imgArea = hasImg
     ? `<img src="${b.bgImg}" alt="${b.n}" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top" onerror="this.style.display='none'"/>`
     : `<div style="position:absolute;inset:0;background:linear-gradient(135deg,${b.c},${b.c}AA);display:flex;align-items:center;justify-content:center;font-size:42px;opacity:.55">🎀</div>`;
-  return `<div class="fu kw-bcard overflow-hidden ${catBorder(b.s)}" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer" onclick="openM(${b.id})">
+  return `<div class="fu kw-bcard overflow-hidden" style="animation-delay:${delay}s;overflow:hidden;cursor:pointer;${cardFrame(b.s)}" onclick="openM(${b.id})">
     <!-- 사진 영역 -->
     <div style="position:relative;height:158px;background:${b.c}14">
       ${imgArea}
