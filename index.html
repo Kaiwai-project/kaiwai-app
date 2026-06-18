@@ -824,7 +824,9 @@ function logoEl(b, size, radius, shadow) {
   return `<div class="logo-wrapper" style="width:${size}px;height:${size}px;border-radius:${radius}px;background:${b.c};${sh}"><span style="font-weight:700;font-size:${fs}px;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif">${b.i}</span>${src?`<img src="${src}" alt="" onload="this.style.opacity=1" onerror="this.remove()" style="background:${logoBg}"/>`:''}</div>`;
 }
 
-function mHeader(b, fv){
+function mHeader(b, fv, dark){
+  const descC = dark ? "#E4E4E7" : "#8D7B80";
+  const headC = dark ? "#FFFFFF" : "#4A4A4A";
   if(isImg(b.bgImg)){
     return `
 <div style="position:relative;height:280px;overflow:hidden;background:${b.c}18">
@@ -848,7 +850,7 @@ function mHeader(b, fv){
   </div>
 </div>
 <div style="padding:14px 20px 16px">
-  <p style="font-size:13px;color:#8D7B80;margin:0;line-height:1.75">${b.desc}</p>
+  <p style="font-size:13px;color:${descC};margin:0;line-height:1.75">${b.desc}</p>
 </div>`;
   }
   return `
@@ -856,7 +858,7 @@ function mHeader(b, fv){
   <div style="display:flex;align-items:flex-start;gap:13px">
     ${logoEl(b,60,20,`0 4px 18px ${b.c}55`)}
     <div style="flex:1;min-width:0;padding-top:2px">
-      <h2 style="font-weight:800;color:#4A4A4A;font-size:19px;line-height:1.2;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</h2>
+      <h2 style="font-weight:800;color:${headC};font-size:19px;line-height:1.2;margin:0 0 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</h2>
       <div style="display:flex;flex-wrap:wrap;gap:5px">
         <span style="background:${b.c}18;color:${b.c};font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;border:1px solid ${b.c}33">${b.s}</span>
         ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:11px;font-weight:600;padding:3px 11px;border-radius:100px;border:1px solid #B3FFDF">✓ 면세 가능</span>`:""}
@@ -867,7 +869,7 @@ function mHeader(b, fv){
       <span id="mlk" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
     </div>
   </div>
-  <p style="font-size:13px;color:#8D7B80;margin:13px 0 0;line-height:1.75">${b.desc}</p>
+  <p style="font-size:13px;color:${descC};margin:13px 0 0;line-height:1.75">${b.desc}</p>
 </div>`;
 }
 
@@ -913,36 +915,50 @@ const CARD_THEME = {
   "비쥬얼계 고스·펑크":   { bg:"#FAF5FF", dark:false }, // bg-purple-50
   "스나계":               { bg:"#F5F5F4", dark:false }, // bg-stone-100
   "로리타":               { bg:"#FBCFE8", dark:false }, // bg-pink-200
-  "잡화(가방,신발,악세)": { bg:"#FEF3C7", dark:false }, // bg-amber-100
+  "잡화(가방,신발,악세)": { bg:"#E8DCCB", dark:false }, // 부드러운 채도 낮은 갈색 베이지 (기존 amber-100 너무 노랑)
 };
 function cardTheme(cat){ return CARD_THEME[cat] || { bg:"#FFFFFF", dark:false }; }
 
 /* 카테고리별 반투명 반복 문양 (가벼운 인라인 SVG/CSS 타일).
-   카드 위에 z-index:0 오버레이로 깔리고 콘텐츠는 z-index:1 로 그 위에 옴. */
-function _svgPat(inner, color, vb, sizeCss){
-  const p = vb.split(" "); const w = p[2], h = p[3];
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}' viewBox='${vb}'>${inner.replace(/COLOR/g, color)}</svg>`;
-  return `background-image:url("data:image/svg+xml,${encodeURIComponent(svg)}");background-repeat:repeat;background-size:${sizeCss}`;
+   투명도를 색(rgba)에 baked-in 해서 카드 오버레이·모달 배경 어디든 그대로 재사용.
+   색은 배경과 같은 계열의 '더 진한 톤'을 써서 어우러지되 또렷하게 보이도록 함. */
+function _rgba(hex, a){ const n = parseInt(hex.slice(1), 16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
+function _svgUrl(inner, color, alpha, vb){
+  const c = _rgba(color, alpha), p = vb.split(" ");
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${p[2]}' height='${p[3]}' viewBox='${vb}'>${inner.replace(/COLOR/g, c)}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+function _svgPat(inner, color, alpha, vb, sizeCss){
+  return `background-image:${_svgUrl(inner, color, alpha, vb)};background-repeat:repeat;background-size:${sizeCss}`;
 }
 const CAT_PATTERN = (function(){
   const P = {};
-  // 양산형 A — 클래식 리본
-  P["양산형"] = _svgPat("<path fill='COLOR' d='M12 12c-2.2-2.6-7-2.6-7 .3 0 2.7 4.8 2.6 7-.3z'/><path fill='COLOR' d='M12 12c2.2-2.6 7-2.6 7 .3 0 2.7-4.8 2.6-7-.3z'/><circle cx='12' cy='12' r='1.7' fill='COLOR'/>", "#E5468A", "0 0 24 24", "30px 30px") + ";opacity:.14";
-  // 지뢰계 A — 고딕 십자가
-  P["지뢰계"] = _svgPat("<path fill='COLOR' d='M11 2h2v6h4v2h-4v12h-2V10H7V8h4z'/>", "#FFFFFF", "0 0 24 24", "26px 26px") + ";opacity:.18";
-  // 서브컬쳐(천사계) A — 천사 날개
-  P["서브컬쳐"] = _svgPat("<path fill='COLOR' d='M12 14c-1.6-3.5-5.5-5-9-3.5 1.8.7 2.6 2.2 2.4 3.8 1.8-.8 4.2-.7 6.6-.3z'/><path fill='COLOR' d='M12 14c1.6-3.5 5.5-5 9-3.5-1.8.7-2.6 2.2-2.4 3.8-1.8-.8-4.2-.7-6.6-.3z'/>", "#38BDF8", "0 0 24 24", "36px 36px") + ";opacity:.2";
-  // 비쥬얼계 고스·펑크 B — 해골
-  P["비쥬얼계 고스·펑크"] = _svgPat("<path fill='COLOR' d='M12 4a6 6 0 00-6 6c0 2.1 1.1 3.9 2.7 5V17h1.6v-1.4h3.4V17H15v-2c1.6-1.1 2.7-2.9 2.7-5a6 6 0 00-6-6zM9.4 11.2a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm5.2 0a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8z'/>", "#7C3AED", "0 0 24 24", "32px 32px") + ";opacity:.15";
-  // 스나계 A — 다이아몬드 퀼팅 (CSS 크로스해치)
-  P["스나계"] = "background-image:repeating-linear-gradient(45deg,#B08D57 0 1px,transparent 1px 20px),repeating-linear-gradient(-45deg,#B08D57 0 1px,transparent 1px 20px);opacity:.28";
-  // 로리타 C — 레이스 테두리 (위·아래 가장자리만 스캘럽)
-  P["로리타"] = "background-image:radial-gradient(circle at 7px 0,#C026D3 0 4px,transparent 5px),radial-gradient(circle at 7px 100%,#C026D3 0 4px,transparent 5px);background-repeat:repeat-x;background-size:14px 14px;background-position:top,bottom;opacity:.22";
-  // 잡화 C — 물결 라인
-  P["잡화(가방,신발,악세)"] = _svgPat("<path fill='none' stroke='COLOR' stroke-width='1.6' d='M0 6q6-6 12 0t12 0'/>", "#B45309", "0 0 24 12", "24px 12px") + ";opacity:.18";
+  // 양산형 A — 클래식 리본 (진한 로즈)
+  P["양산형"] = _svgPat("<path fill='COLOR' d='M12 12c-2.2-2.6-7-2.6-7 .3 0 2.7 4.8 2.6 7-.3z'/><path fill='COLOR' d='M12 12c2.2-2.6 7-2.6 7 .3 0 2.7-4.8 2.6-7-.3z'/><circle cx='12' cy='12' r='1.7' fill='COLOR'/>", "#D81B82", .26, "0 0 24 24", "30px 30px");
+  // 지뢰계 A — 고딕 십자가 (화이트, 회색 위)
+  P["지뢰계"] = _svgPat("<path fill='COLOR' d='M11 2h2v6h4v2h-4v12h-2V10H7V8h4z'/>", "#FFFFFF", .30, "0 0 24 24", "26px 26px");
+  // 서브컬쳐(천사계) A — 천사 날개 (진한 스카이)
+  P["서브컬쳐"] = _svgPat("<path fill='COLOR' d='M12 14c-1.6-3.5-5.5-5-9-3.5 1.8.7 2.6 2.2 2.4 3.8 1.8-.8 4.2-.7 6.6-.3z'/><path fill='COLOR' d='M12 14c1.6-3.5 5.5-5 9-3.5-1.8.7-2.6 2.2-2.4 3.8-1.8-.8-4.2-.7-6.6-.3z'/>", "#0284C7", .30, "0 0 24 24", "36px 36px");
+  // 비쥬얼계 고스·펑크 B — 해골 (진한 퍼플)
+  P["비쥬얼계 고스·펑크"] = _svgPat("<path fill='COLOR' d='M12 4a6 6 0 00-6 6c0 2.1 1.1 3.9 2.7 5V17h1.6v-1.4h3.4V17H15v-2c1.6-1.1 2.7-2.9 2.7-5a6 6 0 00-6-6zM9.4 11.2a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8zm5.2 0a1.4 1.4 0 110-2.8 1.4 1.4 0 010 2.8z'/>", "#7E22CE", .26, "0 0 24 24", "32px 32px");
+  // 스나계 A — 다이아몬드 퀼팅 (CSS 크로스해치, taupe)
+  P["스나계"] = "background-image:repeating-linear-gradient(45deg," + _rgba("#9A7B4F", .42) + " 0 1px,transparent 1px 20px),repeating-linear-gradient(-45deg," + _rgba("#9A7B4F", .42) + " 0 1px,transparent 1px 20px)";
+  // 로리타 A+C — 다마스크 본문 + 위·아래 레이스 테두리
+  (function(){
+    const damask = _svgUrl("<path fill='COLOR' d='M12 3c1.6 1.8 1.6 3.8 0 5.6-1.6-1.8-1.6-3.8 0-5.6z'/><path fill='COLOR' d='M12 9c2.4 2.8 5.6 3.4 8.4 2-1.8 2.2-4.6 2.4-8.4 4.6-3.8-2.2-6.6-2.4-8.4-4.6 2.8 1.4 6 .8 8.4-2z'/><path fill='COLOR' d='M12 16c1.2 1.4 1.2 3 0 4.6-1.2-1.6-1.2-3.2 0-4.6z'/>", "#A21CAF", .2, "0 0 24 24");
+    const laceT = "radial-gradient(circle at 7px 0," + _rgba("#A21CAF", .42) + " 0 4px,transparent 5px)";
+    const laceB = "radial-gradient(circle at 7px 100%," + _rgba("#A21CAF", .42) + " 0 4px,transparent 5px)";
+    P["로리타"] = `background-image:${damask},${laceT},${laceB};background-repeat:repeat,repeat-x,repeat-x;background-size:40px 40px,14px 14px,14px 14px;background-position:center,top,bottom`;
+  })();
+  // 잡화 C — 물결 라인 (채도 낮은 브라운)
+  P["잡화(가방,신발,악세)"] = _svgPat("<path fill='none' stroke='COLOR' stroke-width='1.8' d='M0 6q6-6 12 0t12 0'/>", "#7C5A3A", .42, "0 0 24 12", "24px 12px");
   return P;
 })();
 function catPattern(cat){ return CAT_PATTERN[cat] || ""; }
+/* CSS 선언 문자열을 element.style 에 그대로 적용 (모달 배경에 패턴 재사용) */
+function _applyBgStyle(el, css){
+  css.split(";").forEach(d=>{ const i = d.indexOf(":"); if(i>0) el.style.setProperty(d.slice(0,i).trim(), d.slice(i+1).trim()); });
+}
 
 function card(b, delay){
   const fv = favs.includes(b.id);
@@ -1379,13 +1395,15 @@ function openM(id){
   const b=B.find(x=>x.id===id);
   if(!b)return;
   const fv=favs.includes(b.id);
+  const th=cardTheme(b.s), pat=catPattern(b.s);
+  const hC = th.dark ? "#CDBFC6" : "#C4A8B0";   // 섹션 라벨 색 (다크 모달에서 가독성 보정)
   document.getElementById("mBody").innerHTML=`
 <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
 <button onclick="closeModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
-${mHeader(b,fv)}
+${mHeader(b,fv,th.dark)}
 <div style="height:1px;background:#FFE8F0;margin:0 20px"></div>
 <div style="padding:15px 20px">
-  <h3 style="font-size:9px;font-weight:700;color:#C4A8B0;text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">공식 스토어</h3>
+  <h3 style="font-size:9px;font-weight:700;color:${hC};text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">공식 스토어</h3>
   <div style="display:flex;flex-direction:column;gap:8px">
     ${b.japanUrl?`<a href="${b.japanUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#FF6FA8,#C41055);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(196,16,85,.25);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">🛒 공식 스토어 가기</a>`:""}
     ${b.globalUrl?`<a href="${b.globalUrl}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:linear-gradient(135deg,#7733BB,#4A0080);border-radius:16px;text-decoration:none;font-size:14px;font-weight:700;color:#fff;box-shadow:0 4px 14px rgba(74,0,128,.22);transition:opacity .15s;font-family:'M PLUS Rounded 1c',sans-serif" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">✈️ 해외 직구 스토어</a>`:""}
@@ -1399,7 +1417,7 @@ ${mHeader(b,fv)}
 ${b.st.length?`
 <div style="height:1px;background:#FFE8F0;margin:0 20px"></div>
 <div style="padding:15px 20px 26px">
-  <h3 style="font-size:9px;font-weight:700;color:#C4A8B0;text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">오프라인 매장 (${b.st.length}개)</h3>
+  <h3 style="font-size:9px;font-weight:700;color:${hC};text-transform:uppercase;letter-spacing:2.5px;margin:0 0 11px">오프라인 매장 (${b.st.length}개)</h3>
   <div style="display:flex;flex-direction:column;gap:8px">
     ${b.st.map(s=>`
     <div style="background:#FFF5F8;border-radius:16px;padding:11px 13px;border:1px solid #FFE8F0">
@@ -1426,6 +1444,10 @@ ${b.st.length?`
   </div>
 </div>`}`;
   const ov=document.getElementById("overlay"), sh=document.getElementById("mSheet");
+  // 카드와 동일한 카테고리 배경색 + 문양을 시트에 적용 (열 때마다 리셋 후 재적용)
+  sh.style.background = "";
+  sh.style.backgroundColor = th.bg;
+  if(pat) _applyBgStyle(sh, pat);
   ov.style.display="flex";
   sh.classList.remove("su"); void sh.offsetWidth; sh.classList.add("su");
 }
