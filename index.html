@@ -1418,6 +1418,29 @@ function openPostDetail(postId){
 }
 function closePostDetail(){ document.getElementById("postDetailOverlay").style.display="none"; _detailEditing=false; }
 
+/* 마이페이지 등에서 ?post=<id> 로 들어오면 피드 탭 + 해당 게시물 상세를 연다.
+   피드 최신 50개에 없는 글(예: 좋아요한 남의 코디)은 public_feed 단건 조회로 폴백. */
+async function openPostById(id){
+  let p = FEED.find(x=>x.id===id);
+  if(!p){ try{ await loadFeed(); }catch(e){} p = FEED.find(x=>x.id===id); }
+  if(!p && window.sb){
+    try{
+      const { data } = await window.sb.from("public_feed").select("*").eq("id", id).maybeSingle();
+      if(data){ FEED.unshift(data); drawFeed(); p = data; }
+    }catch(e){ console.warn("게시물 단건 조회 실패:", e?.message||e); }
+  }
+  if(p) openPostDetail(id);
+  else showToast("게시물을 찾을 수 없어요 🥲");
+}
+async function openPostFromUrl(){
+  const pid = new URLSearchParams(location.search).get("post");
+  if(!pid) return;
+  go("feed");                 // 피드 탭으로 전환 (loadFeed 트리거)
+  await openPostById(pid);
+  // 새로고침 시 재오픈 방지 — 주소에서 post 파라미터 제거
+  history.replaceState(null, "", location.pathname + location.hash);
+}
+
 function renderPostDetail(){
   const body=document.getElementById("postDetailBody");
   const p=FEED.find(x=>x.id===_detailPostId);
@@ -2590,6 +2613,7 @@ initSupabaseAuth();
 subscribePostLikes();   // 실시간 좋아요 구독
 
 loadCal();
+openPostFromUrl();      // ?post=<id> 딥링크 → 피드 게시물 상세 열기
 </script>
 </body>
 </html>

@@ -197,9 +197,17 @@
     const cell = document.createElement("div");
     cell.className = "cell" + (img ? " cell--img" : "");
     cell.style.animationDelay = `${i * 0.05}s`;
+    cell.style.cursor = "pointer";
+    cell.setAttribute("role", "button");
+    cell.setAttribute("tabindex", "0");
+    cell.setAttribute("aria-label", "피드에서 이 게시물 보기");
     cell.innerHTML = img
       ? `<img src="${img}" alt="OOTD" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`
       : `<span class="cell__ico">🎀</span>`;
+    // 클릭 → 피드 탭의 해당 게시물 상세로 이동 (index.html 에서 ?post= 처리)
+    const goToPost = () => { location.href = "index.html?post=" + encodeURIComponent(p.id); };
+    cell.addEventListener("click", goToPost);
+    cell.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goToPost(); } });
     return cell;
   }
 
