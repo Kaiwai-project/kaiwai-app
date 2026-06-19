@@ -2145,11 +2145,19 @@ function showToast(msg){
 }
 
 /* ═══════════════════════════════════
-   좋아요(찜) 시스템 — Mock DB
-   초기값: id 기반 일관된 의사난수 (100~5000)
-   증감: localStorage kaiwai_likes 에 delta 저장
+   좋아요(찜) 시스템 — 티어 기반 베이스 + localStorage delta
+   · Elite(인기 20개): 500~1000  · General(그 외): 50~500
+   · 값은 brand id 기반 '결정적' 의사난수 → 새로고침해도 동일(렌더마다 안 바뀜).
+   · 실제 좋아요 증감은 kaiwai_likes(delta)에 누적 → getBrandLikes = base + delta.
 ═══════════════════════════════════ */
-function _mockBase(id){ return ((id*7919+2345)%4901)+100; }
+const ELITE_BRAND_NAMES = ["Ank Rouge","LIZ LISA","Honey Cinnamon","Secret Honey","ROJITA","DearMyLove","NOEMIE","EATME","MA*RS","REFLEM","TRAVAS TOKYO","ACDC RAG","LISTEN FLAVOR","pium","YOSUKE","BUBBLES","Maison de FLEUR","Samantha Vega","MCM","CIVARIZE"];
+const ELITE_IDS = new Set(B.filter(b=>ELITE_BRAND_NAMES.includes(b.n)).map(b=>b.id));
+function _seededRand(n){ const x=Math.sin(n*127.1+311.7)*43758.5453; return x-Math.floor(x); }  // 0~1 결정적
+function _mockBase(id){
+  const elite = ELITE_IDS.has(id);
+  const min = elite?500:50, max = elite?1000:500;
+  return Math.round(min + _seededRand(id)*(max-min));
+}
 function _likeDelta(){ return JSON.parse(localStorage.getItem("kaiwai_likes")||"{}"); }
 function getBrandLikes(id){ return _mockBase(id)+(_likeDelta()[id]||0); }
 function _setLikeDelta(id,d){
