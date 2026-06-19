@@ -33,6 +33,7 @@
     nickname: $("nickname"),
     badge:    $("providerBadge"),
     label:    $("providerLabel"),
+    email:    $("userEmail"),
     grid:     $("feedGrid"),
     empty:    $("emptyHint"),
     logout:   $("logoutBtn"),
@@ -110,6 +111,12 @@
     if (code === "23503") return "관련 정보를 찾을 수 없어요. 새로고침 후 다시 시도해 주세요.";
     if (code === "42501" || error.status === 403) return "권한이 없어요. 다시 로그인해 주세요.";
     return fallback;
+  }
+
+  /* 소셜 로그인 더미 이메일(noreply/users.noreply)은 그대로 노출하지 않고 안내문으로 대체 */
+  function displayEmail(email) {
+    if (!email) return "이메일 정보 없음";
+    return /noreply|users\.noreply/i.test(email) ? "비공개 이메일 (소셜 연동)" : email;
   }
 
   /* ── 2. 디폴트 아바타 (저작권 안전한 귀여운 더미) ───────
@@ -252,6 +259,9 @@
     els.badge.className = `badge ${meta.cls}`;
     els.badge.querySelector(".badge__ico").textContent = meta.ico;
     els.label.textContent = meta.label;
+
+    // 유저 이메일 (더미 이메일이면 '비공개 이메일'로 대체)
+    if (els.email) els.email.textContent = displayEmail(user.email);
   }
 
   /* ── 6.5 닉네임 인라인 편집 ───────────────────────────── */

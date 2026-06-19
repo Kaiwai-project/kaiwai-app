@@ -187,6 +187,12 @@ body{
 .badge--default{ background:var(--pink-tint); color:var(--pink-deep); }
 .badge--default .badge__ico{ background:var(--pink); color:#fff; }
 
+/* 유저 이메일 (뱃지 아래) */
+.card__email{
+  margin:8px 0 0; font-size:12px; color:var(--muted);
+  word-break:break-all; text-align:center;
+}
+
 .card__bio{
   margin:14px auto 0; max-width:240px;
   font-size:12.5px; line-height:1.6; color:var(--muted);

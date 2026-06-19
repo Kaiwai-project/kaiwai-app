@@ -1253,6 +1253,12 @@ function escapeHtml(s){
   return String(s ?? "").replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+/* 소셜 로그인 더미 이메일(noreply/users.noreply) 은 그대로 노출하지 않고 깔끔한 안내문으로 대체 */
+function displayEmail(email){
+  if(!email) return "이메일 정보 없음";
+  return /noreply|users\.noreply/i.test(email) ? "비공개 이메일 (소셜 연동)" : email;
+}
+
 /* posts 공개 뷰에서 최신순으로 불러와 FEED 채우고 렌더 */
 async function loadFeed(){
   const grid=document.getElementById("feedGrid");
@@ -2088,7 +2094,7 @@ function switchAuth(v){
     const pv = PROV_BADGE[authUser.provider] || PROV_BADGE.email;
     document.getElementById("profSub").innerHTML =
       `<span style="display:inline-block;background:${pv.bg};color:${pv.col};${pv.border?'border:'+pv.border+';':''}font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;font-family:'Noto Sans KR',sans-serif">${pv.label}</span>`
-      + (authUser.email ? `<span style="display:block;margin-top:7px;font-size:12px;color:#8D7B80;word-break:break-all">${escapeHtml(authUser.email)}</span>` : "");
+      + `<span style="display:block;margin-top:7px;font-size:12px;color:#8D7B80;word-break:break-all">${escapeHtml(displayEmail(authUser.email))}</span>`;
     document.getElementById("profFavCount").textContent = favs.length+"개 브랜드 저장 중";
   }
 }
