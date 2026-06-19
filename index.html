@@ -196,7 +196,20 @@
     <span style="font-size:18px">✨</span> 내 서브컬쳐 취향 진단하기 <span style="font-size:16px">→</span>
   </button>
   <p id="homeCountWrap" class="px-4 mb-2 text-xs" style="color:#8D7B80"></p>
-  <div id="brandList" class="px-4 pb-28 flex flex-col gap-3"></div>
+  <div id="brandList" class="px-4 pb-4 flex flex-col gap-3"></div>
+
+  <!-- ══ 공식 비즈니스 푸터 (글로벌 제휴 네트워크 심사용) ══ -->
+  <footer class="bg-gray-100 text-center text-xs text-gray-400 px-4 py-5 mt-3">
+    <p class="mb-1.5">© 2026 KAIWAI. All rights reserved.</p>
+    <p class="mb-2">Contact: <a href="mailto:rmfjwlak114@gmail.com" class="text-gray-400 underline">rmfjwlak114@gmail.com</a></p>
+    <p class="flex items-center justify-center gap-2">
+      <a href="#" onclick="event.preventDefault();openMenu('privacy')" class="text-gray-400 underline hover:text-gray-600">Privacy Policy</a>
+      <span class="text-gray-300">|</span>
+      <a href="#" onclick="event.preventDefault();openMenu('terms')" class="text-gray-400 underline hover:text-gray-600">Terms of Service</a>
+    </p>
+  </footer>
+  <!-- 하단 고정 탭바에 가리지 않도록 여백 -->
+  <div aria-hidden="true" style="height:76px"></div>
 </div>
 
 <!-- ══ 쇼핑맵 탭 ══ -->
@@ -1669,22 +1682,22 @@ const QUIZ = [
 const RESULT_ORDER = ["ryousan","jirai","subcul","suna","lolita","punk"];
 /* cat = 실제 DB(B[].s) 카테고리 → 결과창에서 해당 카테고리 브랜드를 랜덤 추천 */
 const RESULTS = {
-  ryousan:{ emoji:"🎀🍰🧸", cat:"양산형", img:"./illust/ryousan.png", name:"인간 벚꽃 🎀 사랑받기 위해 태어난 아이돌 덕후",
+  ryousan:{ cat:"양산형", img:"./illust/ryousan.png", name:"인간 벚꽃 🎀 사랑받기 위해 태어난 아이돌 덕후",
     desc:"덕질에 인생을 배팅한 당신! 예쁜 카페와 핑크색을 사랑하며, 겉으로는 늘 방긋방긋 웃는 완벽한 공주님입니다. 하지만 은근히 주변 눈치를 많이 보는 외강내유 스타일!",
     bg:"#FCE7F3", fg:"#3A2B30", sub:"#8A6B74" },
-  jirai:{ emoji:"🖤🔪💊", cat:"지뢰계", img:"./illust/jirai.png", name:"취급주의! 🖤 멘탈 붕괴 직전의 다크 큐티돌",
+  jirai:{ cat:"지뢰계", img:"./illust/jirai.png", name:"취급주의! 🖤 멘탈 붕괴 직전의 다크 큐티돌",
     desc:"겉보기엔 인형 같지만 속은 꽤나 곪아있는(?) 다크 카와이의 정석. 애정결핍과 독점욕이 조금 있는 편! 통굽 구두와 가터벨트로 무장하고 오늘 밤도 번화가를 배회합니다.",
     bg:"#27272A", fg:"#FFFFFF", sub:"#C9C4CE" },
-  subcul:{ emoji:"👼🎧💻", cat:"서브컬쳐", img:"./illust/tenshi.png", name:"현실 로그아웃 🩵 방구석 인터넷 엔젤",
+  subcul:{ cat:"서브컬쳐", img:"./illust/tenshi.png", name:"현실 로그아웃 🩵 방구석 인터넷 엔젤",
     desc:"\"현실 사람보단 2D가 편해...\" 헤드폰과 루즈삭스는 당신의 방어구! 인간관계에 지쳐있으며, 인터넷 세상에서 가장 활발한 당신은 네오 사이버 무드의 천사입니다.",
     bg:"#E0F2FE", fg:"#23323A", sub:"#5E7480" },
-  suna:{ emoji:"🥂🩰🤍", cat:"스나계", img:"./illust/suna.png", name:"분위기 여신 🥂 성숙하고 차분한 어른의 여유",
+  suna:{ cat:"스나계", img:"./illust/suna.png", name:"분위기 여신 🥂 성숙하고 차분한 어른의 여유",
     desc:"요란한 치장보다는 실루엣과 감성으로 승부하는 으른 언니! 인간관계에서도 선을 잘 지키고, 무채색과 베이지 톤을 사랑하는 세련된 프렌치 걸리시 무드의 소유자입니다.",
     bg:"#F5F5F4", fg:"#3A332B", sub:"#857C6F" },
-  lolita:{ emoji:"👗☕️🪞", cat:"로리타", img:"./illust/lolita.png", name:"현대판 귀족 👗 일상을 동화로 만드는 아티스트",
+  lolita:{ cat:"로리타", img:"./illust/lolita.png", name:"현대판 귀족 👗 일상을 동화로 만드는 아티스트",
     desc:"패션은 곧 예술! 남들의 시선 따위 가볍게 무시하고 자신만의 확고한 미학을 밀고 나가는 자존감 만렙. 정교한 레이스와 파니에로 무장한 당신은 이 구역의 주인공입니다.",
     bg:"#FAE8FF", fg:"#3A2B38", sub:"#86708A" },
-  punk:{ emoji:"⛓️🎸☠️", cat:"비쥬얼계 고스·펑크", img:"./illust/punk.png", name:"반항심 100% ⛓️ 거칠고 자유로운 록스타",
+  punk:{ cat:"비쥬얼계 고스·펑크", img:"./illust/punk.png", name:"반항심 100% ⛓️ 거칠고 자유로운 록스타",
     desc:"세상의 규칙? 가볍게 무시! 체인과 피어싱, 올블랙 코디로 세상에 반항하는 마이웨이 끝판왕. 겉은 까칠해 보여도 자기가 좋아하는 것엔 엄청난 열정을 쏟는 타입.",
     bg:"#F3E8FF", fg:"#332B3A", sub:"#7C6E86" },
 };
@@ -1762,46 +1775,53 @@ function _pickBrands(cat, n){
 }
 function quizOpenBrand(id){ closeQuiz(); openM(id); }
 
+/* 배경색 명도로 어두운 타입(예: 지뢰계) 판별 → 텍스트/카드 라이트·다크 분기 */
+function _isDarkBg(hex){
+  const n=parseInt(String(hex||"#ffffff").slice(1),16);
+  const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  return (0.299*r+0.587*g+0.114*b) < 140;
+}
 function renderQuizResult(){
   const key=quizTopKey(), r=RESULTS[key];
   const picks = _pickBrands(r.cat, 3);
-  // 글래스모피즘 브랜드 카드 (풀사이즈 일러스트 위에 떠 보이게)
-  const glass = "background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.3)";
+  const dark = _isDarkBg(r.bg);
+  // 일러스트 제거 → 유형별 파스텔 단색 배경 + fg/sub 텍스트 색으로 깔끔하게
+  const fg = dark ? "#FFFFFF" : (r.fg||"#3A2B30");
+  const sub = dark ? "rgba(255,255,255,.85)" : (r.sub||"#8A6B74");
+  const cardBg     = dark ? "rgba(255,255,255,.10)" : "#FFFFFF";
+  const cardBorder = dark ? "1px solid rgba(255,255,255,.22)" : "1px solid rgba(0,0,0,.06)";
+  const cardShadow = dark ? "0 6px 18px rgba(0,0,0,.35)" : "0 8px 20px rgba(0,0,0,.07)";
+  const cardSub    = dark ? "rgba(255,255,255,.8)" : (r.sub||"#8A6B74");
   const brandsHtml = picks.length ? picks.map(b=>`
     <div role="button" tabindex="0" onclick="quizOpenBrand(${b.id})"
-      style="width:100%;margin-bottom:9px;padding:11px 13px;border-radius:16px;${glass};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.28);transition:transform .15s var(--jelly)"
+      style="width:100%;margin-bottom:9px;padding:11px 13px;border-radius:16px;background:${cardBg};border:${cardBorder};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:${cardShadow};transition:transform .15s var(--jelly)"
       onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
       <div style="display:flex;align-items:center;gap:11px;text-align:left">
         ${logoEl(b,40,12,'')}
         <div style="flex:1;min-width:0">
-          <div style="font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.55);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
+          <div style="font-weight:800;font-size:15px;color:${fg};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</div>
+          <div style="font-size:11px;color:${cardSub};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.desc||b.s}</div>
         </div>
-        <span style="font-size:18px;color:rgba(255,255,255,.85);flex-shrink:0">›</span>
+        <span style="font-size:18px;color:${cardSub};flex-shrink:0">›</span>
       </div>
-      ${b.affiliate_url?`<button onclick="event.stopPropagation();window.open('${b.affiliate_url}','_blank','noopener')" style="margin-top:9px;width:100%;padding:8px;border:1px solid rgba(255,255,255,.5);border-radius:9999px;background:rgba(255,255,255,.2);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 3px rgba(0,0,0,.5);transition:background .15s" onmouseover="this.style.background='rgba(255,255,255,.34)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">🛒 보러가기</button>`:""}
-    </div>`).join("") : `<p style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">추천 브랜드를 준비 중이에요 🎀</p>`;
+      ${b.affiliate_url?`<button onclick="event.stopPropagation();window.open('${b.affiliate_url}','_blank','noopener')" style="margin-top:9px;width:100%;padding:8px;border:none;border-radius:9999px;background:linear-gradient(120deg,#FF6FA8,#C41055);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 6px 14px -6px rgba(196,16,85,.8);transition:filter .15s" onmouseover="this.style.filter='brightness(1.05)'" onmouseout="this.style.filter='none'">🛒 보러가기</button>`:""}
+    </div>`).join("") : `<p style="font-size:13px;color:${sub}">추천 브랜드를 준비 중이에요 🎀</p>`;
+  const closeBtnBg = dark ? "rgba(255,255,255,.18)" : "rgba(0,0,0,.06)";
   document.getElementById("quizBody").innerHTML = `
-    <div style="position:relative;min-height:100%;flex:1;display:flex;flex-direction:column;background:url('${r.img}') center/cover no-repeat,${r.bg}">
-      <!-- 가독성용 다크 그라데이션 오버레이 -->
-      <div style="position:absolute;inset:0;z-index:0;background:linear-gradient(to top,rgba(0,0,0,.92) 0%,rgba(0,0,0,.55) 50%,rgba(0,0,0,.4) 100%)"></div>
-      <!-- 콘텐츠 -->
+    <div style="position:relative;min-height:100%;flex:1;display:flex;flex-direction:column;background:${r.bg}">
       <div style="position:relative;z-index:1;flex:1;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center">
         <div style="width:100%;display:flex;justify-content:flex-end">
-          <button onclick="closeQuiz()" style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.3);color:#fff;cursor:pointer;font-size:14px;line-height:1">✕</button>
+          <button onclick="closeQuiz()" style="width:34px;height:34px;border-radius:50%;background:${closeBtnBg};border:none;color:${fg};cursor:pointer;font-size:14px;line-height:1">✕</button>
         </div>
-        <p style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.9);margin:6px 0 16px;text-shadow:0 1px 4px rgba(0,0,0,.6)">나의 서브컬쳐 패션 유형은</p>
-        <div style="width:130px;height:130px;border-radius:50%;${glass};display:flex;align-items:center;justify-content:center;box-shadow:0 14px 36px rgba(0,0,0,.4);margin-bottom:20px">
-          <span style="font-size:54px;line-height:1;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))">${r.emoji}</span>
-        </div>
-        <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#fff;text-align:center;line-height:1.4;margin:0 0 16px;word-break:keep-all;text-shadow:0 2px 10px rgba(0,0,0,.7)">${r.name}</h2>
-        <p style="font-size:14px;font-weight:600;line-height:1.8;color:#fff;text-align:center;margin:0 0 28px;word-break:keep-all;text-shadow:0 1px 8px rgba(0,0,0,.8)">${r.desc}</p>
+        <p style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:${sub};margin:6px 0 22px">나의 서브컬쳐 패션 유형은</p>
+        <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:${fg};text-align:center;line-height:1.4;margin:0 0 16px;word-break:keep-all">${r.name}</h2>
+        <p style="font-size:14px;font-weight:500;line-height:1.8;color:${sub};text-align:center;margin:0 0 28px;word-break:keep-all">${r.desc}</p>
         <div style="width:100%">
-          <p style="font-size:13px;font-weight:800;color:#fff;margin:0 0 12px;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 6px rgba(0,0,0,.7)">💝 당신에게 추천하는 브랜드</p>
+          <p style="font-size:13px;font-weight:800;color:${fg};margin:0 0 12px;font-family:'M PLUS Rounded 1c',sans-serif">💝 당신에게 추천하는 브랜드</p>
           ${brandsHtml}
         </div>
         <div style="display:flex;gap:10px;width:100%;margin-top:22px">
-          <button onclick="startQuiz()" style="flex:1;padding:15px;border-radius:16px;cursor:pointer;${glass};color:#fff;font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;text-shadow:0 1px 4px rgba(0,0,0,.5)">🔄 다시하기</button>
+          <button onclick="startQuiz()" style="flex:1;padding:15px;border-radius:16px;cursor:pointer;background:${cardBg};border:${cardBorder};color:${fg};font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:${cardShadow}">🔄 다시하기</button>
           <button onclick="closeQuiz()" style="flex:1.4;padding:15px;border-radius:16px;border:none;cursor:pointer;background:linear-gradient(120deg,#FF6FA8,#C41055);color:#fff;font-weight:800;font-size:14px;font-family:'M PLUS Rounded 1c',sans-serif;box-shadow:0 8px 20px -8px rgba(196,16,85,.9)">브랜드 둘러보기 →</button>
         </div>
       </div>
@@ -2220,6 +2240,19 @@ const MENU_CONTENT = {
           <p style="margin:0">카카오 · 네이버 · Google 계정으로 간편하게 시작할 수 있어요.</p>
         </div>
       </div>`,
+  },
+  privacy: {
+    title: "🔒 개인정보처리방침",
+    html: `
+      <p style="font-weight:700;color:#4A4A4A;margin:0 0 6px">1. 수집하는 항목</p>
+      <p style="margin:0 0 14px">KAIWAI는 로그인에 필요한 최소한의 정보(이메일, 닉네임, 프로필 이미지)만 수집합니다.</p>
+      <p style="font-weight:700;color:#4A4A4A;margin:0 0 6px">2. 이용 목적</p>
+      <p style="margin:0 0 14px">수집한 정보는 회원 식별과 OOTD·즐겨찾기 등 서비스 제공 목적으로만 이용되며, 마케팅 목적으로 제3자에게 판매·제공하지 않습니다.</p>
+      <p style="font-weight:700;color:#4A4A4A;margin:0 0 6px">3. 보유 및 파기</p>
+      <p style="margin:0 0 14px">회원탈퇴 시 작성한 게시물·즐겨찾기·좋아요 데이터와 계정 정보는 모두 즉시 삭제됩니다.</p>
+      <p style="font-weight:700;color:#4A4A4A;margin:0 0 6px">4. 문의</p>
+      <p style="margin:0 0 14px">개인정보 관련 문의: rmfjwlak114@gmail.com</p>
+      <p style="font-size:11px;color:#C4A8B0;margin:0">최종 개정일 2026.06.20 · 본 방침은 서비스 정식 출시 전 시범 버전입니다.</p>`,
   },
   terms: {
     title: "📜 이용약관 및 정책",
