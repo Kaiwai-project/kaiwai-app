@@ -154,23 +154,82 @@
     return "default";
   }
 
-  /* ── 4. 더미 피드 그리드 (탭별 6칸) ─────────────────────── */
-  const DUMMY = {
-    ootd:  ["📸", "👗", "🎀", "🧷", "🩰", "🫧"],
-    liked: ["♡", "💖", "🌸", "🍓", "⭐", "🦴"],
-  };
-  function renderGrid(tab) {
+  /* ── 4. 피드 그리드 (탭별 실데이터) ─────────────────────────
+     내 OOTD = 내가 올린 게시물(author_id=나)
+     좋아요 한 코디 = 내가 post_likes 에 누른 게시물
+     둘 다 public_feed 뷰에서 이미지 썸네일로 렌더. 피드/업로드 변경이 즉시 반영됨. */
+  let _myPosts = null, _likedPosts = null;
+
+  async function loadMyPosts() {
+    if (_myPosts) return _myPosts;
+    const { data, error } = await sb
+      .from("public_feed").select("*")
+      .eq("author_id", currentUser.id)
+      .order("created_at", { ascending: false });
+    if (error) { console.warn("내 OOTD 조회 실패:", error.message); return []; }
+    _myPosts = data || [];
+    return _myPosts;
+  }
+  async function loadLikedPosts() {
+    if (_likedPosts) return _likedPosts;
+    const { data: likes, error: lErr } = await sb
+      .from("post_likes").select("post_id").eq("user_id", currentUser.id);
+    if (lErr) { console.warn("좋아요 목록 조회 실패:", lErr.message); return []; }
+    const ids = (likes || []).map((r) => r.post_id);
+    if (!ids.length) { _likedPosts = []; return _likedPosts; }
+    const { data, error } = await sb.from("public_feed").select("*").in("id", ids);
+    if (error) { console.warn("좋아요 코디 조회 실패:", error.message); return []; }
+    _likedPosts = (data || []).sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+    return _likedPosts;
+  }
+  // 외부(업로드/좋아요 직후)에서 캐시 무효화용
+  function invalidateGridCache() { _myPosts = null; _likedPosts = null; }
+
+  function _postCell(p, i) {
+    const img = (Array.isArray(p.image_urls) && p.image_urls[0]) || "";
+    const cell = document.createElement("div");
+    cell.className = "cell" + (img ? " cell--img" : "");
+    cell.style.animationDelay = `${i * 0.05}s`;
+    cell.innerHTML = img
+      ? `<img src="${img}" alt="OOTD" loading="lazy" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`
+      : `<span class="cell__ico">🎀</span>`;
+    return cell;
+  }
+
+  function _renderSkeleton() {
     els.grid.innerHTML = "";
-    DUMMY[tab].forEach((ico, i) => {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.style.animationDelay = `${i * 0.05}s`;
-      cell.innerHTML = `<span class="cell__ico">${ico}</span>`;
-      els.grid.appendChild(cell);
-    });
-    els.empty.textContent = tab === "ootd"
-      ? "아직 올린 OOTD가 없어요. 첫 코디를 기록해볼까요? ✿"
-      : "아직 좋아요 한 코디가 없어요. 마음에 드는 룩을 찾아보세요 ♡";
+    for (let i = 0; i < 6; i++) {
+      const c = document.createElement("div");
+      c.className = "cell";
+      c.style.animationDelay = `${i * 0.05}s`;
+      els.grid.appendChild(c);
+    }
+    els.empty.textContent = "";
+  }
+
+  async function renderGrid(tab) {
+    _renderSkeleton();
+    let posts = [];
+    try { posts = tab === "ootd" ? await loadMyPosts() : await loadLikedPosts(); }
+    catch (e) { console.warn("그리드 로드 실패:", e?.message || e); }
+    els.grid.innerHTML = "";
+    if (!posts.length) {
+      els.empty.textContent = tab === "ootd"
+        ? "아직 올린 OOTD가 없어요. 첫 코디를 기록해볼까요? ✿"
+        : "아직 좋아요 한 코디가 없어요. 마음에 드는 룩을 찾아보세요 ♡";
+      return;
+    }
+    els.empty.textContent = "";
+    posts.forEach((p, i) => els.grid.appendChild(_postCell(p, i)));
+  }
+
+  // OOTD 개수 스탯 갱신 (프로필 카드 상단 stats 첫 항목)
+  async function updateOotdStat() {
+    try {
+      const ps = await loadMyPosts();
+      const b = document.querySelector(".stats__item b");
+      if (b) b.textContent = ps.length;
+    } catch (e) { /* 무시 */ }
   }
 
   /* ── 5. 토스트 ─────────────────────────────────────────── */
@@ -296,6 +355,7 @@
     currentNick = nickname;
     render(user, profile, nickname);
     renderGrid("ootd");
+    updateOotdStat();
 
     // (e) 로딩 → 본문 전환
     els.loader.classList.add("hide");

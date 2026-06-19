@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 import time
 from datetime import datetime, timedelta, timezone
@@ -262,6 +263,30 @@ def build_seed_schedule(today: datetime, days: int = 14) -> list[dict]:
     return out
 
 
+_SRC_RANK = {"x": 3, "twitter": 3, "tw": 3, "instagram": 2, "ig": 2, "web": 1, "home": 1, "official": 1}
+
+
+def _src_rank(s: str) -> int:
+    return _SRC_RANK.get(str(s or "").lower(), 0)
+
+
+def _norm_news(s: str) -> str:
+    """내용 비교용 정규화: 영숫자/한글/일문 외 문자(이모지·공백·기호) 제거 + 소문자."""
+    return re.sub(r"[^\w가-힣ぁ-んァ-ン一-龥]", "", str(s or "")).lower()
+
+
+def dedup_events(events: list[dict]) -> list[dict]:
+    """같은 브랜드(bid)·날짜(dt)·내용(d 정규화)이면 중복으로 보고 한 건만 남긴다.
+    소스 우선순위 X(tw) > IG > 공식홈/기타 순으로 보존."""
+    best: dict[tuple, dict] = {}
+    for e in events:
+        key = (e.get("bid"), e.get("dt"), _norm_news(e.get("d")))
+        prev = best.get(key)
+        if prev is None or _src_rank(e.get("src")) > _src_rank(prev.get("src")):
+            best[key] = e
+    return list(best.values())
+
+
 def main():
     today = datetime.now(KST)
     apify = ApifyClient(APIFY_TOKEN) if (APIFY_TOKEN and ApifyClient) else None
@@ -296,23 +321,24 @@ def main():
 
     for brand in brands:
         print(f"\n▶ {brand['name']}")
-        texts: list[str] = []
+        # (text, src) 튜플로 수집 — src 는 중복제거 시 우선순위(X>IG>공홈)에 사용
+        texts: list[tuple[str, str]] = []
 
         if apify:
             if brand["ig"]:
                 ig_posts = fetch_instagram(apify, brand["ig"])
                 print(f"  IG {len(ig_posts)}개 수집")
-                texts.extend(ig_posts)
+                texts.extend((t, "ig") for t in ig_posts)
             if brand["tw"]:
                 tw_posts = fetch_twitter(apify, brand["tw"])
                 print(f"  TW {len(tw_posts)}개 수집")
-                texts.extend(tw_posts)
+                texts.extend((t, "tw") for t in tw_posts)
 
         if not texts:
             print("  수집 없음")
             continue
 
-        for i, text in enumerate(texts):
+        for i, (text, src) in enumerate(texts):
             if not text or not text.strip():
                 continue
 
@@ -322,7 +348,7 @@ def main():
                 time.sleep(0.3)
 
             if result:
-                print(f"  ✅ [{result['date']}] {result['description']}")
+                print(f"  ✅ [{result['date']}] ({src}) {result['description']}")
                 events.append({
                     "dt":  result["date"],
                     "bid": brand["id"],
@@ -330,6 +356,7 @@ def main():
                     "d":   result["description"],
                     "c":   brand["color"],
                     "e":   brand["emoji"],
+                    "src": src,
                 })
             elif analyzer is None or analyzer.disabled:
                 # LLM 없음/실패 폴백: 키워드 필터 (일본어·한국어 이벤트 키워드)
@@ -343,6 +370,7 @@ def main():
                         "d":   text[:50].strip(),
                         "c":   brand["color"],
                         "e":   brand["emoji"],
+                        "src": src,
                     })
             else:
                 print(f"  ⏭ 게시물 {i+1}: 이벤트 없음")
@@ -352,6 +380,9 @@ def main():
     # 7일 이상 지난 이벤트 제거
     cutoff = (today - timedelta(days=7)).strftime("%Y-%m-%d")
     events = [e for e in events if e.get("dt", "") >= cutoff]
+
+    # 중복 소식 제거: 같은 브랜드·날짜·내용이면 한 건만, 소스 우선순위 X(tw)>IG>공홈 보존
+    events = dedup_events(events)
 
     # 날짜 오름차순 정렬
     events.sort(key=lambda x: x.get("dt", "9999-12-31"))

@@ -143,6 +143,23 @@
       transition-duration:.05ms !important; scroll-behavior:auto !important;
     }
   }
+  /* 검색 input 기본 X(지우기)·데코 버튼 숨김 — 커스텀 ✕ 버튼만 노출 */
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-decoration{ -webkit-appearance:none; appearance:none; }
+  input[type="search"]::-ms-clear,
+  input[type="search"]::-ms-reveal{ display:none; width:0; height:0; }
+  /* 헤더 포인트 칩 */
+  #pointChip{ display:none; align-items:center; gap:4px; background:linear-gradient(120deg,#FFF4C2,#FFE08A);
+    color:#9A6B00; font-family:'M PLUS Rounded 1c',sans-serif; font-size:12px; font-weight:800;
+    padding:6px 12px; border-radius:100px; border:1.5px solid #FFD86B; box-shadow:0 2px 8px rgba(255,200,80,.35); white-space:nowrap; }
+  /* 해시태그 자동완성 드롭다운 */
+  #hashSuggest{ display:none; position:absolute; z-index:60; left:0; right:0; top:100%; margin-top:6px;
+    background:#fff; border:1.5px solid #FFD6E8; border-radius:14px; box-shadow:0 8px 24px rgba(255,150,180,.28);
+    overflow:hidden auto; max-height:196px; }
+  #hashSuggest button{ display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:10px 14px;
+    background:none; border:none; cursor:pointer; font-family:'Noto Sans KR',sans-serif; font-size:13px; color:#6B5B60; }
+  #hashSuggest button:hover, #hashSuggest button.active{ background:#FFF0F5; color:#C41055; }
+  #hashSuggest button .ht-strong{ color:#C41055; font-weight:700; }
 </style>
 </head>
 <body class="flex justify-center min-h-screen">
@@ -154,7 +171,10 @@
   <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
     <div class="flex items-end justify-between mb-4">
       <span class="logo-font text-[32px] leading-none pop" onclick="goHome()" title="홈으로" role="button" style="color:#4A4A4A;cursor:pointer;display:inline-block">KAIWAI <span style="color:#FF6FA8">🎀</span></span>
-      <button id="authBtn" onclick="openAuth('login')" style="background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:100px;padding:7px 16px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;font-weight:700;color:#FF6FA8;transition:all .2s" onmouseover="this.style.background='#FFE0EE'" onmouseout="this.style.background='#FFF0F5'">로그인</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="pointChip" title="내 포인트"><span style="font-size:13px">🪙</span> 0P</span>
+        <button id="authBtn" onclick="openAuth('login')" style="background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:100px;padding:7px 16px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;font-weight:700;color:#FF6FA8;transition:all .2s" onmouseover="this.style.background='#FFE0EE'" onmouseout="this.style.background='#FFF0F5'">로그인</button>
+      </div>
     </div>
     <div id="filterRow" class="flex gap-2 overflow-x-auto noscroll pb-1 drag"></div>
     <div style="position:relative;margin-top:10px">
@@ -260,11 +280,14 @@
         </div>
       </div>
 
-      <!-- 코디 설명 / 해시태그 -->
-      <textarea id="uploadCaption" rows="3" placeholder="오늘의 코디를 설명해 주세요 ✨  #지뢰계 #양산형"
-        style="width:100%;margin-top:16px;padding:13px 16px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;transition:border-color .2s,box-shadow .2s"
-        onfocus="this.style.borderColor='#FF6FA8';this.style.boxShadow='0 0 0 3px rgba(255,111,168,.12)'"
-        onblur="this.style.borderColor='#FFD6E8';this.style.boxShadow='none'"></textarea>
+      <!-- 코디 설명 / 해시태그 (# 입력 시 자동완성) -->
+      <div style="position:relative;margin-top:16px">
+        <textarea id="uploadCaption" rows="3" placeholder="오늘의 코디를 설명해 주세요 ✨  #지뢰계 #양산형"
+          oninput="onCaptionInput(event)" onkeydown="onCaptionKey(event)" onblur="onCaptionBlur()"
+          style="width:100%;padding:13px 16px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;transition:border-color .2s,box-shadow .2s"
+          onfocus="this.style.borderColor='#FF6FA8';this.style.boxShadow='0 0 0 3px rgba(255,111,168,.12)'"></textarea>
+        <div id="hashSuggest" role="listbox" aria-label="해시태그 추천"></div>
+      </div>
 
       <!-- 완료 -->
       <button id="uploadSubmitBtn" onclick="submitPost()"
@@ -743,6 +766,41 @@ const KR = {
   56:"엠씨엠", 57:"사만다베가", 58:"비비안웨스트우드", 59:"라파리"
 };
 
+/* 검색어 약어(Alias) → 브랜드 영문명 매핑.
+   "시허니"→Secret Honey, "디마럽"→DearMyLove, "딤모"→DimMoire 처럼 줄임말로도 검색되게 함.
+   아래 약어들은 각 브랜드의 검색 haystack 에 합쳐져, 입력이 약어에 부분일치하면 매칭된다. */
+const SEARCH_ALIAS = {
+  "Secret Honey":["시허니","시크허니","시크릿허니","시허"],
+  "DearMyLove":["디마럽","디어마이럽","디어마이러브","디마"],
+  "DimMoire":["딤모","딤모아","딤모아르"],
+  "LIZ LISA":["리즈리사","리즈","리사"],
+  "Ank Rouge":["앙크루즈","앙크","앙크루지"],
+  "Honey Cinnamon":["허니시나몬","허시","허니"],
+  "ROJITA":["로지타","로짓"],
+  "Jamie エーエヌケー":["제이미","제이미앙크","쟈미"],
+  "MA*RS":["마즈","마스","엠에이알에스"],
+  "EATME":["잇미","이트미"],
+  "Angelic Pretty":["앤프","앙프","엔젤릭프리티","안젤릭프리티"],
+  "BABY THE STARS SHINE BRIGHT":["베이비","베스샤","베더스","베이비더스타즈"],
+  "REFLEM":["레플렘","레플"],
+  "TRAVAS TOKYO":["트라바스","트라바스도쿄"],
+  "Moi-même-Moitié":["모와뜨","모와메므","모이메메"],
+  "ACDC RAG":["에씨디씨","에이씨디씨"],
+  "LISTEN FLAVOR":["리슨플레이버","리플","리슨"],
+  "SNIDEL":["스나이델","스나델","스나"],
+  "Maison de FLEUR":["메종드플레르","메종","메플"],
+  "Samantha Vega":["사만다베가","사만다","사베"],
+};
+/* 약어를 brand id 기준으로 역인덱싱: id → "약어1 약어2 …" (haystack 합치기용) */
+const ALIAS_BY_ID = (function(){
+  const map = {};
+  for(const [name, aliases] of Object.entries(SEARCH_ALIAS)){
+    const b = B.find(x=>x.n===name);
+    if(b) map[b.id] = aliases.join(" ");
+  }
+  return map;
+})();
+
 /* ═══════════════════════════════════
    탭 전환
 ═══════════════════════════════════ */
@@ -861,7 +919,7 @@ function mHeader(b, fv, dark){
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-bottom:4px">
         <button id="mfb" onclick="tFav(${b.id})" style="font-size:24px;background:none;border:none;cursor:pointer;transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
-        <span id="mlk" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+        <span id="mlk" style="font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.42);padding:4px 10px;border-radius:100px;backdrop-filter:blur(3px);font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
       </div>
     </div>
   </div>
@@ -883,7 +941,7 @@ function mHeader(b, fv, dark){
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;margin-top:2px">
       <button id="mfb" onclick="tFav(${b.id})" style="font-size:24px;background:none;border:none;cursor:pointer;transition:transform .1s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='none'">${fv?"❤️":"🤍"}</button>
-      <span id="mlk" style="font-size:10px;font-weight:700;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
+      <span id="mlk" style="font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.42);padding:4px 10px;border-radius:100px;backdrop-filter:blur(3px);font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap">💖 ${getBrandLikes(b.id).toLocaleString()}</span>
     </div>
   </div>
   <p style="font-size:15px;font-weight:600;color:${descC};margin:13px 0 0;line-height:1.7">${b.desc}</p>
@@ -1067,7 +1125,7 @@ function card(b, delay){
 function drawBrands(){
   const q = srch.trim().toLowerCase();
   let list = filt==="전체보기" ? B : B.filter(x=>x.s===filt);
-  if(q) list = list.filter(b=>(b.n+" "+b.s+" "+b.desc+" "+(KR[b.id]||"")).toLowerCase().includes(q));
+  if(q) list = list.filter(b=>(b.n+" "+b.s+" "+b.desc+" "+(KR[b.id]||"")+" "+(ALIAS_BY_ID[b.id]||"")).toLowerCase().includes(q));
   const wrap = document.getElementById("homeCountWrap");
   if(wrap) wrap.innerHTML = q
     ? `<span style="color:#D63070;font-weight:700">${list.length}개</span> &nbsp;"${srch.trim()}" 검색 결과`
@@ -1430,6 +1488,21 @@ function drawFav(){
 /* ═══════════════════════════════════
    캘린더
 ═══════════════════════════════════ */
+/* 소스 우선순위: X(트위터) > 인스타그램 > 공식홈/기타.
+   같은 브랜드(bid)·같은 날짜(dt)·같은 내용(d 정규화)이면 한 건만 남기되,
+   우선순위가 높은 소스(it.src)를 보존한다. (it.src 없는 구 데이터는 0순위 = 가장 낮음) */
+const _CAL_SRC_RANK = { x:3, twitter:3, tw:3, instagram:2, ig:2, web:1, home:1, official:1, "공홈":1 };
+function _calSrcRank(s){ return _CAL_SRC_RANK[String(s||"").toLowerCase()] || 0; }
+function _normNews(s){ return String(s||"").toLowerCase().replace(/[^\p{L}\p{N}]/gu,""); }
+function dedupCal(list){
+  const map = new Map();
+  for(const it of (list||[])){
+    const key = it.bid + "|" + it.dt + "|" + _normNews(it.d);
+    const prev = map.get(key);
+    if(!prev || _calSrcRank(it.src) > _calSrcRank(prev.src)) map.set(key, it);
+  }
+  return [...map.values()];
+}
 function drawCal(){
   const el = document.getElementById("calList");
   if (!CAL.length) {
@@ -1448,7 +1521,7 @@ function drawCal(){
     "팝업":{bg:"#F0E0FF",c:"#7733BB"},
     "이벤트":{bg:"#FFF0F5",c:"#8D7B80"}
   };
-  const sorted=[...CAL].sort((a,b)=>(a.dt+"T"+(a.tm||"00:00")).localeCompare(b.dt+"T"+(b.tm||"00:00")));
+  const sorted=dedupCal(CAL).sort((a,b)=>(a.dt+"T"+(a.tm||"00:00")).localeCompare(b.dt+"T"+(b.tm||"00:00")));
   document.getElementById("calList").innerHTML=sorted.map((it,i)=>{
     const d=new Date(it.dt+"T00:00:00"), mm=d.getMonth()+1, dd=d.getDate(), dw=DOW[d.getDay()];
     const tp=it.tp||"이벤트";
@@ -1789,7 +1862,73 @@ async function openUpload(){
   ov.style.display="flex";
   sh.classList.remove("su"); void sh.offsetWidth; sh.classList.add("su");  // 슬라이드업
 }
-function closeUpload(){ document.getElementById("uploadOverlay").style.display="none"; }
+function closeUpload(){ document.getElementById("uploadOverlay").style.display="none"; _hideHashBox(); }
+
+/* ── OOTD 해시태그 자동완성 ──────────────────────────────
+   카테고리·인기 브랜드(한글)·스타일 키워드를 추천. # 다음 글자를 입력하면
+   부분일치 추천 드롭다운 노출 → Tab/Enter/클릭/↑↓ 로 선택. */
+const HASHTAGS = [
+  "양산형","지뢰계","서브컬쳐","스나계","로리타","비쥬얼계","고스펑크","잡화",
+  "로지타","리즈리사","앙크루즈","시크릿허니","에블린","스완키스","멜티","허니시나몬",
+  "디어마이러브","마즈","잇미","노에미","제이미","스나이델","레디아젤","지알엘",
+  "딤모아르","아미리쥬","레플렘","트라바스도쿄","앤지릭프리티","베이비더스타즈","모와뜨",
+  "오오티디","코디","데일리룩","하라주쿠","시부야","오늘의코디","멘헤라","천사계",
+  "핑크코디","블랙코디","리본","레이스","프릴","세트업","원피스","빈티지","키치","파스텔",
+];
+let _hashState = { active:false, start:-1, q:"", items:[], idx:0 };
+function _hashBox(){ return document.getElementById("hashSuggest"); }
+function _hideHashBox(){ const b=_hashBox(); if(b) b.style.display="none"; _hashState.active=false; }
+/* 커서 직전의 해시태그 토큰(#뒤 공백·# 없는 연속 문자열) 추출 */
+function _currentHashToken(ta){
+  const pos = ta.selectionStart;
+  const m = /#([^\s#]*)$/.exec(ta.value.slice(0, pos));
+  if(!m) return null;
+  return { q:m[1], start:pos - m[1].length };   // start = '#' 바로 다음 인덱스
+}
+function onCaptionInput(e){
+  const ta=e.target, tok=_currentHashToken(ta);
+  if(!tok){ _hideHashBox(); return; }
+  const q=tok.q.toLowerCase();
+  let items = HASHTAGS.filter(h=> q==="" ? true : h.toLowerCase().includes(q));
+  items.sort((a,b)=>(a.toLowerCase().startsWith(q)?0:1)-(b.toLowerCase().startsWith(q)?0:1));
+  items = items.slice(0,8);
+  if(!items.length){ _hideHashBox(); return; }
+  _hashState = { active:true, start:tok.start, q:tok.q, items, idx:0 };
+  _renderHashBox();
+}
+function _renderHashBox(){
+  const box=_hashBox(); if(!box) return;
+  const q=_hashState.q.toLowerCase();
+  box.innerHTML=_hashState.items.map((h,i)=>{
+    const low=h.toLowerCase(), at=q?low.indexOf(q):-1;
+    const disp = at>=0
+      ? escapeHtml(h.slice(0,at))+'<span class="ht-strong">'+escapeHtml(h.slice(at,at+q.length))+'</span>'+escapeHtml(h.slice(at+q.length))
+      : escapeHtml(h);
+    return `<button type="button" role="option" class="${i===_hashState.idx?'active':''}" onmousedown="event.preventDefault();completeHash(${i})">#${disp}</button>`;
+  }).join("");
+  box.style.display="block";
+}
+function onCaptionKey(e){
+  if(!_hashState.active) return;
+  if(e.key==="ArrowDown"){ e.preventDefault(); _hashState.idx=(_hashState.idx+1)%_hashState.items.length; _renderHashBox(); }
+  else if(e.key==="ArrowUp"){ e.preventDefault(); _hashState.idx=(_hashState.idx-1+_hashState.items.length)%_hashState.items.length; _renderHashBox(); }
+  else if(e.key==="Tab" || e.key==="Enter"){ e.preventDefault(); completeHash(_hashState.idx); }
+  else if(e.key==="Escape"){ _hideHashBox(); }
+}
+function onCaptionBlur(){ setTimeout(_hideHashBox, 150); }   // 클릭 처리 후 닫기
+function completeHash(i){
+  const ta=document.getElementById("uploadCaption");
+  const h=_hashState.items[i]; if(h==null||!ta) return;
+  const pos=ta.selectionStart;
+  const before=ta.value.slice(0, _hashState.start);   // '#' 포함까지
+  const after=ta.value.slice(pos);
+  const insert=h+" ";
+  ta.value = before + insert + after;
+  const caret=(before+insert).length;
+  ta.setSelectionRange(caret, caret);
+  _hideHashBox();
+  ta.focus();
+}
 
 function _resetUpload(){
   const f=document.getElementById("uploadFile");
@@ -1800,6 +1939,7 @@ function _resetUpload(){
   if(img){ img.src=""; img.style.display="none"; }
   if(ph) ph.style.display="block";
   if(cap) cap.value="";
+  _hideHashBox();
 }
 
 /* 사진 선택 시 썸네일 미리보기 (FileReader) */
@@ -1851,6 +1991,18 @@ async function submitPost(){
   const { data:{ session } } = await window.sb.auth.getSession();
   if(!session){ showToast('로그인이 필요해요 🎀'); openAuth('login'); return; }
   const userId=session.user.id;
+
+  // 하루(오늘 0시 기준) 업로드 3회 제한 — 도배 방지
+  try{
+    const since=new Date(); since.setHours(0,0,0,0);
+    const { count, error: cntErr } = await window.sb
+      .from("public_feed").select("id",{ count:"exact", head:true })
+      .eq("author_id", userId).gte("created_at", since.toISOString());
+    if(!cntErr && (count||0) >= 3){
+      showToast('OOTD는 하루 최대 3개까지 올릴 수 있어요 🎀 내일 또 만나요!');
+      return;
+    }
+  }catch(e){ console.warn("업로드 횟수 확인 실패:", e?.message||e); }   // 조회 실패해도 업로드는 진행
 
   const btn=document.getElementById("uploadSubmitBtn");
   if(btn){ btn.disabled=true; btn.style.filter="grayscale(.3)"; btn.textContent="업로드 중…"; }
@@ -1906,9 +2058,17 @@ function switchAuth(v){
       _av.textContent = authUser.nickname[0].toUpperCase();
     }
     document.getElementById("profNick").textContent = authUser.nickname;
-    document.getElementById("profSub").textContent = authUser.provider
-      ? {kakao:"카카오 계정",naver:"네이버 계정",google:"Google 계정"}[authUser.provider]||authUser.provider
-      : "@"+(authUser.id||authUser.email||"");
+    // 로그인 플랫폼 배지: 카카오=노랑 / 네이버=네이버그린 / 구글=화이트 / 자체=핑크
+    const PROV_BADGE = {
+      kakao:  { bg:"#FEE500", col:"#191919", label:"카카오 계정" },
+      naver:  { bg:"#03C75A", col:"#fff",    label:"네이버 계정" },
+      google: { bg:"#fff",    col:"#4A4A4A", label:"Google 계정", border:"1px solid #E8D8DC" },
+      email:  { bg:"#FFE0EE", col:"#C41055", label:"KAIWAI 계정" },
+    };
+    const pv = PROV_BADGE[authUser.provider] || PROV_BADGE.email;
+    document.getElementById("profSub").innerHTML =
+      `<span style="display:inline-block;background:${pv.bg};color:${pv.col};${pv.border?'border:'+pv.border+';':''}font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;font-family:'Noto Sans KR',sans-serif">${pv.label}</span>`
+      + (authUser.email ? `<span style="display:block;margin-top:7px;font-size:12px;color:#8D7B80;word-break:break-all">${escapeHtml(authUser.email)}</span>` : "");
     document.getElementById("profFavCount").textContent = favs.length+"개 브랜드 저장 중";
   }
 }
@@ -2002,9 +2162,13 @@ async function doRegister(){
       const msg = dup ? "이미 가입된 이메일이에요. 로그인해 주세요." : ("회원가입 실패: " + error.message);
       alert(msg); _showErr("regErr", msg); return;
     }
-    // Confirm email OFF → 세션 즉시 발급. (혹시 ON이면 session 이 없을 수 있음)
+    // Confirm email ON → 세션 없이 인증 메일 발송. (대시보드 Auth > Confirm email 켜짐 상태)
+    //   OFF 면 data.session 즉시 발급되어 아래 분기를 건너뛴다.
     if(!data.session){
-      alert("가입이 접수됐어요. 이메일 인증 후 로그인해 주세요.");
+      closeAuth();
+      alert("🎀 가입 확인 메일을 보냈어요!\n\n"
+        + email + " 으로 전송된 인증 링크를 클릭하면 가입이 완료돼요.\n"
+        + "메일이 안 보이면 스팸함도 확인해 주세요.");
       switchAuth("login"); return;
     }
     await applySupabaseUser(data.user);
@@ -2030,7 +2194,7 @@ function doLogout(){
     try{ window.sb.auth.signOut(); }catch(e){}
   }
   authUser=null; localStorage.removeItem("kaiwai_user");
-  updateAuthBtn(); closeAuth();
+  updateAuthBtn(); renderPoints(); closeAuth();
   showToast("로그아웃 됐어요.");
 }
 
@@ -2244,9 +2408,59 @@ function updMFav(id){
 }
 
 /* ═══════════════════════════════════
+   포인트 제도 (일일 출석) — 로그인 유저별 localStorage 보관
+   · 자정 이후 '하루 첫 로그인/접속' 시 50P 지급 + "+50P 출석 완료!" 토스트
+   · 헤더 포인트 칩에 현재 포인트 표시 (비로그인 시 숨김)
+   · DB 연동 시: profiles.points 컬럼 + 출석 RPC 로 이전 가능(아래 SQL 제안 참고)
+═══════════════════════════════════ */
+function _pointsKey(){ return authUser?.id ? "kaiwai_points_"+authUser.id : null; }
+function _pointsObj(){ const k=_pointsKey(); if(!k) return {points:0}; try{ return JSON.parse(localStorage.getItem(k)||"{}"); }catch(e){ return {points:0}; } }
+function getPoints(){ return _pointsObj().points || 0; }
+function _todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function renderPoints(){
+  const chip=document.getElementById("pointChip");
+  if(!chip) return;
+  if(!authUser){ chip.style.display="none"; return; }
+  chip.style.display="inline-flex";
+  chip.innerHTML=`<span style="font-size:13px">🪙</span> ${getPoints().toLocaleString()}P`;
+}
+function checkDailyAttendance(){
+  const k=_pointsKey(); if(!k){ renderPoints(); return; }
+  const o=_pointsObj();
+  const today=_todayStr();
+  if(o.lastAttend!==today){
+    o.points=(o.points||0)+50;
+    o.lastAttend=today;
+    localStorage.setItem(k, JSON.stringify(o));
+    renderPoints();
+    showToast("+50P 출석 완료! 🎀");
+  } else {
+    renderPoints();
+  }
+}
+
+/* ═══════════════════════════════════
+   월말(매월) 브랜드 하트 리셋 — 클라이언트측
+   · 매월이 바뀌면 유저가 누른 좋아요 증감(localStorage delta)을 0으로 초기화.
+   · 베이스(티어 의사난수)는 마케팅 표시용이라 유지됨. 실제 0 리셋이 필요하면
+     서버에 brand_likes 테이블 + pg_cron 도입 권장(supabase/proposed_monthly_likes_reset.sql).
+═══════════════════════════════════ */
+function _checkMonthlyLikeReset(){
+  const cur = new Date().getFullYear()+"-"+String(new Date().getMonth()+1).padStart(2,"0");
+  const saved = localStorage.getItem("kaiwai_likes_month");
+  if(saved && saved!==cur){
+    localStorage.setItem("kaiwai_likes","{}");   // 브랜드 하트 카운트(유저 기여 델타) 0 리셋
+    // ※ 개인 즐겨찾기(favs/zp_fav)는 '저장 목록'이라 유지 — 하트 '수'만 리셋
+  }
+  localStorage.setItem("kaiwai_likes_month", cur);
+}
+
+/* ═══════════════════════════════════
    초기화
 ═══════════════════════════════════ */
+_checkMonthlyLikeReset();
 drawFilter(); drawBanner(); drawBrands(); drawRanking(); go("home"); updateAuthBtn();
+renderPoints(); if(authUser) checkDailyAttendance();
 
 /* ═══════════════════════════════════
    Supabase 세션 → authUser 브리지
@@ -2301,6 +2515,7 @@ async function applySupabaseUser(user){
   localStorage.setItem("kaiwai_user", JSON.stringify(authUser));
   updateAuthBtn();
   currentUserId = user.id;
+  checkDailyAttendance();                 // 하루 첫 접속 → 출석 포인트 + 칩 갱신
   fetchUserFavorites();                  // 로그인 → DB 즐겨찾기 동기화
 }
 
@@ -2311,6 +2526,7 @@ function _clearAuthLocal(){
   localStorage.removeItem("kaiwai_user");
   favs = []; localStorage.setItem("zp_fav","[]");
   updateAuthBtn();
+  renderPoints();                        // 비로그인 → 포인트 칩 숨김
   drawBrands(); if(tab==="fav") drawFav();
 }
 

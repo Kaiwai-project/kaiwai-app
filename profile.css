@@ -234,6 +234,9 @@ body{
   animation:pop .4s both;
 }
 .cell__ico{ font-size:24px; opacity:.45; }
+/* 실제 사진이 들어간 셀: 스켈레톤 샤이머 끄고 배경 단색 */
+.cell--img{ background:#FFF0F5; }
+.cell--img::before{ content:none; }
 /* 스켈레톤 샤이머 */
 .cell::before{
   content:""; position:absolute; inset:0;
