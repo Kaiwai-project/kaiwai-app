@@ -85,6 +85,78 @@
     };
   }
 
+  /* ════════════════════════════════════════════════════════════════
+     상품 URL 파싱 — CORS 우회(allorigins 프록시) + DOMParser
+     fetchProductDataFromUrl(url) → { title, imageUrl, price } / 실패 시 throw
+     ════════════════════════════════════════════════════════════════ */
+  const PROXY_BASE = "https://api.allorigins.win/get?url=";
+
+  // og:description·메타·본문에서 가격(정수) 추출 시도. 실패 시 0.
+  function extractPrice(doc, ogDescription) {
+    function toInt(s) {
+      const n = parseInt(String(s == null ? "" : s).replace(/[,\.\s]/g, ""), 10);
+      return isNaN(n) || n <= 0 ? 0 : n;
+    }
+    // 1) 가격 전용 메타 우선
+    const priceMetaSels = [
+      'meta[property="product:price:amount"]',
+      'meta[property="og:price:amount"]',
+      'meta[itemprop="price"]',
+    ];
+    for (let i = 0; i < priceMetaSels.length; i++) {
+      const el = doc.querySelector(priceMetaSels[i]);
+      if (el) { const p = toInt(el.getAttribute("content")); if (p) return p; }
+    }
+    // 2) 통화기호/단위 주변 숫자 (¥ ₩ $ 円 원 엔 JPY KRW)
+    const re = /(?:[¥₩$]|円|원|엔|JPY|KRW)\s*([0-9][0-9,\.]{1,})|([0-9][0-9,\.]{1,})\s*(?:円|원|엔|JPY|KRW)/i;
+    const bodyText = (doc.body && doc.body.textContent) || "";
+    const sources = [ogDescription || "", bodyText];
+    for (let i = 0; i < sources.length; i++) {
+      const m = re.exec(sources[i]);
+      if (m) { const p = toInt(m[1] || m[2]); if (p) return p; }
+    }
+    return 0;
+  }
+
+  // HTML 문자열 → 상품 정보 (DOMParser 필요). fetch 와 분리해 단위 테스트 용이.
+  function parseProductHtml(html) {
+    if (!html || typeof html !== "string") throw new Error("HTML 콘텐츠가 비어 있습니다.");
+    if (typeof DOMParser === "undefined") throw new Error("DOMParser 를 사용할 수 없는 환경입니다.");
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    function meta(prop) {
+      const el = doc.querySelector('meta[property="' + prop + '"]') || doc.querySelector('meta[name="' + prop + '"]');
+      return el ? (el.getAttribute("content") || "").trim() : "";
+    }
+    const titleEl = doc.querySelector("title");
+    const title = meta("og:title") || (titleEl ? (titleEl.textContent || "").trim() : "");
+    if (!title) throw new Error("상품명(og:title/title)을 찾을 수 없습니다.");
+    const imageUrl = meta("og:image") || "";
+    const price = extractPrice(doc, meta("og:description"));
+    return { title: title, imageUrl: imageUrl, price: price };
+  }
+
+  async function fetchProductDataFromUrl(url) {
+    const target = String(url == null ? "" : url).trim();
+    if (!/^https?:\/\//i.test(target)) throw new Error("올바른 상품 URL(http/https)이 아닙니다.");
+    if (typeof fetch === "undefined") throw new Error("fetch 를 사용할 수 없는 환경입니다.");
+
+    let res;
+    try {
+      res = await fetch(PROXY_BASE + encodeURIComponent(target));
+    } catch (e) {
+      throw new Error("네트워크 오류로 상품 정보를 가져오지 못했습니다.");
+    }
+    if (!res.ok) throw new Error("프록시 응답 오류: HTTP " + res.status);
+
+    let payload;
+    try { payload = await res.json(); }
+    catch (e) { throw new Error("프록시 응답(JSON) 파싱에 실패했습니다."); }
+
+    const html = payload && payload.contents;
+    if (!html) throw new Error("대상 페이지의 HTML 을 가져오지 못했습니다.");
+    return parseProductHtml(html);   // { title, imageUrl, price }
+  }
+
   /* ── 시스템(컨텍스트): 유저 레지스트리 + 하나의 공구 ──
      users 는 Map / 배열 / {id:profile} 무엇이든 흡수. */
   function createCoopSystem(coop, users, opts) {
@@ -404,6 +476,8 @@
     createCoop: createCoop,
     createCoopSystem: createCoopSystem,
     runCoopAutoTest: runCoopAutoTest,
+    fetchProductDataFromUrl: fetchProductDataFromUrl,
+    parseProductHtml: parseProductHtml,
   };
 
   if (typeof module !== "undefined" && module.exports) module.exports = CoopCore;
