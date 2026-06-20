@@ -611,6 +611,24 @@
   </div>
 </div>
 
+<!-- ══ 렌즈라라 주문 진행 모달 (팀원 요약 + 복사 + 바로가기) ══ -->
+<div id="orderProcessOverlay" onclick="closeOrderProcess()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:90vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeOrderProcess()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:22px 22px 28px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:20px;color:#3A2B30;margin:4px 0 14px">🛒 렌즈라라 주문 진행</h2>
+      <div id="orderProcBody"></div>
+      <div class="flex gap-2 mt-4">
+        <button onclick="copyOrderSheet()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">📋 주문서 복사</button>
+        <button id="orderGoBtn" onclick="goOrderPlatform()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 바로가기</button>
+      </div>
+      <button onclick="finalizeOrder()" class="w-full rounded-xl py-3 mt-2" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,#FF6FA8,#C41055)">✅ 주문 완료 처리 (정보 잠금 · 전체 알림)</button>
+      <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:8px;text-align:center">주문서를 복사해 렌즈라라에서 결제한 뒤, [주문 완료 처리]를 누르면 참여자 정보가 잠기고 발송 준비 알림이 갑니다.</p>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 문제 발생(Issue) 사유 선택 모달 ══ -->
 <div id="issueOverlay" onclick="closeIssue()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:24px">
   <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#fff;border-radius:22px;padding:22px">
@@ -1716,7 +1734,7 @@ function renderBusRoom(b){
       <div style="margin-top:12px">
         ${ b.ordered
           ? `<div class="w-full rounded-xl py-3" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#7BE8A8;background:#22351F;border:1px solid #2F5A2C">✅ 주문 진행 중 · 파티원 정보 잠금됨</div>`
-          : `<button onclick="toggleOrdered(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
+          : `<button onclick="openOrderProcess(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
              <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>` }
       </div>
       <p style="font-size:11px;color:#B6AAB0;margin-top:10px;line-height:1.5">🚚 운송장은 위 파티원 목록의 <b style="color:#fff">[운송장 입력]</b> 버튼으로 <b style="color:#fff">개별 등록</b>하세요. 등록 즉시 해당 파티원에게 발송 알림이 갑니다.</p>
@@ -1955,12 +1973,57 @@ function saveIssue(){
 }
 
 // ── 방장: 구매 시작(주문 진행) → 정보 잠금 + 전체 알림 ──
-function toggleOrdered(busId){
+// 플랫폼별 주문 사이트 URL
+const PLATFORM_URL = { "렌즈라라": "https://lenslala3.com/", "파스비": "https://fasbee.com" };
+function platformUrl(b){
+  const p = (b && b.platform) || "렌즈라라";
+  return PLATFORM_URL[p] || ("https://search.naver.com/search.naver?query=" + encodeURIComponent(p));
+}
+
+let _orderProcBusId = null;
+// '렌즈라라 연동하여 주문 진행하기' → 팀원 요약 + 복사 + 바로가기 모달
+function openOrderProcess(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
-  if(!confirm("구매를 시작하시겠습니까? 구매를 시작하면 참여자들의 정보가 변경 불가능하도록 잠금 처리되며, 모든 참여자에게 알림이 발송됩니다.")) return;
-  b.ordered = true;   // = coopData.isOrderStarted
+  const riders = b.riders || [];
+  let total = 0;
+  const rows = riders.length ? riders.map((r,i)=>{
+    total += r.amount || 0;
+    return `<div class="flex items-center justify-between" style="padding:9px 2px;border-bottom:1px solid #F0ECEE">
+      <div style="min-width:0">
+        <p style="font-size:13px;font-weight:800;color:#3A2B30">${i+1}. ${r.nick}</p>
+        <p style="font-size:11px;color:#8D7B80;margin-top:2px">${lensName(r.lensId)} · ${r.power||"도수 미입력"} · ${methodShort(r.method)}</p>
+      </div>
+      <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;flex-shrink:0">${(r.amount||0).toLocaleString()}원</span>
+    </div>`;
+  }).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">탑승객이 없어요</p>`;
+  document.getElementById("orderProcBody").innerHTML = `
+    <p style="font-size:12px;color:#8D7B80;margin:0 0 10px">총 <b style="color:#C41055">${riders.length}명</b> · 합계 <b style="color:#3A2B30">${total.toLocaleString()}원</b> — 주문서를 복사해 ${b.platform||"렌즈라라"}에서 한 번에 주문하세요.</p>
+    <div style="max-height:40vh;overflow-y:auto;border:1.5px solid #FFE0EE;border-radius:14px;padding:2px 12px">${rows}</div>`;
+  _orderProcBusId = busId;
+  _roomBusId = busId;   // copyOrderSheet 가 참조
+  const goBtn = document.getElementById("orderGoBtn");
+  if(goBtn) goBtn.textContent = "🛒 " + (b.platform||"렌즈라라") + " 바로가기";
+  document.getElementById("orderProcessOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeOrderProcess(){
+  document.getElementById("orderProcessOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+function goOrderPlatform(){
+  const b = BUSES.find(x=>x.id===_orderProcBusId);
+  if(!b) return;
+  window.open(platformUrl(b), "_blank", "noopener");
+}
+// 주문 완료 처리 → 정보 잠금 + 전체 알림
+function finalizeOrder(){
+  const b = BUSES.find(x=>x.id===_orderProcBusId);
+  if(!b) return;
+  if(!confirm("주문 완료로 처리할까요? 참여자 정보가 잠기고 모든 참여자에게 알림이 발송됩니다.")) return;
+  b.ordered = true;
   (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "렌즈라라 일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 일본에서 발송됩니다 ✈️"));
+  closeOrderProcess();
   renderBusRoom(b);
 }
 
