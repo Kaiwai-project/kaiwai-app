@@ -1567,14 +1567,19 @@ function renderBusRoom(b){
   const locked = b.ordered && !isAdminUser();   // 관리자는 주문 잠금도 우회
   const now = Date.now();
 
-  // 관리자 패널 버튼(상태 반영): 노쇼는 10분 쿨다운 동안 '노쇼 경고중'(비활성)→이후 복귀, 문제는 처리 후 '문제 처리중'
-  const noshowBtn = (r,i)=>{
-    const left = NOSHOW_CD_MS - (now - ((coopCooldowns[_cdKey(b.id,r)]||{}).noshow || 0));
-    return left > 0
-      ? `<button disabled style="border:none;font-size:11px;font-weight:800;color:#fff;background:#B0A06A;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif;cursor:not-allowed;opacity:.85">⏰ 노쇼 경고중</button>`
-      : `<button onclick="noshowWarn(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#C77800;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">⏰ 노쇼 경고</button>`;
-  };
-  const problemBtn = (r,i)=> r.issue
+  // 노쇼 경고 10분 경과 시 상태 자동 해제 → 버튼/태그 '노쇼 경고'로 복귀
+  (riders||[]).forEach(r=>{
+    if(r.status === "warning-noshow"){
+      const cd = (coopCooldowns[_cdKey(b.id,r)]||{}).noshow || 0;
+      if(now - cd >= NOSHOW_CD_MS) r.status = null;
+    }
+  });
+
+  // 관리자 패널 버튼(상태 반영): 클릭은 항상 가능하되, 진행중 상태면 핸들러가 안내 메시지 표시
+  const noshowBtn = (r,i)=> r.status === "warning-noshow"
+    ? `<button onclick="noshowWarn(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#B0A06A;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">⏰ 노쇼 경고중</button>`
+    : `<button onclick="noshowWarn(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#C77800;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">⏰ 노쇼 경고</button>`;
+  const problemBtn = (r,i)=> r.status === "problem-processing"
     ? `<button onclick="openIssue(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#B23B3F;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">🚨 문제 처리중</button>`
     : `<button onclick="openIssue(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#E5484D;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">⚠️ 문제</button>`;
 
@@ -1595,8 +1600,8 @@ function renderBusRoom(b){
   const issueText = (r)=> r.issue==="etc" ? ("🚨 " + (r.issueText||"기타")) : (ISSUE_LABEL[r.issue] || "🚨 확인요망");
   // 장부 상태 태그 (문제 처리중 / 노쇼 경고중)
   const STATUS_TAG = {
-    problem: { t:"🚨 문제 처리중", bg:"#E5484D", bd:"#C73B3F" },
-    noshow:  { t:"⏰ 노쇼 경고중", bg:"#C77800", bd:"#A66400" },
+    "problem-processing": { t:"🚨 문제 처리중", bg:"#E5484D", bd:"#C73B3F" },
+    "warning-noshow":     { t:"⏰ 노쇼 경고중", bg:"#C77800", bd:"#A66400" },
   };
   const statusTag = (r)=>{ const s=STATUS_TAG[r.status]; return s ? `<span style="font-size:10px;font-weight:800;color:#fff;background:${s.bg};border:1px solid ${s.bd};padding:3px 8px;border-radius:100px">${s.t}</span>` : ""; };
 
@@ -1859,6 +1864,13 @@ function onIssueReasonChange(){
   document.getElementById("issueEtcText").style.display = (sel && sel.value==="etc") ? "block" : "none";
 }
 function openIssue(busId, idx){
+  // 이미 문제 처리 중이면 팝업 대신 안내
+  const _b = BUSES.find(x=>x.id===busId);
+  const _r = _b && _b.riders && _b.riders[idx];
+  if(_r && _r.status === "problem-processing"){
+    showToast("현재 문제가 처리 중입니다. 문제가 해결될 때까지 잠시만 기다려주세요.");
+    return;
+  }
   _issueTarget = { busId, idx };
   document.querySelectorAll('input[name="issueReason"]').forEach(r=>{ r.checked = false; });
   const et = document.getElementById("issueEtcText"); et.value = ""; et.style.display = "none";
@@ -1893,7 +1905,7 @@ function saveIssue(){
   }
   // 사유 + 상태 갱신
   r.issue = sel.value; r.issueText = sel.value==="etc" ? reasonText : "";
-  r.status = "problem";                                    // 장부 태그: 문제 처리중
+  r.status = "problem-processing";                         // 장부 태그: 문제 처리중
   coopCooldowns[key] = { ...coopCooldowns[key], problem: now };
   closeIssue();
   renderBusRoom(b);
@@ -1946,15 +1958,15 @@ function noshowWarn(busId, idx){
   const b = BUSES.find(x=>x.id===busId);
   const r = b && b.riders && b.riders[idx];
   if(!r) return;
-  // 알림 쿨다운 (노쇼: 10분)
   const key = _cdKey(b.id, r);
   const now = Date.now();
-  if(now - ((coopCooldowns[key]||{}).noshow || 0) < NOSHOW_CD_MS){
-    showToast("10분 뒤에 다시 경고 알림을 보낼 수 있습니다.");
+  // 이미 경고중(10분 쿨다운)이면 팝업 대신 안내
+  if(r.status === "warning-noshow" && now - ((coopCooldowns[key]||{}).noshow || 0) < NOSHOW_CD_MS){
+    showToast("이미 경고 알림을 보냈습니다. 10분 후에 다시 알람을 발송할 수 있습니다.");
     return;
   }
   if(!confirm(`'${r.payer||r.nick}' 님에게 미입금 경고를 보낼까요?`)) return;
-  r.status = "noshow";                                     // 장부 태그: 노쇼 경고중
+  r.status = "warning-noshow";                             // 장부 태그: 노쇼 경고중
   coopCooldowns[key] = { ...coopCooldowns[key], noshow: now };
   renderBusRoom(b);
   sendNotification(r.nick, "⏰ 미입금 경고", "기한 내 미입금 시 보증금 300P 차감 + 3진 아웃제가 적용돼요. 빠른 입금 부탁드려요!");
