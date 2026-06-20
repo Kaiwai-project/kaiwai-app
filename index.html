@@ -2148,15 +2148,17 @@ function drawMap(){
     return;
   }
   document.getElementById("mapList").innerHTML=pairs.map(({b,s},i)=>`
-<div class="fu kawaii-card" style="animation-delay:${i*.04}s;overflow:hidden;cursor:pointer" onclick="openM(${b.id})">
-  <div style="height:4px;background:${b.c}"></div>
-  <div style="padding:13px 14px">
+<div class="fu kw-bcard" style="animation-delay:${i*.04}s;position:relative;padding:${FRAME_BAND}px;cursor:pointer;border-radius:24px;box-shadow:0 6px 18px -10px rgba(255,150,180,.5);overflow:hidden" onclick="openM(${b.id})">
+  <!-- 카테고리별 액자 프레임 (홈 카드와 동일) -->
+  <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:1;${cardFrame(b.s)}"></div>
+  <div style="position:relative;z-index:2">
+    <div style="height:4px;background:${b.c};border-radius:100px;margin-bottom:11px"></div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
       ${logoEl(b,42,14,'')}
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;color:#4A4A4A;font-size:14px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'M PLUS Rounded 1c',sans-serif">${b.n}</div>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <span style="background:${b.c}18;color:${b.c};font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px">${b.s}</span>
+          <span style="background:${b.c}18;color:${b.c};border:1px solid ${b.c}33;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px">${b.s}</span>
           <span style="background:#FFF0F5;color:#8D7B80;font-size:9px;padding:2px 7px;border-radius:100px">${s.city}</span>
           ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:9px;font-weight:600;padding:2px 7px;border-radius:100px">✓ 면세</span>`:""}
         </div>
