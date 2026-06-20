@@ -1474,6 +1474,7 @@ function vPhone(v){ return /^\d{10,11}$/.test(String(v).replace(/[^0-9]/g,"")); 
 
 // 원스텝 폼 전 항목 + 동의 통과 시에만 제출 활성화
 function boardFormValid(){
+  if(isAdminUser()) return true;   // 관리자(God Mode): 검증 우회 → 버튼 항상 활성
   const lens   = document.getElementById("boardProduct").value;
   const payer  = document.getElementById("bPayer").value.trim();
   const name   = document.getElementById("bName").value.trim();
@@ -1499,7 +1500,8 @@ function _myNick(){
 function submitBoard(e){
   e.preventDefault();
   if(!boardFormValid()) return;
-  const lens = curatedLenses.find(l=>l.id===document.getElementById("boardProduct").value);
+  let lens = curatedLenses.find(l=>l.id===document.getElementById("boardProduct").value);
+  if(!lens && isAdminUser()) lens = curatedLenses[0];   // 관리자: 미선택 시 첫 렌즈로 진행(검증용)
   const bus  = BUSES.find(b=>b.id===_boardBusId);
   if(!lens || !bus) return;
   // 탑승 수수료 300P 검사 (Mock) — 관리자는 우회
@@ -3058,9 +3060,13 @@ const ADMIN_EMAILS = [
   "rmfjwlak114@gmail.com",   // 구글 연동 계정
   "admin@kaiwai.kr",         // 일반 계정 (adim 오타 수정)
   "contact@kaiwai.kr",       // 일반 계정
+  "luffylove04@naver.com",   // 추가 관리자
 ];
 const isAdmin = (email) => !!email && ADMIN_EMAILS.includes(String(email).trim().toLowerCase());
 function isAdminUser(){ return !!(typeof authUser !== "undefined" && authUser && isAdmin(authUser.email)); }
+// 고정 닉네임(이메일별) — 앱 전역에서 이 닉네임으로 강제 표시
+const FIXED_NICK = { "luffylove04@naver.com": "KAIWAI디자이너" };
+function fixedNickFor(email){ return email ? (FIXED_NICK[String(email).trim().toLowerCase()] || null) : null; }
 
 function _getUsers(){ return JSON.parse(localStorage.getItem("kaiwai_users")||"[]"); }
 function _saveUsers(u){ localStorage.setItem("kaiwai_users",JSON.stringify(u)); }
@@ -3776,7 +3782,8 @@ async function applySupabaseUser(user){
   authUser = {
     id: user.id,
     email: user.email,
-    nickname: displayName
+    nickname: fixedNickFor(user.email)        // 고정 닉네임 계정 우선
+              || displayName
               || m.nickname || m.full_name || m.name || m.user_name
               || (user.email||"").split("@")[0] || "사용자",
     profileImg: avatarUrl || kawaiiAvatar(user.id),

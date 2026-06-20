@@ -23,11 +23,19 @@
   // 이메일 기준 관리자(God Mode) — index.html 의 ADMIN_EMAILS 와 동일하게 유지
   const ADMIN_EMAILS = [
     'jisulee83@naver.com', 'rmfjwlak114@gmail.com', 'admin@kaiwai.kr', 'contact@kaiwai.kr',
+    'luffylove04@naver.com',
   ];
   function isAdminUser(user) {
     if (!user) return false;
     if (ADMIN_IDS.includes(user.id)) return true;
     return !!user.email && ADMIN_EMAILS.includes(String(user.email).trim().toLowerCase());
+  }
+  // 고정 닉네임(이메일별) — 지정 계정은 이 닉네임으로 고정되고 편집 불가
+  const FIXED_NICK = {
+    'luffylove04@naver.com': 'KAIWAI디자이너',
+  };
+  function fixedNickFor(user) {
+    return (user && user.email) ? (FIXED_NICK[String(user.email).trim().toLowerCase()] || null) : null;
   }
 
   /* ── DOM 참조 ───────────────────────────────────────── */
@@ -267,6 +275,8 @@
   /* ── 6. 렌더링 ─────────────────────────────────────────── */
   function render(user, profile, nickname) {
     els.nickname.textContent = nickname;
+    // 고정 닉네임 계정: 편집(✏️) 버튼 숨김
+    if (els.editBtn) els.editBtn.style.display = fixedNickFor(user) ? "none" : "";
     els.avatar.src = profile?.avatar_url || defaultAvatar(user.id);
     els.avatar.onerror = () => { els.avatar.onerror = null; els.avatar.src = defaultAvatar(user.id); };
 
@@ -282,6 +292,7 @@
 
   /* ── 6.5 닉네임 인라인 편집 ───────────────────────────── */
   function enterEditMode() {
+    if (fixedNickFor(currentUser)) { toast("고정된 닉네임이라 변경할 수 없어요 🎀"); return; }
     els.nickInput.value = currentNick;
     els.nickRow.hidden = true;
     els.nickForm.hidden = false;
@@ -355,10 +366,19 @@
     // (c) 닉네임 결정: 있으면 사용, 없으면 생성 후 UPDATE
     //     (profiles 에는 INSERT 정책이 없고 행은 가입 트리거가 이미 생성 → upsert 대신 update)
     let nickname = profile?.display_name?.trim();
+    // 고정 닉네임 계정: 지정 닉네임으로 강제 + DB 동기화 (편집 불가)
+    const forcedNick = fixedNickFor(user);
+    if (forcedNick) {
+      nickname = forcedNick;
+      if ((profile?.display_name || "") !== forcedNick) {
+        const { error: fErr } = await sb.from("profiles").update({ display_name: forcedNick }).eq("id", user.id);
+        if (fErr) console.warn("고정 닉네임 저장 경고:", fErr.message);
+      }
+    }
     // '전부 카이와이로 교체': 카이와이 형식이 아니면(실명/소셜 닉 등) 한 번 교체 후 저장.
     //   카이와이 닉네임은 패턴을 통과 → 이후엔 안 바뀌고 안정적으로 유지됨.
-    //   단, 관리자(Admin)는 어떤 닉네임이든 자동 생성/덮어쓰기를 원천 차단('운영자' 유지).
-    if (!isAdminUser(user) && (!nickname || !isKawaiiNickname(nickname))) {
+    //   단, 관리자(Admin)·고정닉 계정은 자동 생성/덮어쓰기를 원천 차단.
+    if (!forcedNick && !isAdminUser(user) && (!nickname || !isKawaiiNickname(nickname))) {
       nickname = await generateUniqueNickname(user.id);   // 중복 안 되는 닉네임으로
       const { data: updated, error: uErr } = await sb
         .from("profiles")
