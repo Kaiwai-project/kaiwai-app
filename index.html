@@ -1256,8 +1256,31 @@ function syncDeadlineUI(){
 
 function submitCreateBus(e){
   e.preventDefault();
-  // MVP: 백엔드 연동 전 — 개설 안내만 표시
+  const platform = document.getElementById("cbPlatform").value || "렌즈라라";
+  const title = document.getElementById("cbTitle").value.trim();
+  const goal = parseInt(document.getElementById("cbGoal").value, 10);
+  const dlEl = document.querySelector('input[name="cbDeadline"]:checked');
+  const deadlineH = dlEl ? parseInt(dlEl.value, 10) : 24;
+  if(!title || !goal || goal < 1){ alert("제목과 목표 금액을 확인해 주세요"); return; }
+
+  // 새 공구방을 BUSES 맨 앞에 추가 (내가 연 방 → 방장 패널 노출)
+  const newId = BUSES.reduce((m,b)=>Math.max(m, b.id), 0) + 1;
+  BUSES.unshift({
+    id: newId,
+    title: title,
+    captain: _myNick(),
+    tier: "beginner",
+    platform: platform,
+    goal: goal,
+    current: 0,
+    deadlineH: deadlineH,
+    mine: true,
+    riders: [],
+  });
   closeCreateBus();
+  drawBus();                          // 공구 탭 목록 즉시 갱신
+  const list = document.getElementById("busList");
+  if(list) list.scrollIntoView({ behavior:"smooth", block:"start" });
   alert("공구방이 성공적으로 개설되었습니다!");
 }
 
