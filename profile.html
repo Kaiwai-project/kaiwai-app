@@ -87,12 +87,6 @@
     </div>
   </section>
 
-  <!-- ── 총대 권한 신청 배너 ── -->
-  <button type="button" id="captainApplyBtn" class="captain-banner reveal" style="--d:.1s">
-    <span class="captain-banner__txt">🛡️ 안전한 공구 열고 리워드 받기!</span>
-    <span class="captain-banner__cta">총대 권한 신청 ›</span>
-  </button>
-
   <!-- ── 나의 활동 (탭 + 그리드) ── -->
   <section class="activity reveal" style="--d:.15s">
     <div class="tabs" role="tablist">
@@ -117,80 +111,6 @@
   </footer>
 
 </main>
-
-<!-- ── 총대 권한 신청 폼 모달 ── -->
-<div id="captainOverlay" class="cap-overlay" aria-hidden="true">
-  <div class="cap-sheet" role="dialog" aria-modal="true" aria-labelledby="capTitle">
-    <span class="cap-grab" aria-hidden="true"></span>
-    <button type="button" id="capClose" class="cap-close" aria-label="닫기">✕</button>
-    <form id="captainForm" class="cap-body">
-      <h2 id="capTitle" class="cap-title">🛡️ 총대(공구주) 안심 인증</h2>
-      <p class="cap-intro">100% 안전한 공구 문화를 위해 실명 인증을 진행합니다. 2단계 인증 완료 시 즉시 총대 권한이 부여됩니다.</p>
-
-      <!-- STEP 1: 휴대폰 본인인증 -->
-      <div id="capStep1" class="cap-step">
-        <div class="cap-step__top">
-          <span class="cap-step__no">STEP 1</span>
-          <span id="capPhoneStatus" class="cap-step__status cap-step__status--no">(미완료)</span>
-        </div>
-        <div class="cap-step__row">
-          <span class="cap-step__ico">📱</span>
-          <div class="cap-step__body">
-            <p class="cap-step__title">휴대폰 본인인증</p>
-            <p class="cap-step__desc">PASS 또는 SMS로 실명을 확인합니다.</p>
-          </div>
-          <button type="button" id="capPhoneBtn" class="cap-step__btn">PASS / SMS 인증</button>
-        </div>
-      </div>
-
-      <!-- STEP 2: 1원 계좌 실명 인증 -->
-      <div id="capStep2" class="cap-step">
-        <div class="cap-step__top">
-          <span class="cap-step__no">STEP 2</span>
-          <span id="capBankStatus" class="cap-step__status cap-step__status--no">(미완료)</span>
-        </div>
-        <div class="cap-step__row">
-          <span class="cap-step__ico">🏦</span>
-          <div class="cap-step__body">
-            <p class="cap-step__title">1원 계좌 실명 인증</p>
-            <p class="cap-step__desc">계좌로 1원을 보내 입금자명을 확인합니다.</p>
-          </div>
-        </div>
-        <div id="capBankInputs" style="margin-top:12px">
-          <select id="capBank" class="cap-input" style="margin:0 0 8px">
-            <option value="">은행 선택</option>
-            <option>국민은행</option>
-            <option>신한은행</option>
-            <option>우리은행</option>
-            <option>하나은행</option>
-            <option>농협은행</option>
-            <option>토스뱅크</option>
-            <option>카카오뱅크</option>
-          </select>
-          <div style="display:flex;gap:8px">
-            <input id="capAccount" class="cap-input" inputmode="numeric" placeholder="계좌번호 ('-' 없이 입력)" style="margin:0;flex:1"/>
-            <button type="button" id="capSendWon" class="cap-step__btn" style="flex-shrink:0">1원 보내기</button>
-          </div>
-          <!-- [1원 보내기] 후 노출 -->
-          <div id="capVerifyWrap" style="display:none;margin-top:8px">
-            <div style="display:flex;gap:8px">
-              <input id="capDepositName" class="cap-input" maxlength="3" placeholder="입금자명 끝 3자리" style="margin:0;flex:1"/>
-              <button type="button" id="capVerifyBtn" class="cap-step__btn" style="flex-shrink:0;background:#1A9E5E">인증하기</button>
-            </div>
-            <p class="cap-step__desc" style="margin-top:6px">입금 내역의 <b>'카이와이○○○'</b> 끝 3자리를 입력하세요.</p>
-          </div>
-        </div>
-      </div>
-
-      <label class="cap-agree">
-        <input id="capAgree" type="checkbox"/>
-        <span>[필수] 본인인증 및 계좌 정보 제공에 동의하며, 사기/고의적 미배송 등 금전적 피해 발생 시 관련 법적 제재를 받을 수 있음에 동의합니다.</span>
-      </label>
-
-      <button type="submit" id="capFinalBtn" class="cap-submit" disabled>🚀 인증 완료하고 즉시 총대 권한 받기</button>
-    </form>
-  </div>
-</div>
 
 <!-- 토스트 -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
