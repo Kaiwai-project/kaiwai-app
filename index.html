@@ -364,7 +364,26 @@
       <!-- 도수 입력 -->
       <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 입력 *</label>
       <input id="boardPower" required placeholder="좌 -2.00, 우 -2.50 / 무도수는 0.00"
-        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box"/>
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <!-- 수령 방법 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif">수령 방법 *</label>
+      <div class="flex flex-col gap-2">
+        <label class="flex items-center gap-2.5" style="cursor:pointer;padding:11px 13px;border:1.5px solid #FFE0EE;border-radius:14px">
+          <input type="radio" name="boardShip" value="conv" checked onchange="updateReceipt()" style="width:16px;height:16px;accent-color:#C41055"/>
+          <span style="font-size:13px;font-weight:700;color:#3A2B30">편의점 반택 <span style="color:#8D7B80;font-weight:600">(1,800원)</span></span>
+        </label>
+        <label class="flex items-center gap-2.5" style="cursor:pointer;padding:11px 13px;border:1.5px solid #FFE0EE;border-radius:14px">
+          <input type="radio" name="boardShip" value="home" onchange="updateReceipt()" style="width:16px;height:16px;accent-color:#C41055"/>
+          <span style="font-size:13px;font-weight:700;color:#3A2B30">일반 자택 택배 <span style="color:#8D7B80;font-weight:600">(3,500원)</span></span>
+        </label>
+        <label class="flex items-center gap-2.5" style="cursor:pointer;padding:11px 13px;border:1.5px solid #FFE0EE;border-radius:14px">
+          <input type="radio" name="boardShip" value="etc" onchange="updateReceipt()" style="width:16px;height:16px;accent-color:#C41055"/>
+          <span style="font-size:13px;font-weight:700;color:#3A2B30">기타택배 <span style="color:#8D7B80;font-weight:600">(금액입력)</span></span>
+        </label>
+        <input id="boardShipEtc" type="number" min="0" placeholder="기타 배송비 입력 (원)" oninput="updateReceipt()"
+          style="display:none;width:100%;padding:11px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box"/>
+      </div>
 
       <!-- 실시간 자동 계산 영수증 -->
       <div class="bg-gray-50 p-4 rounded-xl mt-4 mb-4">
@@ -374,8 +393,8 @@
           <span id="rcGoods" style="font-size:14px;font-weight:700;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">-</span>
         </div>
         <div class="flex items-center justify-between" style="margin-bottom:10px">
-          <span style="font-size:13px;color:#6B5B60">반택비</span>
-          <span style="font-size:14px;font-weight:700;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">1,800원</span>
+          <span id="rcShipLabel" style="font-size:13px;color:#6B5B60">배송비 (편의점 반택)</span>
+          <span id="rcShip" style="font-size:14px;font-weight:700;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">1,800원</span>
         </div>
         <div class="flex items-center justify-between" style="padding-top:11px;border-top:1.5px dashed #E2DCE0">
           <span style="font-size:13px;font-weight:800;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">최종 결제 예정 금액</span>
@@ -405,23 +424,30 @@
       <p style="font-size:12px;color:#8D7B80;margin:0 0 18px;line-height:1.55">탑승이 완료됐어요! 받으실 정보를 입력해 주세요. <b style="color:#C41055">나중에 입력</b>해도 괜찮아요.</p>
 
       <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">실명 *</label>
-      <input id="dvName" required placeholder="택배 수령인 실명"
+      <input id="dvName" required placeholder="택배 수령인 실명 (한글 2~5자)" oninput="validateDelivery()"
         style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
 
       <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">전화번호 *</label>
-      <input id="dvPhone" required type="tel" placeholder="010-0000-0000"
+      <input id="dvPhone" required type="tel" inputmode="numeric" placeholder="01012345678 (숫자만 10~11자리)" oninput="validateDelivery()"
         style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
 
-      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수령 편의점 주소 *</label>
-      <input id="dvStore" required placeholder="예) GS25 홍대입구역점 / CU 강남터미널점"
-        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:12px"/>
+      <label id="dvAddrLabel" style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수령 편의점 주소 *</label>
+      <input id="dvStore" required placeholder="예) GS25 홍대입구역점" oninput="validateDelivery()"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">실제 입금자명 * <span style="color:#FF1E88">(매우 중요)</span></label>
+      <input id="dvPayer" required placeholder="방장이 통장에서 확인할 이름 (한글 2~5자)" oninput="validateDelivery()"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:6px"/>
+      <p style="font-size:11px;color:#8D7B80;margin:0 0 12px">💸 입금자명이 다르면 방장이 입금 확인을 못 해요!</p>
+
+      <p id="dvError" style="display:none;font-size:12px;font-weight:700;color:#E5484D;margin:0 0 12px">⚠️ 올바른 양식을 입력해주세요</p>
 
       <div class="rounded-xl px-3 py-2.5 mb-4" style="background:#F0ECEE">
         <p style="font-size:11px;color:#8D7B80;line-height:1.5">🔒 통관고유부호는 <b>총대 명의 통관</b>으로 진행되어 <b>수집하지 않습니다.</b></p>
       </div>
 
-      <button type="submit"
-        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9)">배송 정보 저장하기</button>
+      <button id="dvSubmitBtn" type="submit" disabled
+        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9);opacity:.45;transition:opacity .15s">배송 정보 저장하기</button>
       <button type="button" onclick="skipDelivery()"
         style="width:100%;margin-top:10px;padding:11px;border:none;border-radius:14px;cursor:pointer;color:#8D7B80;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:700;font-size:13px;background:none">나중에 입력하기</button>
     </form>
@@ -995,9 +1021,9 @@ const BUSES = [
     fee: 300,
     mine: false,          // 방장 여부(데모용) — true 면 관리자 패널 노출
     riders: [
-      { nick:"마카롱공주", lensId:"L01", power:"좌 -2.00 / 우 -2.25", amount:17640, paid:true,  realName:"김민지", phone:"010-1234-5678", store:"GS25 홍대입구역점", hasAddr:true },
-      { nick:"블랙로즈",   lensId:"L06", power:"좌 -4.50 / 우 -4.50", amount:16200, paid:false, realName:"이수아", phone:"010-2222-3333", store:"CU 강남터미널점", hasAddr:true },
-      { nick:"우유푸딩",   lensId:"L03", power:"좌 0.00 / 우 0.00",   amount:17640, paid:true,  realName:"", phone:"", store:"", hasAddr:false },
+      { nick:"마카롱공주", lensId:"L01", power:"좌 -2.00 / 우 -2.25", method:"conv", amount:17640, paid:true,  realName:"김민지", phone:"010-1234-5678", store:"GS25 홍대입구역점", payer:"김민지", hasAddr:true },
+      { nick:"블랙로즈",   lensId:"L06", power:"좌 -4.50 / 우 -4.50", method:"home", amount:17900, paid:false, realName:"이수아", phone:"010-2222-3333", store:"서울시 강남구 테헤란로 00, 000호", payer:"이수아", hasAddr:true },
+      { nick:"우유푸딩",   lensId:"L03", power:"좌 0.00 / 우 0.00",   method:"conv", amount:17640, paid:true,  realName:"", phone:"", store:"", payer:"", hasAddr:false },
     ],
   },
   {
@@ -1010,8 +1036,8 @@ const BUSES = [
     fee: 300,
     mine: true,           // ← 데모: 내가 연 공구방(방장 관리자 패널 미리보기용)
     riders: [
-      { nick:"딸기소다", lensId:"L02", power:"좌 -1.50 / 우 -1.75", amount:13680, paid:true,  realName:"정하늘", phone:"010-7777-1234", store:"GS25 신촌오거리점", hasAddr:true },
-      { nick:"네온키티", lensId:"L05", power:"좌 -3.00 / 우 -3.00", amount:17145, paid:false, realName:"", phone:"", store:"", hasAddr:false },
+      { nick:"딸기소다", lensId:"L02", power:"좌 -1.50 / 우 -1.75", method:"conv", amount:13680, paid:true,  realName:"정하늘", phone:"010-7777-1234", store:"GS25 신촌오거리점", payer:"정하늘", hasAddr:true },
+      { nick:"네온키티", lensId:"L05", power:"좌 -3.00 / 우 -3.00", method:"home", amount:18845, paid:false, realName:"", phone:"", store:"", payer:"", hasAddr:false },
     ],
   },
 ];
@@ -1077,9 +1103,25 @@ const curatedLenses = [
   { id: 'L06', name: 'Majolica Majorca (지뢰계 블랙)', price: 1600 },
 ];
 
-// 결제 계산 상수 (고정 환율 100엔=900원 → ×9, 반택비 고정)
+// 결제 계산 상수 (고정 환율 100엔=900원 → ×9)
 const YEN_TO_KRW = 9;
-const BOARD_SHIPPING = 1800;
+// 수령 방법별 배송비
+const SHIP_METHODS = {
+  conv: { label: "편의점 반택", fee: 1800 },
+  home: { label: "자택 택배",   fee: 3500 },
+  etc:  { label: "기타택배",     fee: 0 },  // 사용자 입력값 사용
+};
+function getShipMethod(){
+  const r = document.querySelector('input[name="boardShip"]:checked');
+  return r ? r.value : "conv";
+}
+function getShipFee(method){
+  if(method === "etc"){
+    const v = parseInt(document.getElementById("boardShipEtc").value, 10);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
+  return SHIP_METHODS[method].fee;
+}
 
 function boardBus(id){
   const b = BUSES.find(x=>x.id===id);
@@ -1109,8 +1151,15 @@ function closeBoard(){
   document.body.style.overflow = "";
 }
 
-// 렌즈 선택 시 실시간 원화 영수증 계산
+// 렌즈 + 수령 방법에 따라 실시간 원화 영수증 계산
 function updateReceipt(){
+  const method = getShipMethod();
+  // 기타택배일 때만 금액 입력칸 노출
+  document.getElementById("boardShipEtc").style.display = (method === "etc") ? "block" : "none";
+  const fee = getShipFee(method);
+  document.getElementById("rcShipLabel").textContent = `배송비 (${SHIP_METHODS[method].label})`;
+  document.getElementById("rcShip").textContent = fee.toLocaleString() + "원";
+
   const id = document.getElementById("boardProduct").value;
   const lens = curatedLenses.find(l=>l.id===id);
   const goodsEl = document.getElementById("rcGoods");
@@ -1119,8 +1168,8 @@ function updateReceipt(){
     goodsEl.textContent = "-";
     totalEl.textContent = "-";
   } else {
-    const goods = lens.price * YEN_TO_KRW;        // 상품가(원화) = 엔화 × 9
-    const total = goods + BOARD_SHIPPING;          // 최종 = 상품가 + 반택비 1,800원
+    const goods = lens.price * YEN_TO_KRW;   // 상품가(원화) = 엔화 × 9
+    const total = goods + fee;                // 최종 = 상품가 + 배송비
     goodsEl.textContent = goods.toLocaleString() + "원";
     totalEl.textContent = total.toLocaleString() + "원";
   }
@@ -1146,11 +1195,14 @@ function submitBoard(e){
   const lens = curatedLenses.find(l=>l.id===id);
   const power = document.getElementById("boardPower").value.trim();
   if(!lens) return;
+  const method = getShipMethod();
+  const fee = getShipFee(method);
   _pendingRide = {
     busId: _boardBusId,
     lensId: id,
     power: power,
-    amount: lens.price * YEN_TO_KRW + BOARD_SHIPPING,
+    method: method,
+    amount: lens.price * YEN_TO_KRW + fee,
   };
   closeBoard();
   alert("탑승 완료!");
@@ -1159,17 +1211,60 @@ function submitBoard(e){
 }
 
 /* ═══════════════════════════════════
-   STEP 2 — 배송지 입력 (후 입력)
+   STEP 2 — 배송지 + 입금자명 (유효성 검사)
 ═══════════════════════════════════ */
 function openDelivery(){
   const f = document.getElementById("deliveryForm");
   if(f) f.reset();
+  // 수령 방법에 따라 주소 라벨/placeholder 변경
+  const method = _pendingRide ? _pendingRide.method : "conv";
+  const label = document.getElementById("dvAddrLabel");
+  const addr  = document.getElementById("dvStore");
+  if(method === "conv"){
+    label.textContent = "수령 편의점 주소 *";
+    addr.placeholder = "예) GS25 홍대입구역점 / CU 강남터미널점";
+  } else {
+    label.textContent = "배송지 도로명 주소 *";
+    addr.placeholder = "예) 서울시 마포구 와우산로 00, 000동 000호";
+  }
+  document.getElementById("dvError").style.display = "none";
+  validateDelivery();
   document.getElementById("deliveryOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";
 }
 function closeDelivery(){
   document.getElementById("deliveryOverlay").style.display = "none";
   document.body.style.overflow = "";
+}
+
+/* ── 유효성 검사 헬퍼 ──
+   - 전화: 숫자 10~11자리만
+   - 이름/입금자명: 한글 2~5자 (ㅋㅋㅋ·asdf 류 컷)
+   - 주소: 5자 이상 + 한글 2자 이상, 같은 글자 반복 컷 */
+function vPhone(v){ return /^\d{10,11}$/.test(v.replace(/[^0-9]/g,"")); }
+function vName(v){ const s=v.trim(); return /^[가-힣]{2,5}$/.test(s) && !/^(.)\1+$/.test(s); }
+function vAddr(v){
+  const s=v.trim();
+  const hangul=(s.match(/[가-힣]/g)||[]).length;
+  return s.length>=5 && hangul>=2 && !/^(.)\1+$/.test(s.replace(/\s/g,""));
+}
+
+function deliveryValid(){
+  return vName(document.getElementById("dvName").value)
+    && vPhone(document.getElementById("dvPhone").value)
+    && vAddr(document.getElementById("dvStore").value)
+    && vName(document.getElementById("dvPayer").value);
+}
+
+function validateDelivery(){
+  const ok = deliveryValid();
+  const btn = document.getElementById("dvSubmitBtn");
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? "1" : "0.45";
+  // 입력이 하나라도 있는데 아직 무효면 에러문구 노출
+  const touched = ["dvName","dvPhone","dvStore","dvPayer"].some(id=>document.getElementById(id).value.trim());
+  document.getElementById("dvError").style.display = (!ok && touched) ? "block" : "none";
+  return ok;
 }
 
 // 현재 로그인 유저의 표시 닉네임(없으면 '나')
@@ -1188,11 +1283,13 @@ function _commitRide(extra, hasAddr){
     nick: _myNick(),
     lensId: _pendingRide.lensId,
     power: _pendingRide.power,
+    method: _pendingRide.method,
     amount: _pendingRide.amount,
     paid: false,
     realName: extra.realName || "",
     phone: extra.phone || "",
     store: extra.store || "",
+    payer: extra.payer || "",
     hasAddr: !!hasAddr,
     me: true,
   });
@@ -1203,11 +1300,15 @@ function _commitRide(extra, hasAddr){
 
 function saveDelivery(e){
   e.preventDefault();
+  if(!validateDelivery()){
+    document.getElementById("dvError").style.display = "block";
+    return;
+  }
   const realName = document.getElementById("dvName").value.trim();
   const phone    = document.getElementById("dvPhone").value.trim();
   const store    = document.getElementById("dvStore").value.trim();
-  if(!realName || !phone || !store){ alert("실명·전화번호·편의점 주소를 모두 입력해 주세요 🎀"); return; }
-  const bid = _commitRide({ realName, phone, store }, true);
+  const payer    = document.getElementById("dvPayer").value.trim();
+  const bid = _commitRide({ realName, phone, store, payer }, true);
   closeDelivery();
   if(bid) openBusRoom(bid);
 }
@@ -1259,25 +1360,29 @@ function renderBusRoom(b){
     ? `<span style="font-size:10px;font-weight:800;color:#2D6FE0;background:#E5EEFC;border:1px solid #C2D6F7;padding:3px 8px;border-radius:100px">주소 입력완료</span>`
     : `<span style="font-size:10px;font-weight:800;color:#9A8D93;background:#F0ECEE;border:1px solid #E2DCE0;padding:3px 8px;border-radius:100px">주소 미입력</span>`;
 
-  // A. 투명 장부 (개인정보 숨김, 닉네임/렌즈/도수/금액/상태만)
+  // A. 투명 장부 (개인정보 숨김, 닉네임/수령방법/금액/상태만)
   const ledger = riders.length ? riders.map(r=>`
     <div class="rounded-xl p-3" style="background:#fff;border:1.5px solid #FFE0EE">
       <div class="flex items-center justify-between">
         <span style="font-size:13px;font-weight:800;color:#3A2B30">${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
         <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${r.amount.toLocaleString()}원</span>
       </div>
-      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${lensName(r.lensId)} · ${r.power||"도수 미입력"}</p>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${lensName(r.lensId)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
       <div class="flex items-center gap-1.5 mt-2">${payTag(r.paid)}${addrTag(r.hasAddr)}</div>
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">아직 탑승객이 없어요</p>`;
 
-  // B. 방장 전용 관리자 패널 (조건부)
-  const adminRows = riders.map(r=>`
+  // B. 방장 전용 관리자 패널 (조건부) — 입금자명 + 입금 승인 액션
+  const adminRows = riders.map((r,i)=>`
     <tr style="border-bottom:1px solid #F0ECEE">
       <td style="padding:8px 6px;font-weight:700;color:#3A2B30;white-space:nowrap">${r.nick}</td>
+      <td style="padding:8px 6px;font-weight:800;color:#C41055;white-space:nowrap">${r.payer||"-"}</td>
       <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.realName||"-"}</td>
       <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.phone||"-"}</td>
-      <td style="padding:8px 6px;color:#4A4A4A">${lensName(r.lensId)}<br><span style="color:#8D7B80">${r.power||"-"}</span></td>
-      <td style="padding:8px 6px;color:#4A4A4A">${r.store||'<span style="color:#C77800">미입력</span>'}</td>
+      <td style="padding:8px 6px;color:#4A4A4A;min-width:140px">${r.store||'<span style="color:#C77800">미입력</span>'}</td>
+      <td style="padding:8px 6px;font-weight:800;color:#3A2B30;white-space:nowrap">${r.amount.toLocaleString()}원</td>
+      <td style="padding:8px 6px;white-space:nowrap">${ r.paid
+        ? `<span style="display:inline-block;font-size:11px;font-weight:800;color:#1A9E5E;background:#E3F6EC;border:1px solid #B6E6CA;padding:6px 10px;border-radius:100px">✅ 입금완료</span>`
+        : `<button onclick="approvePay(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#1A9E5E;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">✅ 입금 승인</button>` }</td>
     </tr>`).join("");
 
   const adminPanel = owner ? `
@@ -1286,15 +1391,17 @@ function renderBusRoom(b){
         <span style="font-size:14px;font-weight:800;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif">🔐 방장 관리자 패널</span>
         <span style="font-size:10px;font-weight:700;color:#FFB3CC;background:rgba(255,111,168,.18);padding:2px 8px;border-radius:100px">총대 전용</span>
       </div>
-      <p style="font-size:11px;color:#B6AAB0;margin-bottom:12px">파티원 배송 정보입니다. 외부 유출에 주의하세요.</p>
+      <p style="font-size:11px;color:#B6AAB0;margin-bottom:12px">은행 앱에서 <b style="color:#FFD166">입금자명</b>을 확인하고 <b style="color:#7BE8A8">[입금 승인]</b>을 눌러주세요. 정보 외부 유출 주의!</p>
       <div style="overflow-x:auto;border-radius:12px;background:#fff">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px">
           <thead><tr style="background:#FBEFF4">
             <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">닉네임</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">입금자명</th>
             <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">실명</th>
             <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">전화번호</th>
-            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">렌즈/도수</th>
-            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">편의점 주소</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">주소</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">금액</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">입금 승인</th>
           </tr></thead>
           <tbody>${adminRows}</tbody>
         </table>
@@ -1337,6 +1444,22 @@ function renderBusRoom(b){
 function _ridersOf(id){
   const b = BUSES.find(x=>x.id===id);
   return (b && b.riders) || [];
+}
+
+// 수령 방법 짧은 표기 (장부용)
+function methodShort(m){
+  return m === "home" ? "자택" : m === "etc" ? "기타" : "반택";
+}
+
+// 방장 주도 입금 승인: 입금대기 → 입금완료
+function approvePay(busId, idx){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || !b.riders || !b.riders[idx]) return;
+  const r = b.riders[idx];
+  if(r.paid) return;
+  if(!confirm(`'${r.payer||r.nick}' 님의 입금을 확인하셨나요?\n승인하면 장부가 [입금완료]로 바뀝니다.`)) return;
+  r.paid = true;
+  renderBusRoom(b);   // 장부 + 패널 즉시 갱신
 }
 
 // 📋 주소록 복사 — 국내 편의점 택배 양식
