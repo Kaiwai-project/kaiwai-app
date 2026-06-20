@@ -395,6 +395,48 @@
   </div>
 </div>
 
+<!-- ══ STEP 2: 배송지 입력 모달 (후 입력) ══ -->
+<div id="deliveryOverlay" onclick="closeDelivery()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:56;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeDelivery()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <form id="deliveryForm" onsubmit="saveDelivery(event)" style="padding:24px 24px 32px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">📦 배송지 입력</h2>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 18px;line-height:1.55">탑승이 완료됐어요! 받으실 정보를 입력해 주세요. <b style="color:#C41055">나중에 입력</b>해도 괜찮아요.</p>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">실명 *</label>
+      <input id="dvName" required placeholder="택배 수령인 실명"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">전화번호 *</label>
+      <input id="dvPhone" required type="tel" placeholder="010-0000-0000"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수령 편의점 주소 *</label>
+      <input id="dvStore" required placeholder="예) GS25 홍대입구역점 / CU 강남터미널점"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:12px"/>
+
+      <div class="rounded-xl px-3 py-2.5 mb-4" style="background:#F0ECEE">
+        <p style="font-size:11px;color:#8D7B80;line-height:1.5">🔒 통관고유부호는 <b>총대 명의 통관</b>으로 진행되어 <b>수집하지 않습니다.</b></p>
+      </div>
+
+      <button type="submit"
+        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9)">배송 정보 저장하기</button>
+      <button type="button" onclick="skipDelivery()"
+        style="width:100%;margin-top:10px;padding:11px;border:none;border-radius:14px;cursor:pointer;color:#8D7B80;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:700;font-size:13px;background:none">나중에 입력하기</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ 공구방 대시보드 (투명 장부 + 방장 패널) ══ -->
+<div id="busRoomOverlay" style="display:none;position:fixed;inset:0;z-index:57;background:#FFF0F5;overflow-y:auto">
+  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:14px 18px;background:rgba(255,240,245,.92);backdrop-filter:blur(8px);max-width:460px;margin:0 auto">
+    <button onclick="closeBusRoom()" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid #FFD6E8;color:#C41055;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0">‹</button>
+    <span style="font-size:15px;font-weight:800;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">🚌 공구방</span>
+  </div>
+  <div id="busRoomBody"></div>
+</div>
+
 <!-- ══ 메뉴(공지/약관/문의) 모달 ══ -->
 <div id="menuOverlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:55;align-items:flex-end;justify-content:center">
   <div id="menuSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:88vh">
@@ -951,6 +993,12 @@ const BUSES = [
     goal: 10000,
     current: 8500,
     fee: 300,
+    mine: false,          // 방장 여부(데모용) — true 면 관리자 패널 노출
+    riders: [
+      { nick:"마카롱공주", lensId:"L01", power:"좌 -2.00 / 우 -2.25", amount:17640, paid:true,  realName:"김민지", phone:"010-1234-5678", store:"GS25 홍대입구역점", hasAddr:true },
+      { nick:"블랙로즈",   lensId:"L06", power:"좌 -4.50 / 우 -4.50", amount:16200, paid:false, realName:"이수아", phone:"010-2222-3333", store:"CU 강남터미널점", hasAddr:true },
+      { nick:"우유푸딩",   lensId:"L03", power:"좌 0.00 / 우 0.00",   amount:17640, paid:true,  realName:"", phone:"", store:"", hasAddr:false },
+    ],
   },
   {
     id: 2,
@@ -960,8 +1008,19 @@ const BUSES = [
     goal: 10000,
     current: 3000,
     fee: 300,
+    mine: true,           // ← 데모: 내가 연 공구방(방장 관리자 패널 미리보기용)
+    riders: [
+      { nick:"딸기소다", lensId:"L02", power:"좌 -1.50 / 우 -1.75", amount:13680, paid:true,  realName:"정하늘", phone:"010-7777-1234", store:"GS25 신촌오거리점", hasAddr:true },
+      { nick:"네온키티", lensId:"L05", power:"좌 -3.00 / 우 -3.00", amount:17145, paid:false, realName:"", phone:"", store:"", hasAddr:false },
+    ],
   },
 ];
+
+// 렌즈 id → 이름 (장부/주문서 표기용; curatedLenses 는 아래에 정의됨)
+function lensName(id){
+  const l = (typeof curatedLenses !== "undefined") && curatedLenses.find(x=>x.id===id);
+  return l ? l.name : (id || "-");
+}
 
 const BUS_TIER = {
   pro:      { label: "👑 프로 총대",   bg: "#FFF3D6", fg: "#B8860B", bd: "#F2D788" },
@@ -978,13 +1037,15 @@ function drawBus() {
   el.innerHTML = BUSES.map((b)=>{
     const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
     const t = BUS_TIER[b.tier] || BUS_TIER.beginner;
+    const riders = b.riders ? b.riders.length : 0;
     return `
-    <div class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE">
+    <div onclick="openBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer">
       <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h3>
 
       <div class="flex items-center gap-1.5 mt-2.5">
         <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
         <span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:${t.bg};color:${t.fg};border:1px solid ${t.bd}">${t.label}</span>
+        <span style="margin-left:auto;font-size:11px;color:#C4A8B0">👥 ${riders}명 탑승 · 공구방 보기 ›</span>
       </div>
 
       <div class="mt-3">
@@ -997,7 +1058,7 @@ function drawBus() {
         </div>
       </div>
 
-      <button onclick="boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">
+      <button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">
         지금 탑승하기 (${b.fee}P) 🚌
       </button>
     </div>`;
@@ -1076,11 +1137,235 @@ function updateBoardBtn(){
   btn.style.opacity = on ? "1" : "0.45";
 }
 
+// STEP1 → STEP2 로 넘길 탑승 정보 임시 보관
+let _pendingRide = null;
+
 function submitBoard(e){
   e.preventDefault();
-  // MVP: 백엔드 연동 전, 완료 안내만 표시
+  const id = document.getElementById("boardProduct").value;
+  const lens = curatedLenses.find(l=>l.id===id);
+  const power = document.getElementById("boardPower").value.trim();
+  if(!lens) return;
+  _pendingRide = {
+    busId: _boardBusId,
+    lensId: id,
+    power: power,
+    amount: lens.price * YEN_TO_KRW + BOARD_SHIPPING,
+  };
   closeBoard();
-  alert("탑승이 완료되었습니다! 방장의 입금 안내를 기다려주세요.");
+  alert("탑승 완료!");
+  // STEP2: 선 탑승, 후 배송지 입력 — 즉시 배송지 모달 오픈
+  openDelivery();
+}
+
+/* ═══════════════════════════════════
+   STEP 2 — 배송지 입력 (후 입력)
+═══════════════════════════════════ */
+function openDelivery(){
+  const f = document.getElementById("deliveryForm");
+  if(f) f.reset();
+  document.getElementById("deliveryOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeDelivery(){
+  document.getElementById("deliveryOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// 현재 로그인 유저의 표시 닉네임(없으면 '나')
+function _myNick(){
+  return (typeof authUser !== "undefined" && authUser &&
+    (authUser.nickname || authUser.display_name || authUser.name)) || "나";
+}
+
+// 임시 탑승 정보를 해당 버스 장부에 추가 (hasAddr = 주소 입력 여부)
+function _commitRide(extra, hasAddr){
+  if(!_pendingRide) return null;
+  const bus = BUSES.find(b=>b.id===_pendingRide.busId);
+  if(!bus) return null;
+  if(!bus.riders) bus.riders = [];
+  bus.riders.push({
+    nick: _myNick(),
+    lensId: _pendingRide.lensId,
+    power: _pendingRide.power,
+    amount: _pendingRide.amount,
+    paid: false,
+    realName: extra.realName || "",
+    phone: extra.phone || "",
+    store: extra.store || "",
+    hasAddr: !!hasAddr,
+    me: true,
+  });
+  const bid = bus.id;
+  _pendingRide = null;
+  return bid;
+}
+
+function saveDelivery(e){
+  e.preventDefault();
+  const realName = document.getElementById("dvName").value.trim();
+  const phone    = document.getElementById("dvPhone").value.trim();
+  const store    = document.getElementById("dvStore").value.trim();
+  if(!realName || !phone || !store){ alert("실명·전화번호·편의점 주소를 모두 입력해 주세요 🎀"); return; }
+  const bid = _commitRide({ realName, phone, store }, true);
+  closeDelivery();
+  if(bid) openBusRoom(bid);
+}
+
+// 나중에 입력: 주소 없이 장부에만 올리고 공구방으로 이동
+function skipDelivery(){
+  const bid = _commitRide({}, false);
+  closeDelivery();
+  if(bid) openBusRoom(bid);
+}
+
+/* ═══════════════════════════════════
+   공구방 대시보드 (투명 장부 + 방장 패널)
+═══════════════════════════════════ */
+let _roomBusId = null;
+
+// 방장(총대) 여부 — 데모용 mine 플래그 또는 실제 ownerId 매칭
+function isBusOwner(b){
+  if(!b) return false;
+  if(b.mine) return true;
+  return (typeof authUser !== "undefined" && authUser && b.ownerId && authUser.id === b.ownerId);
+}
+
+function openBusRoom(id){
+  const b = BUSES.find(x=>x.id===id);
+  if(!b) return;
+  _roomBusId = id;
+  renderBusRoom(b);
+  document.getElementById("busRoomOverlay").style.display = "block";
+  document.getElementById("busRoomOverlay").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+}
+function closeBusRoom(){
+  document.getElementById("busRoomOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function renderBusRoom(b){
+  const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
+  const t = BUS_TIER[b.tier] || BUS_TIER.beginner;
+  const riders = b.riders || [];
+  const owner = isBusOwner(b);
+
+  // 입금/주소 태그
+  const payTag = (p)=> p
+    ? `<span style="font-size:10px;font-weight:800;color:#1A9E5E;background:#E3F6EC;border:1px solid #B6E6CA;padding:3px 8px;border-radius:100px">입금완료</span>`
+    : `<span style="font-size:10px;font-weight:800;color:#C77800;background:#FFF3D6;border:1px solid #F2D788;padding:3px 8px;border-radius:100px">입금대기</span>`;
+  const addrTag = (a)=> a
+    ? `<span style="font-size:10px;font-weight:800;color:#2D6FE0;background:#E5EEFC;border:1px solid #C2D6F7;padding:3px 8px;border-radius:100px">주소 입력완료</span>`
+    : `<span style="font-size:10px;font-weight:800;color:#9A8D93;background:#F0ECEE;border:1px solid #E2DCE0;padding:3px 8px;border-radius:100px">주소 미입력</span>`;
+
+  // A. 투명 장부 (개인정보 숨김, 닉네임/렌즈/도수/금액/상태만)
+  const ledger = riders.length ? riders.map(r=>`
+    <div class="rounded-xl p-3" style="background:#fff;border:1.5px solid #FFE0EE">
+      <div class="flex items-center justify-between">
+        <span style="font-size:13px;font-weight:800;color:#3A2B30">${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
+        <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${r.amount.toLocaleString()}원</span>
+      </div>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${lensName(r.lensId)} · ${r.power||"도수 미입력"}</p>
+      <div class="flex items-center gap-1.5 mt-2">${payTag(r.paid)}${addrTag(r.hasAddr)}</div>
+    </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">아직 탑승객이 없어요</p>`;
+
+  // B. 방장 전용 관리자 패널 (조건부)
+  const adminRows = riders.map(r=>`
+    <tr style="border-bottom:1px solid #F0ECEE">
+      <td style="padding:8px 6px;font-weight:700;color:#3A2B30;white-space:nowrap">${r.nick}</td>
+      <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.realName||"-"}</td>
+      <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.phone||"-"}</td>
+      <td style="padding:8px 6px;color:#4A4A4A">${lensName(r.lensId)}<br><span style="color:#8D7B80">${r.power||"-"}</span></td>
+      <td style="padding:8px 6px;color:#4A4A4A">${r.store||'<span style="color:#C77800">미입력</span>'}</td>
+    </tr>`).join("");
+
+  const adminPanel = owner ? `
+    <div class="rounded-2xl p-4 mt-5" style="background:#2B2330;border:1.5px solid #3E3447">
+      <div class="flex items-center gap-2 mb-1">
+        <span style="font-size:14px;font-weight:800;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif">🔐 방장 관리자 패널</span>
+        <span style="font-size:10px;font-weight:700;color:#FFB3CC;background:rgba(255,111,168,.18);padding:2px 8px;border-radius:100px">총대 전용</span>
+      </div>
+      <p style="font-size:11px;color:#B6AAB0;margin-bottom:12px">파티원 배송 정보입니다. 외부 유출에 주의하세요.</p>
+      <div style="overflow-x:auto;border-radius:12px;background:#fff">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:520px">
+          <thead><tr style="background:#FBEFF4">
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">닉네임</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">실명</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">전화번호</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">렌즈/도수</th>
+            <th style="padding:9px 6px;text-align:left;color:#C41055;font-weight:800;white-space:nowrap">편의점 주소</th>
+          </tr></thead>
+          <tbody>${adminRows}</tbody>
+        </table>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button onclick="copyAddressBook()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#2D6FE0">📋 주소록 복사</button>
+        <button onclick="copyOrderSheet()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">🛒 주문서 복사</button>
+      </div>
+    </div>` : "";
+
+  document.getElementById("busRoomBody").innerHTML = `
+    <div style="padding:20px 20px 48px;max-width:460px;margin:0 auto">
+      <h2 style="font-size:18px;font-weight:800;line-height:1.4;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h2>
+      <div class="flex items-center gap-1.5 mt-2">
+        <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
+        <span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:${t.bg};color:${t.fg};border:1px solid ${t.bd}">${t.label}</span>
+      </div>
+      <div class="mt-3">
+        <div class="flex items-end justify-between mb-1.5">
+          <span style="font-size:11px;font-weight:700;color:#C41055">달성률 ${pct}%</span>
+          <span style="font-size:11px;color:#8D7B80"><b style="color:#3A2B30">${b.current.toLocaleString()}</b> / ${b.goal.toLocaleString()}엔</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full overflow-hidden" style="height:10px">
+          <div class="rounded-full" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#FF9EC7,#FF6FA8 60%,#C41055)"></div>
+        </div>
+      </div>
+
+      <button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-4 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">지금 탑승하기 (${b.fee}P) 🚌</button>
+
+      <div class="flex items-center gap-2 mt-6 mb-2.5">
+        <span style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">📒 실시간 투명 장부</span>
+        <span style="font-size:11px;color:#8D7B80">탑승객 ${riders.length}명 (개인정보 비공개)</span>
+      </div>
+      <div class="flex flex-col gap-2">${ledger}</div>
+
+      ${adminPanel}
+    </div>`;
+}
+
+function _ridersOf(id){
+  const b = BUSES.find(x=>x.id===id);
+  return (b && b.riders) || [];
+}
+
+// 📋 주소록 복사 — 국내 편의점 택배 양식
+function copyAddressBook(){
+  const riders = _ridersOf(_roomBusId).filter(r=>r.hasAddr && r.realName);
+  if(!riders.length){ alert("주소를 입력한 파티원이 아직 없어요."); return; }
+  const text = riders.map((r,i)=>
+    `${i+1}. ${r.realName} / ${r.phone} / ${r.store}`).join("\n");
+  _copy(text, `주소록 ${riders.length}건을 복사했어요 📋`);
+}
+
+// 🛒 주문서 복사 — 렌즈라라 결제용 (렌즈명 + 도수만)
+function copyOrderSheet(){
+  const riders = _ridersOf(_roomBusId);
+  if(!riders.length){ alert("탑승객이 아직 없어요."); return; }
+  const text = riders.map((r,i)=>
+    `${i+1}. ${lensName(r.lensId)} | ${r.power||"도수 미입력"}`).join("\n");
+  _copy(text, `주문서 ${riders.length}건을 복사했어요 🛒`);
+}
+
+function _copy(text, okMsg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(
+      ()=>alert(okMsg + "\n\n" + text),
+      ()=>alert("복사 실패 — 아래 내용을 길게 눌러 복사하세요:\n\n" + text)
+    );
+  } else {
+    alert("아래 내용을 길게 눌러 복사하세요:\n\n" + text);
+  }
 }
 
 /* ═══════════════════════════════════
