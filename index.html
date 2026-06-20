@@ -1160,6 +1160,10 @@ function drawBus() {
     const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
     const t = BUS_TIER[b.tier] || BUS_TIER.beginner;
     const riders = b.riders ? b.riders.length : 0;
+    const isMyRoom = isBusOwner(b);   // 접속 유저가 이 방의 총대인가
+    const cardBtn = isMyRoom
+      ? `<button onclick="event.stopPropagation();openBusRoom(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#7E3AA8,#2B2330);box-shadow:0 8px 18px -8px rgba(43,35,48,.6)">👑 내 공구 관리하기</button>`
+      : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>`;
     return `
     <div onclick="openBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer">
       <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h3>
@@ -1180,9 +1184,7 @@ function drawBus() {
         </div>
       </div>
 
-      <button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">
-        지금 탑승하기 🚌
-      </button>
+      ${cardBtn}
     </div>`;
   }).join("");
 }
@@ -1607,6 +1609,12 @@ function renderBusRoom(b){
         <button onclick="copyAddressBook()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#2D6FE0">📋 주소록 복사</button>
         <button onclick="copyOrderSheet()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">🛒 주문서 복사</button>
       </div>
+      <div style="margin-top:14px;border-top:1px solid #3E3447;padding-top:14px">
+        ${ riders.some(r=>r.paid)
+          ? `<button disabled class="w-full rounded-xl py-3" style="border:none;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#8A8090;background:#3E3447;cursor:not-allowed">🗑️ 공구방 취소/삭제</button>
+             <p style="font-size:11px;color:#FF8A8A;font-weight:700;line-height:1.5;margin-top:8px">⚠️ 입금자가 발생하여 임의 취소가 불가능합니다. (사고 발생 시 고객센터 문의)</p>`
+          : `<button onclick="cancelBus(${b.id})" class="w-full rounded-xl py-3" style="border:1.5px solid #6E4550;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#FF8A8A;background:transparent">🗑️ 공구방 취소/삭제</button>` }
+      </div>
     </div>` : "";
 
   document.getElementById("busRoomBody").innerHTML = `
@@ -1626,7 +1634,9 @@ function renderBusRoom(b){
         </div>
       </div>
 
-      <button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-4 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">지금 탑승하기 🚌</button>
+      ${ owner
+        ? `<div class="w-full mt-4 rounded-xl py-3" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:700;color:#8D7B80;background:#F0ECEE">👑 내가 총대인 공구방이에요</div>`
+        : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-4 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>` }
 
       <div class="flex items-center gap-2 mt-6 mb-2.5">
         <span style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">📒 실시간 투명 장부</span>
@@ -1646,6 +1656,28 @@ function _ridersOf(id){
 // 수령 방법 짧은 표기 (장부용)
 function methodShort(m){
   return m === "home" ? "자택" : m === "etc" ? "기타" : "반택";
+}
+
+// 공구방 취소/삭제 (방장 전용) — 입금자 있으면 차단
+function cancelBus(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b) return;
+  const riders = b.riders || [];
+  if(riders.some(r=>r.paid)){
+    alert("입금자가 발생하여 임의 취소가 불가능합니다. (사고 발생 시 고객센터 문의)");
+    return;
+  }
+  if(riders.length === 0){
+    if(!confirm("공구방을 삭제할까요?")) return;
+    alert("공구방이 삭제되었습니다.");
+  } else {
+    if(!confirm("공구를 취소할까요? 파티원들에게 300P가 환불됩니다.")) return;
+    alert("공구가 취소되며, 파티원들에게 300P가 환불됩니다.");
+  }
+  const idx = BUSES.findIndex(x=>x.id===busId);
+  if(idx >= 0) BUSES.splice(idx, 1);
+  closeBusRoom();
+  drawBus();
 }
 
 // 방장 주도 입금 승인: 입금대기 → 입금완료
