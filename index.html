@@ -412,11 +412,11 @@
       <!-- 노쇼 방지 동의 -->
       <label class="flex items-start gap-2 mb-4" style="cursor:pointer">
         <input id="boardAgree" type="checkbox" onchange="updateBoardBtn()" style="margin-top:2px;width:16px;height:16px;accent-color:#C41055;flex-shrink:0"/>
-        <span style="font-size:12px;color:#6B5B60;line-height:1.55"><b style="color:#C41055">[필수]</b> 기한 내 미입금(노쇼) 시, <b style="color:#C41055">KAIWAI 3진 아웃제</b>에 따라 이용이 제한될 수 있음에 동의합니다.</span>
+        <span style="font-size:12px;color:#6B5B60;line-height:1.55"><b style="color:#C41055">[필수]</b> 탑승 수수료 <b style="color:#C41055">300P 차감</b>에 동의하며, 미입금(노쇼) 시 <b style="color:#C41055">3진 아웃제</b> 패널티가 부여됨을 확인했습니다.</span>
       </label>
 
       <button id="boardSubmitBtn" type="submit" disabled
-        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9);opacity:.45;transition:opacity .15s">🚀 탑승 완료하기</button>
+        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9);opacity:.45;transition:opacity .15s">🚀 300P 내고 탑승 완료하기</button>
     </form>
   </div>
 </div>
@@ -545,8 +545,8 @@
     </div>
 
     <div class="rounded-xl p-4 mb-3" style="background:#FFF8E8;border:1.5px solid #F7E4B0">
-      <p style="font-size:14px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:6px">② 노쇼 3진 아웃제 <span style="color:#8D7B80;font-size:12px">(잠수 차단)</span></p>
-      <p style="font-size:12px;color:#6B5B60;line-height:1.65">상습적인 노쇼(잠수) 빌런은 KAIWAI가 완벽하게 차단합니다. 정해진 기한 내 미입금 시 <b>1회 경고(일시 정지)</b>가 부여되며, <b>누적 3회 적발 시 영구 퇴출(3 OUT)</b>됩니다.</p>
+      <p style="font-size:14px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:6px">② 300P 탑승 수수료 & 3진 아웃제 <span style="color:#8D7B80;font-size:12px">(노쇼 차단)</span></p>
+      <p style="font-size:12px;color:#6B5B60;line-height:1.65">공구 탑승 시 <b>300P가 안심 수수료</b>로 차감되어 총대님께 수고비로 100% 전달됩니다. 또한, 정해진 기한 내 입금하지 않는 노쇼(잠수) 적발 시 1회 경고가 부여되며, <b>누적 3회 시 영구 퇴출(3 OUT)</b>됩니다.</p>
     </div>
 
     <div class="rounded-xl p-4" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
@@ -1206,9 +1206,9 @@ function closeRuleModal(){
 // (추후 Supabase 본인인증 결과로 교체)
 let isVerifiedHost = (function(){ try { return localStorage.getItem("kaiwai_verified_host") === "1"; } catch(_) { return false; } })();
 
-// 보상(총대 수고비/리워드) 노출 플래그 — 무료 운영 중엔 false.
-// 유료/리워드 전환 시 true 로 바꾸면 관련 안내가 전부 다시 노출됨.
-const REWARDS_ENABLED = false;
+// 보상(총대 수고비/리워드) 노출 플래그.
+// 300P 탑승 수수료 → 총대 수고비 지급 구조가 부활하여 true (관련 안내 노출).
+const REWARDS_ENABLED = true;
 
 function openCreateBus(){
   if(!isVerifiedHost){
@@ -1365,6 +1365,10 @@ function submitBoard(e){
   const lens = curatedLenses.find(l=>l.id===id);
   const power = document.getElementById("boardPower").value.trim();
   if(!lens) return;
+  // 탑승 수수료 300P 검사 (Mock) — 부족 시 차단
+  const userPoints = getPoints();
+  if(userPoints < 300){ alert("포인트가 부족합니다. 매일 로그인하여 포인트를 모아보세요!"); return; }
+  spendPoints(300);
   const method = getShipMethod();
   const fee = getShipFee(method);
   _pendingRide = {
@@ -1375,7 +1379,7 @@ function submitBoard(e){
     amount: lens.price * YEN_TO_KRW + fee,
   };
   closeBoard();
-  alert("탑승 완료!");
+  alert("탑승이 완료되었습니다! 300P가 차감되었습니다.");
   // STEP2: 선 탑승, 후 배송지 입력 — 즉시 배송지 모달 오픈
   openDelivery();
 }
@@ -3282,6 +3286,15 @@ function updMFav(id){
 function _pointsKey(){ return authUser?.id ? "kaiwai_points_"+authUser.id : null; }
 function _pointsObj(){ const k=_pointsKey(); if(!k) return {points:0}; try{ return JSON.parse(localStorage.getItem(k)||"{}"); }catch(e){ return {points:0}; } }
 function getPoints(){ return _pointsObj().points || 0; }
+function spendPoints(n){
+  const k=_pointsKey(); if(!k) return false;
+  const o=_pointsObj();
+  if((o.points||0) < n) return false;
+  o.points = (o.points||0) - n;
+  localStorage.setItem(k, JSON.stringify(o));
+  renderPoints();
+  return true;
+}
 function _todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function renderPoints(){
   const chip=document.getElementById("pointChip");

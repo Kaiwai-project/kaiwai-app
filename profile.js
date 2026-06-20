@@ -426,9 +426,9 @@
   const capForm    = $("captainForm");
   const capClose   = $("capClose");
 
-  // 보상(리워드) 노출 플래그 — 무료 운영 중엔 false.
-  // 유료/리워드 전환 시 true 로 바꾸면 HTML 원문(리워드 문구)이 그대로 노출됨.
-  const REWARDS_ENABLED = false;
+  // 보상(리워드) 노출 플래그 — 300P 수고비 구조 부활로 true.
+  // false 로 바꾸면 배너 문구가 무료 버전으로 덮어쓰기됨.
+  const REWARDS_ENABLED = true;
   if (!REWARDS_ENABLED) {
     const bannerTxt = document.querySelector(".captain-banner__txt");
     if (bannerTxt) bannerTxt.textContent = "🛡️ 나도 총대 되어 안전한 공구 열기!";
