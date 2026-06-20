@@ -580,6 +580,30 @@
   </div>
 </div>
 
+<!-- ══ 개별 운송장 등록 모달 ══ -->
+<div id="trackingOverlay" onclick="closeTracking()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:24px">
+  <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#fff;border-radius:22px;padding:22px">
+    <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:17px;color:#3A2B30;margin:0 0 4px">🚚 운송장 등록</h2>
+    <p id="trkWho" style="font-size:12px;color:#8D7B80;margin:0 0 16px">파티원에게 발송 알림이 전송됩니다.</p>
+    <label style="display:block;font-size:12px;font-weight:800;color:#2D6FE0;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">택배사 *</label>
+    <select id="trkCourier" style="width:100%;padding:12px 14px;border:1.5px solid #DBEAFE;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:14px">
+      <option>편의점반택(CU)</option>
+      <option>편의점반택(GS25)</option>
+      <option>CJ대한통운</option>
+      <option>우체국택배</option>
+      <option>한진택배</option>
+      <option>롯데택배</option>
+      <option>로젠택배</option>
+    </select>
+    <label style="display:block;font-size:12px;font-weight:800;color:#2D6FE0;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">운송장 번호 *</label>
+    <input id="trkNum" inputmode="numeric" placeholder="'-' 없이 숫자만" style="width:100%;padding:12px 14px;border:1.5px solid #DBEAFE;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:18px"/>
+    <div class="flex gap-2">
+      <button onclick="closeTracking()" class="flex-1 rounded-xl py-3" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">취소</button>
+      <button onclick="saveTracking()" class="flex-1 rounded-xl py-3" style="border:none;background:#2D6FE0;color:#fff;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">등록 완료</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 문제 발생(Issue) 사유 선택 모달 ══ -->
 <div id="issueOverlay" onclick="closeIssue()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:24px">
   <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#fff;border-radius:22px;padding:22px">
@@ -1612,7 +1636,7 @@ function renderBusRoom(b){
   const ledger = riders.length ? riders.map((r,i)=>`
     <div class="rounded-xl p-3" style="background:${r.issue?'#FFF5F5':'#fff'};border:1.5px solid ${r.issue?'#F7C9CB':'#FFE0EE'}">
       <div class="flex items-center justify-between">
-        <span style="font-size:13px;font-weight:800;color:#3A2B30">${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
+        <span style="font-size:13px;font-weight:800;color:#3A2B30">${r.trackingNumber?"🚚 ":""}${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
         <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${r.amount.toLocaleString()}원</span>
       </div>
       <p style="font-size:11px;color:#8D7B80;margin-top:3px">${lensName(r.lensId)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
@@ -1623,6 +1647,15 @@ function renderBusRoom(b){
              <button onclick="editMyInfo(${b.id},${i})" style="border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 정보 수정</button>
              <button onclick="cancelMyRide(${b.id},${i})" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">🚪 탑승 취소</button>
            </div>`) : "" }
+      ${ (r.me || owner) ? (r.trackingNumber
+        ? `<div class="mt-2 rounded-xl px-3 py-2.5" style="background:#EFF6FF;border:1px solid #DBEAFE">
+             <p style="font-size:11px;font-weight:800;color:#1E40AF">📦 나의 택배 운송장</p>
+             <div class="flex items-center justify-between gap-2 mt-1">
+               <span style="font-size:12px;font-weight:700;color:#1E3A5F;min-width:0;overflow:hidden;text-overflow:ellipsis">${_esc(r.courierName||"택배")} ${_esc(r.trackingNumber)}</span>
+               <button onclick="event.stopPropagation();trackQuery(${b.id},${i})" style="flex-shrink:0;border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#2D6FE0;padding:6px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">조회하기</button>
+             </div>
+           </div>`
+        : `<div class="mt-2" style="font-size:11px;font-weight:700;color:#9A8D93">🚚 운송장 등록 대기 중</div>`) : "" }
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">아직 탑승객이 없어요</p>`;
 
   // B. 방장 전용 관리자 패널 (조건부) — 입금자명 + 입금 승인 액션
@@ -1641,6 +1674,9 @@ function renderBusRoom(b){
             : `<button onclick="approvePay(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#1A9E5E;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">✅ 입금 승인</button>
                ${noshowBtn(r,i)}` }
           ${problemBtn(r,i)}
+          ${ r.trackingNumber
+            ? `<button onclick="openTracking(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#2D6FE0;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">🚚 ${_esc(r.trackingNumber)} (수정)</button>`
+            : `<button onclick="openTracking(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#6B7280;padding:7px 11px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif">🚚 운송장 입력</button>` }
         </div>
         ${ r.issue ? `<div style="font-size:10px;font-weight:800;color:#E5484D;margin-top:5px">${_esc(issueText(r))}</div>` : "" }
       </td>
@@ -1682,7 +1718,7 @@ function renderBusRoom(b){
           : `<button onclick="toggleOrdered(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
              <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>` }
       </div>
-      <button onclick="registerTracking(${b.id})" class="w-full rounded-xl py-3" style="margin-top:8px;border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#2D6FE0">🚚 운송장 등록 · 한국 도착 알림${ b.tracking ? " (등록됨)" : "" }</button>
+      <p style="font-size:11px;color:#B6AAB0;margin-top:10px;line-height:1.5">🚚 운송장은 위 파티원 목록의 <b style="color:#fff">[운송장 입력]</b> 버튼으로 <b style="color:#fff">개별 등록</b>하세요. 등록 즉시 해당 파티원에게 발송 알림이 갑니다.</p>
       <div style="margin-top:14px;border-top:1px solid #3E3447;padding-top:14px">
         ${ (riders.some(r=>r.paid) && !isAdminUser())
           ? `<button disabled class="w-full rounded-xl py-3" style="border:none;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#8A8090;background:#3E3447;cursor:not-allowed">🗑️ 공구방 취소/삭제</button>
@@ -1945,17 +1981,43 @@ function cancelMyRide(busId, idx){
   renderBusRoom(b);
 }
 
-// ── 방장: 운송장 등록(한국 도착/반택 접수) → 전체 알림 ──
-function registerTracking(busId){
+// ── 방장: 개별 운송장 등록 → 해당 파티원에게 발송 알림 ──
+let _trkTarget = { busId:null, idx:null };
+function openTracking(busId, idx){
   const b = BUSES.find(x=>x.id===busId);
-  if(!b) return;
-  const v = prompt("운송장 번호를 입력하세요 (입력 시 파티원에게 '한국 도착' 알림 발송):", b.tracking||"");
-  if(v === null) return;
-  b.tracking = v.trim();
-  if(b.tracking){
-    (b.riders||[]).forEach(r=> sendNotification(r.nick, "렌즈가 한국에 도착했어요! 📦", `곧 편의점 택배로 발송돼요. 운송장: ${b.tracking}`));
-  }
+  const r = b && b.riders && b.riders[idx];
+  if(!r) return;
+  _trkTarget = { busId, idx };
+  document.getElementById("trkWho").textContent = `${r.nick} 님 — 등록 즉시 발송 알림이 전송됩니다.`;
+  if(r.courierName) document.getElementById("trkCourier").value = r.courierName;
+  document.getElementById("trkNum").value = r.trackingNumber || "";
+  document.getElementById("trackingOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeTracking(){
+  document.getElementById("trackingOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+function saveTracking(){
+  const b = BUSES.find(x=>x.id===_trkTarget.busId);
+  const r = b && b.riders && b.riders[_trkTarget.idx];
+  if(!r){ closeTracking(); return; }
+  const courier = document.getElementById("trkCourier").value;
+  const num = document.getElementById("trkNum").value.replace(/[^0-9A-Za-z]/g,"").trim();
+  if(!num){ alert("운송장 번호를 입력해 주세요"); return; }
+  r.courierName = courier;
+  r.trackingNumber = num;
+  closeTracking();
   renderBusRoom(b);
+  sendNotification(r.nick, "택배가 발송되었습니다! 📦", `${courier} 운송장 번호: ${num}로 상품이 발송되었습니다. 확인해주세요!`);
+}
+// 운송장 조회 — 택배사+번호로 검색
+function trackQuery(busId, idx){
+  const b = BUSES.find(x=>x.id===busId);
+  const r = b && b.riders && b.riders[idx];
+  if(!r || !r.trackingNumber) return;
+  const q = encodeURIComponent(`${r.courierName||""} ${r.trackingNumber} 택배조회`);
+  window.open(`https://search.naver.com/search.naver?query=${q}`, "_blank", "noopener");
 }
 
 // ── 방장: 노쇼(미입금) 사전 경고 → 보증금 차감 전 알림 (쿨다운 10분) ──
