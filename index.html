@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Gowun+Dodum&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- 소셜 로그인 전부 Supabase Auth 로 통일 (카카오/구글/네이버 SDK 모두 제거) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -268,7 +269,7 @@
   <div class="px-4 pt-1 pb-3">
     <!-- 신뢰도 슬로건 배너 (? 클릭 → 안심 공구 3대 철칙 모달) -->
     <div class="rounded-xl p-4 mb-1" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
-      <p style="font-size:14px;font-weight:800;color:#1E40AF;font-family:'M PLUS Rounded 1c',sans-serif;line-height:1.45">먹튀 0%, 잠수 0%. 스트레스 없는 KAIWAI 안심 버스 🚌 <span onclick="openRuleModal()" role="button" title="안심 공구 3대 철칙 보기" style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#94A3B8;color:#fff;font-size:12px;font-weight:800;cursor:pointer;vertical-align:middle">?</span></p>
+      <p style="font-size:14px;font-weight:800;color:#1E40AF;font-family:'M PLUS Rounded 1c',sans-serif;line-height:1.45">먹튀 0%, 잠수 0%. 스트레스 없는 KAIWAI 안심 버스 🚌 <i class="fa-solid fa-circle-question text-gray-400 cursor-pointer" onclick="openRuleModal()" role="button" title="안심 공구 3대 철칙 보기" style="font-size:15px;vertical-align:middle"></i></p>
     </div>
   </div>
   <div id="busList" class="px-4 pb-28 flex flex-col gap-3"></div>
@@ -411,7 +412,7 @@
       <!-- 노쇼 방지 동의 -->
       <label class="flex items-start gap-2 mb-4" style="cursor:pointer">
         <input id="boardAgree" type="checkbox" onchange="updateBoardBtn()" style="margin-top:2px;width:16px;height:16px;accent-color:#C41055;flex-shrink:0"/>
-        <span style="font-size:12px;color:#6B5B60;line-height:1.55">2시간 내 미입금(노쇼) 시 <b style="color:#C41055">다음 공구 참여가 제한</b>될 수 있음에 동의합니다.</span>
+        <span style="font-size:12px;color:#6B5B60;line-height:1.55"><b style="color:#C41055">[필수]</b> 기한 내 미입금(노쇼) 시, <b style="color:#C41055">KAIWAI 3진 아웃제</b>에 따라 이용이 제한될 수 있음에 동의합니다.</span>
       </label>
 
       <button id="boardSubmitBtn" type="submit" disabled
@@ -544,8 +545,8 @@
     </div>
 
     <div class="rounded-xl p-4 mb-3" style="background:#FFF8E8;border:1.5px solid #F7E4B0">
-      <p style="font-size:14px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:6px">② 보증금 시스템 <span style="color:#8D7B80;font-size:12px">(노쇼 차단)</span></p>
-      <p style="font-size:12px;color:#6B5B60;line-height:1.65">공구 탑승 시 <b>300P가 보증금</b>으로 차감됩니다. 정해진 시간 내에 입금하지 않는 노쇼(잠수) 유저의 포인트는 압수되어 총대님께 위로금으로 지급됩니다.</p>
+      <p style="font-size:14px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:6px">② 노쇼 3진 아웃제 <span style="color:#8D7B80;font-size:12px">(잠수 차단)</span></p>
+      <p style="font-size:12px;color:#6B5B60;line-height:1.65">상습적인 노쇼(잠수) 빌런은 KAIWAI가 완벽하게 차단합니다. 정해진 기한 내 미입금 시 <b>1회 경고(일시 정지)</b>가 부여되며, <b>누적 3회 적발 시 영구 퇴출(3 OUT)</b>됩니다.</p>
     </div>
 
     <div class="rounded-xl p-4" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
