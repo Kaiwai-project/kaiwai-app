@@ -427,8 +427,8 @@
           <input id="bAddr" oninput="updateBoardBtn()" placeholder="예) GS25 홍대입구역점"
             style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px"/>
         </div>
-        <div id="bAddrHomeWrap" style="display:none">
-          <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">일반택배 배송지 주소 * <span style="color:#8D7B80;font-weight:600">(자택/기타택배)</span></label>
+        <div id="bAddrHomeWrap">
+          <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">일반택배 배송지 주소 <span style="color:#8D7B80;font-weight:600">(자택/기타택배)</span></label>
           <input id="bAddrHome" oninput="updateBoardBtn()" placeholder="예) 서울시 마포구 와우산로 00, 000동 000호"
             style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px"/>
         </div>
@@ -1473,14 +1473,6 @@ function updateReceipt(){
   document.getElementById("rcShipLabel").textContent = `배송비 (${SHIP_METHODS[method].label})`;
   document.getElementById("rcShip").textContent = fee.toLocaleString() + "원";
 
-  // 수령 방법에 따라 주소 입력칸 토글: 편의점 반택 → 편의점 주소칸 / 자택·기타 → 일반택배 주소칸
-  const convWrap = document.getElementById("bAddrConvWrap");
-  const homeWrap = document.getElementById("bAddrHomeWrap");
-  if(convWrap && homeWrap){
-    const isConv = (method === "conv");
-    convWrap.style.display = isConv ? "block" : "none";
-    homeWrap.style.display = isConv ? "none" : "block";
-  }
 
   const lens = curatedLenses.find(l=>l.id===document.getElementById("boardProduct").value);
   const goodsEl = document.getElementById("rcGoods");
