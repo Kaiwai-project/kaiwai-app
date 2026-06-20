@@ -521,7 +521,8 @@
         </label>
       </div>
 
-      <div class="rounded-xl px-4 py-3 mb-4" style="background:linear-gradient(120deg,#FFF3D6,#FFF0F5)">
+      <!-- 보상 안내: REWARDS_ENABLED 로 노출 제어 (무료 운영 중엔 숨김) -->
+      <div id="cbRewardNote" class="rounded-xl px-4 py-3 mb-4" style="display:none;background:linear-gradient(120deg,#FFF3D6,#FFF0F5)">
         <p style="font-size:12px;color:#7A6A4E;line-height:1.6">🎁 이 공구가 무사히 완료되어 KAIWAI 제휴 링크로 결제하시면, <b style="color:#C41055">총대 수고비(포인트)</b>가 지급됩니다.</p>
       </div>
 
@@ -1166,6 +1167,10 @@ function drawBus() {
 // 총대(방장) 인증 여부 — 추후 Supabase 본인인증 결과로 교체
 let isVerifiedHost = false;
 
+// 보상(총대 수고비/리워드) 노출 플래그 — 무료 운영 중엔 false.
+// 유료/리워드 전환 시 true 로 바꾸면 관련 안내가 전부 다시 노출됨.
+const REWARDS_ENABLED = false;
+
 function openCreateBus(){
   if(!isVerifiedHost){
     document.getElementById("hostVerifyOverlay").style.display = "flex";
@@ -1174,6 +1179,8 @@ function openCreateBus(){
   }
   const f = document.getElementById("createBusForm");
   if(f) f.reset();
+  const rn = document.getElementById("cbRewardNote");
+  if(rn) rn.style.display = REWARDS_ENABLED ? "block" : "none";
   syncDeadlineUI();
   document.getElementById("createBusOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";

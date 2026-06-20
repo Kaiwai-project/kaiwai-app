@@ -426,6 +426,16 @@
   const capForm    = $("captainForm");
   const capClose   = $("capClose");
 
+  // 보상(리워드) 노출 플래그 — 무료 운영 중엔 false.
+  // 유료/리워드 전환 시 true 로 바꾸면 HTML 원문(리워드 문구)이 그대로 노출됨.
+  const REWARDS_ENABLED = false;
+  if (!REWARDS_ENABLED) {
+    const bannerTxt = document.querySelector(".captain-banner__txt");
+    if (bannerTxt) bannerTxt.textContent = "🛡️ 나도 총대 되어 안전한 공구 열기!";
+    const capIntro = document.querySelector(".cap-intro");
+    if (capIntro) capIntro.textContent = "안전한 공구를 직접 열어보세요. 검토 후 인증 결과를 안내해 드려요.";
+  }
+
   function openCaptain() {
     // 닉네임 자동 채움 (편집 중 값이 있으면 우선)
     const nickEl = $("capNick");
