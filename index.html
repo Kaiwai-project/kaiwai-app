@@ -1593,8 +1593,11 @@ function renderBusRoom(b){
       <p style="font-size:11px;color:#8D7B80;margin-top:3px">${lensName(r.lensId)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
       <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">${issueTag(r)}${payTag(r.paid)}${addrTag(r.hasAddr)}</div>
       ${ r.me ? (b.ordered
-        ? `<div class="mt-2" style="font-size:11px;font-weight:700;color:#9A8D93">🔒 주문 완료되어 수정이 잠겼어요</div>`
-        : `<button onclick="editMyInfo(${b.id},${i})" class="mt-2" style="border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 정보 수정</button>`) : "" }
+        ? `<div class="mt-2" style="font-size:11px;font-weight:700;color:#9A8D93">🔒 주문이 시작되어 수정·취소가 잠겼어요</div>`
+        : `<div class="flex gap-1.5 mt-2">
+             <button onclick="editMyInfo(${b.id},${i})" style="border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 정보 수정</button>
+             <button onclick="cancelMyRide(${b.id},${i})" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">🚪 탑승 취소</button>
+           </div>`) : "" }
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">아직 탑승객이 없어요</p>`;
 
   // B. 방장 전용 관리자 패널 (조건부) — 입금자명 + 입금 승인 액션
@@ -1650,8 +1653,9 @@ function renderBusRoom(b){
       </div>` : "" }
       <div style="margin-top:12px">
         ${ b.ordered
-          ? `<div class="w-full rounded-xl py-3" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#7BE8A8;background:#22351F;border:1px solid #2F5A2C">✅ 렌즈라라 주문 완료됨 (파티원 수정 잠금)</div>`
-          : `<button onclick="toggleOrdered(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">🛒 렌즈라라에서 한 번에 결제하기</button>` }
+          ? `<div class="w-full rounded-xl py-3" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#7BE8A8;background:#22351F;border:1px solid #2F5A2C">✅ 주문 진행 중 · 파티원 정보 잠금됨</div>`
+          : `<button onclick="toggleOrdered(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
+             <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>` }
       </div>
       <button onclick="registerTracking(${b.id})" class="w-full rounded-xl py-3" style="margin-top:8px;border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#2D6FE0">🚚 운송장 등록 · 한국 도착 알림${ b.tracking ? " (등록됨)" : "" }</button>
       <div style="margin-top:14px;border-top:1px solid #3E3447;padding-top:14px">
@@ -1665,9 +1669,10 @@ function renderBusRoom(b){
   document.getElementById("busRoomBody").innerHTML = `
     <div style="padding:20px 20px 48px;max-width:460px;margin:0 auto">
       <h2 style="font-size:18px;font-weight:800;line-height:1.4;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h2>
-      <div class="flex items-center gap-1.5 mt-2">
+      <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">
         <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
         <span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:${t.bg};color:${t.fg};border:1px solid ${t.bd}">${t.label}</span>
+        ${ b.ordered ? `<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:#1E3A5F;color:#fff">🔒 주문 진행 중 (수정 불가)</span>` : "" }
       </div>
       <div class="mt-3">
         <div class="flex items-end justify-between mb-1.5">
@@ -1834,13 +1839,31 @@ function saveIssue(){
   sendNotification(r.nick, "공구 주문에 문제가 발생했어요 ⚠️", "방장님이 적은 사유: " + reasonText);
 }
 
-// ── 방장: 렌즈라라 한 번에 결제(주문 완료) → 전체 알림 + 수정 잠금 ──
+// ── 방장: 구매 시작(주문 진행) → 정보 잠금 + 전체 알림 ──
 function toggleOrdered(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
-  if(!confirm("렌즈라라에서 한 번에 결제(주문)하셨나요?\n완료 시 파티원들의 정보 수정이 잠깁니다.")) return;
-  b.ordered = true;
-  (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀", "렌즈라라에서 일괄 주문이 완료됐어요! 곧 일본에서 발송됩니다 ✈️"));
+  if(!confirm("구매를 시작하시겠습니까? 구매를 시작하면 참여자들의 정보가 변경 불가능하도록 잠금 처리되며, 모든 참여자에게 알림이 발송됩니다.")) return;
+  b.ordered = true;   // = coopData.isOrderStarted
+  (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "렌즈라라 일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 일본에서 발송됩니다 ✈️"));
+  renderBusRoom(b);
+}
+
+// ── 파티원: 탑승 취소 (주문 시작 전까지만) ──
+function cancelMyRide(busId, idx){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || b.ordered){ alert("주문이 시작되어 더 이상 취소할 수 없어요."); return; }
+  const r = b.riders && b.riders[idx];
+  if(!r) return;
+  if(!confirm("탑승을 취소할까요? 차감된 300P는 환불됩니다.")) return;
+  b.riders.splice(idx, 1);
+  if(typeof spendPoints === "function" && typeof getPoints === "function"){
+    // 보증금 300P 환불 (Mock)
+    const k = _pointsKey && _pointsKey();
+    if(k){ const o=_pointsObj(); o.points=(o.points||0)+300; localStorage.setItem(k, JSON.stringify(o)); renderPoints(); }
+  }
+  alert("탑승이 취소되었습니다. 보증금 300P가 환불되었어요.");
+  drawBus();
   renderBusRoom(b);
 }
 
