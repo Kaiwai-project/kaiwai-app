@@ -372,9 +372,19 @@
           <option value="">렌즈를 선택해 주세요</option>
         </select>
 
-        <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 입력 *</label>
-        <input id="boardPower" required oninput="updateBoardBtn()" placeholder="좌 -2.00, 우 -2.50 / 무도수는 0.00"
-          style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+        <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 선택 * <span style="color:#8D7B80;font-weight:600">(무도수는 0.00)</span></label>
+        <div class="flex gap-2" style="margin-bottom:16px">
+          <div style="flex:1">
+            <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">좌 (L)</span>
+            <select id="boardPowerL" onchange="updateBoardBtn()"
+              style="width:100%;padding:12px 12px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+          </div>
+          <div style="flex:1">
+            <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">우 (R)</span>
+            <select id="boardPowerR" onchange="updateBoardBtn()"
+              style="width:100%;padding:12px 12px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+          </div>
+        </div>
 
         <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif">수령 방법 *</label>
         <div class="flex flex-col gap-2" style="margin-bottom:20px">
@@ -386,6 +396,12 @@
             <input type="radio" name="boardShip" value="home" onchange="updateReceipt()" style="width:16px;height:16px;accent-color:#C41055"/>
             <span style="font-size:13px;font-weight:700;color:#3A2B30">일반 자택 택배 <span style="color:#8D7B80;font-weight:600">(3,500원)</span></span>
           </label>
+          <label class="flex items-center gap-2.5" style="cursor:pointer;padding:11px 13px;border:1.5px solid #FFE0EE;border-radius:14px">
+            <input type="radio" name="boardShip" value="etc" onchange="updateReceipt()" style="width:16px;height:16px;accent-color:#C41055"/>
+            <span style="font-size:13px;font-weight:700;color:#3A2B30">기타택배 <span style="color:#8D7B80;font-weight:600">(금액 직접입력)</span></span>
+          </label>
+          <input id="boardShipEtc" type="number" min="0" inputmode="numeric" placeholder="기타 배송비 입력 (원)" oninput="updateReceipt()"
+            style="display:none;width:100%;padding:11px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box"/>
         </div>
 
         <!-- 섹션 B: 배송 및 입금 정보 -->
@@ -1334,16 +1350,27 @@ const curatedLenses = [
 
 // 결제 계산 상수 (고정 환율 100엔=900원 → ×9)
 const YEN_TO_KRW = 9;
-// 수령 방법별 배송비
+// 도수 드롭다운 옵션: 0.00 ~ -10.00 (0.25 단위)
+const POWER_OPTIONS = (function(){
+  const arr = ["0.00"];
+  for(let v=0.25; v<=10.0001; v+=0.25){ arr.push("-" + v.toFixed(2)); }
+  return arr;
+})();
+// 수령 방법별 배송비 (etc 는 사용자 직접입력)
 const SHIP_METHODS = {
   conv: { label: "편의점 반택", fee: 1800 },
   home: { label: "자택 택배",   fee: 3500 },
+  etc:  { label: "기타택배",     fee: 0 },
 };
 function getShipMethod(){
   const r = document.querySelector('input[name="boardShip"]:checked');
   return r && SHIP_METHODS[r.value] ? r.value : "conv";
 }
 function getShipFee(method){
+  if(method === "etc"){
+    const v = parseInt((document.getElementById("boardShipEtc")||{}).value, 10);
+    return isNaN(v) || v < 0 ? 0 : v;
+  }
   return (SHIP_METHODS[method] || SHIP_METHODS.conv).fee;
 }
 
@@ -1360,10 +1387,16 @@ function boardBus(id){
   document.getElementById("boardBusTitle").textContent = b.title;
   document.getElementById("boardBusCaptain").textContent = `총대 ${b.captain} · 달성률 ${Math.round(b.current/b.goal*100)}%`;
   document.getElementById("boardForm").reset();
-  // 드롭다운을 큐레이션 데이터로 채움
+  // 렌즈 드롭다운을 큐레이션 데이터로 채움
   const sel = document.getElementById("boardProduct");
   sel.innerHTML = `<option value="">렌즈를 선택해 주세요</option>` +
     curatedLenses.map(l=>`<option value="${l.id}">${l.name} · ${l.price.toLocaleString()}엔</option>`).join("");
+  // 도수 드롭다운(좌·우) 채움 — 0.00 ~ -10.00 (0.25 단위), 기본 0.00
+  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
+  document.getElementById("boardPowerL").innerHTML = opts;
+  document.getElementById("boardPowerR").innerHTML = opts;
+  document.getElementById("boardPowerL").value = "0.00";
+  document.getElementById("boardPowerR").value = "0.00";
   updateReceipt();
   document.getElementById("boardOverlay").style.display = "flex";
   document.getElementById("boardSheet").scrollTop = 0;
@@ -1378,6 +1411,9 @@ function closeBoard(){
 // 렌즈 + 수령 방법 → 실시간 영수증 + 주소 placeholder 동기화
 function updateReceipt(){
   const method = getShipMethod();
+  // 기타택배일 때만 금액 입력칸 노출
+  const etcInput = document.getElementById("boardShipEtc");
+  if(etcInput) etcInput.style.display = (method === "etc") ? "block" : "none";
   const fee = getShipFee(method);
   document.getElementById("rcShipLabel").textContent = `배송비 (${SHIP_METHODS[method].label})`;
   document.getElementById("rcShip").textContent = fee.toLocaleString() + "원";
@@ -1415,12 +1451,12 @@ function vPhone(v){ return /^\d{10,11}$/.test(String(v).replace(/[^0-9]/g,"")); 
 // 원스텝 폼 전 항목 + 동의 통과 시에만 제출 활성화
 function boardFormValid(){
   const lens   = document.getElementById("boardProduct").value;
-  const power  = document.getElementById("boardPower").value.trim();
   const payer  = document.getElementById("bPayer").value.trim();
   const name   = document.getElementById("bName").value.trim();
   const addr   = document.getElementById("bAddr").value.trim();
   const agreed = document.getElementById("boardAgree").checked;
-  return !!lens && power.length>=1 && payer.length>=2 && name.length>=2
+  // 도수는 드롭다운(기본 0.00)이라 항상 값이 있음 → 별도 검사 불필요
+  return !!lens && payer.length>=2 && name.length>=2
     && vPhone(document.getElementById("bPhone").value) && addr.length>=2 && agreed;
 }
 function updateBoardBtn(){
@@ -1451,7 +1487,7 @@ function submitBoard(e){
   bus.riders.push({
     nick: _myNick(),
     lensId: lens.id,
-    power: document.getElementById("boardPower").value.trim(),
+    power: `좌 ${document.getElementById("boardPowerL").value} / 우 ${document.getElementById("boardPowerR").value}`,
     method: method,
     amount: lens.price * YEN_TO_KRW + fee,
     paid: false,
