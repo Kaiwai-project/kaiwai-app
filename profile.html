@@ -87,6 +87,12 @@
     </div>
   </section>
 
+  <!-- ── 총대 권한 신청 배너 ── -->
+  <button type="button" id="captainApplyBtn" class="captain-banner reveal" style="--d:.1s">
+    <span class="captain-banner__txt">🛡️ 안전한 공구 열고 리워드 받기!</span>
+    <span class="captain-banner__cta">총대 권한 신청 ›</span>
+  </button>
+
   <!-- ── 나의 활동 (탭 + 그리드) ── -->
   <section class="activity reveal" style="--d:.15s">
     <div class="tabs" role="tablist">
@@ -111,6 +117,55 @@
   </footer>
 
 </main>
+
+<!-- ── 총대 권한 신청 폼 모달 ── -->
+<div id="captainOverlay" class="cap-overlay" aria-hidden="true">
+  <div class="cap-sheet" role="dialog" aria-modal="true" aria-labelledby="capTitle">
+    <span class="cap-grab" aria-hidden="true"></span>
+    <button type="button" id="capClose" class="cap-close" aria-label="닫기">✕</button>
+    <form id="captainForm" class="cap-body">
+      <h2 id="capTitle" class="cap-title">🛡️ 총대 권한 신청</h2>
+      <p class="cap-intro">안전한 공구를 직접 열고 리워드를 받아보세요. 검토 후 인증 결과를 안내해 드려요.</p>
+
+      <label class="cap-label">활동 닉네임 *</label>
+      <input id="capNick" class="cap-input" type="text" maxlength="20" required placeholder="공구에서 쓸 닉네임"/>
+
+      <label class="cap-label">공구 진행 경험 *</label>
+      <select id="capExp" class="cap-input" required>
+        <option value="">선택해 주세요</option>
+        <option>처음이에요</option>
+        <option>1~5회</option>
+        <option>5회 이상 (베테랑)</option>
+      </select>
+
+      <label class="cap-label">주력 카테고리 *</label>
+      <select id="capCat" class="cap-input" required>
+        <option value="">선택해 주세요</option>
+        <option>양산형</option>
+        <option>지뢰계</option>
+        <option>서브컬쳐</option>
+        <option>비쥬얼계 고스·펑크</option>
+        <option>스나계</option>
+        <option>로리타</option>
+        <option>잡화</option>
+        <option>렌즈/뷰티</option>
+      </select>
+
+      <label class="cap-label">연락 수단 (오픈채팅/메일 등) *</label>
+      <input id="capContact" class="cap-input" type="text" required placeholder="예) 카카오 오픈채팅 링크, 이메일"/>
+
+      <label class="cap-label">각오 한마디 (선택)</label>
+      <textarea id="capIntro" class="cap-input cap-textarea" rows="3" placeholder="어떤 공구를 안전하게 운영하고 싶은지 적어주세요 ✨"></textarea>
+
+      <label class="cap-agree">
+        <input id="capAgree" type="checkbox" required/>
+        <span>총대 운영 정책 및 정산 규정을 준수할 것에 동의합니다.</span>
+      </label>
+
+      <button type="submit" class="cap-submit">신청서 제출하기 🛡️</button>
+    </form>
+  </div>
+</div>
 
 <!-- 토스트 -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>

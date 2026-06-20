@@ -420,6 +420,40 @@
     }
   });
 
+  // 총대 권한 신청 모달
+  const capBtn     = $("captainApplyBtn");
+  const capOverlay = $("captainOverlay");
+  const capForm    = $("captainForm");
+  const capClose   = $("capClose");
+
+  function openCaptain() {
+    // 닉네임 자동 채움 (편집 중 값이 있으면 우선)
+    const nickEl = $("capNick");
+    if (nickEl && !nickEl.value) nickEl.value = currentNick || els.nickname.textContent.trim() || "";
+    capOverlay.classList.add("open");
+    capOverlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+  function closeCaptain() {
+    capOverlay.classList.remove("open");
+    capOverlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  if (capBtn)   capBtn.addEventListener("click", openCaptain);
+  if (capClose) capClose.addEventListener("click", closeCaptain);
+  if (capOverlay) capOverlay.addEventListener("click", (e) => { if (e.target === capOverlay) closeCaptain(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && capOverlay && capOverlay.classList.contains("open")) closeCaptain();
+  });
+  if (capForm) capForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // MVP: 백엔드 연동 전, 접수 안내만 표시
+    closeCaptain();
+    capForm.reset();
+    toast("총대 신청서가 접수됐어요 🛡️ 검토 후 안내해 드릴게요!");
+  });
+
   /* ── 시작 ─────────────────────────────────────────────── */
   init().catch((e) => {
     console.error(e);

@@ -255,10 +255,34 @@
   <div id="calList" class="px-4 pb-28 flex flex-col gap-3"></div>
 </div>
 
+<!-- ══ 공구(버스) 탭 ══ -->
+<div id="tBus" style="display:none" class="flex-col flex-1">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">🚌 안심 렌즈 공구</h1>
+        <p style="color:#8D7B80;font-size:10px;margin-top:2px">안전하고 저렴하게! 렌즈라라 무배 버스 🛒</p>
+      </div>
+      <span style="background:#FFE8F0;color:#C41055;font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px">안심결제 ✓</span>
+    </div>
+  </div>
+  <div class="px-4 pt-1 pb-3">
+    <div class="rounded-2xl px-4 py-3 mb-1" style="background:linear-gradient(120deg,#FFE0EE,#FFF0F5)">
+      <p style="font-size:14px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">안전하고 저렴한 렌즈라라 무배 탑승! 🛒</p>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">목표 금액을 함께 채우면 무료배송 · 총대가 안전하게 진행해요</p>
+    </div>
+  </div>
+  <div id="busList" class="px-4 pb-28 flex flex-col gap-3"></div>
+</div>
+
 <!-- ══ 하단 탭바 ══ -->
 <nav class="fixed bottom-0 z-20 w-full max-w-[430px] flex" style="background:#fff;border-top:1.5px solid #FFD6E8;box-shadow:0 -4px 20px rgba(255,150,180,.12)">
   <button id="nb-home" onclick="go('home')" class="active flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:700;color:#FF6FA8;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🎀</span>홈</button>
   <button id="nb-map"  onclick="go('map')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗺️</span>쇼핑맵</button>
+  <button id="nb-bus"  onclick="go('bus')"  class="flex-1 flex flex-col items-center justify-end py-2" style="border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif">
+    <span id="nb-bus-icon" style="margin-top:-20px;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:23px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -5px rgba(196,16,85,.65);border:3px solid #fff;transition:transform .25s var(--jelly)">🚌</span>
+    <span style="font-size:10px;font-weight:800;color:#C41055;margin-top:3px">공구</span>
+  </button>
   <button id="nb-feed" onclick="go('feed')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">📸</span>피드</button>
   <button id="nb-fav"  onclick="go('fav')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">❤️</span>즐겨찾기</button>
   <button id="nb-cal"  onclick="go('cal')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗓️</span>캘린더</button>
@@ -315,6 +339,70 @@
   <div id="postDetailSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column">
     <button onclick="closePostDetail()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
     <div id="postDetailBody" style="overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- ══ 버스 탑승 폼 모달 ══ -->
+<div id="boardOverlay" onclick="closeBoard()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:55;align-items:flex-end;justify-content:center">
+  <div id="boardSheet" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeBoard()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <form id="boardForm" onsubmit="submitBoard(event)" style="padding:24px 24px 36px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">🚌 버스 탑승하기</h2>
+      <!-- 선택한 버스 요약 -->
+      <div id="boardBusInfo" class="rounded-2xl px-4 py-3 mb-4" style="background:#FFF5F8;border:1.5px solid #FFE0EE">
+        <p id="boardBusTitle" style="font-size:13px;font-weight:800;color:#3A2B30;line-height:1.45"></p>
+        <p id="boardBusCaptain" style="font-size:11px;color:#8D7B80;margin-top:3px"></p>
+      </div>
+
+      <!-- 렌즈 상품 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">렌즈 상품 *</label>
+      <select id="boardProduct" required
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:16px">
+        <option value="">상품을 선택해 주세요</option>
+        <option>렌즈라라 밤비 (Bambi)</option>
+        <option>렌즈라라 플러리 (Flury)</option>
+        <option>렌즈라라 트윙클 (Twinkle)</option>
+        <option>기타 (메모에 기재)</option>
+      </select>
+
+      <!-- 도수 + 수량 -->
+      <div class="flex gap-3 mb-4">
+        <div style="flex:1.4">
+          <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 (양안) *</label>
+          <input id="boardPower" required placeholder="예) -3.50 / -4.00"
+            style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box"/>
+        </div>
+        <div style="flex:1">
+          <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수량</label>
+          <div class="flex items-center" style="border:1.5px solid #FFD6E8;border-radius:14px;overflow:hidden">
+            <button type="button" onclick="boardQty(-1)" style="width:38px;height:48px;border:none;background:#FFF0F5;color:#C41055;font-size:18px;font-weight:800;cursor:pointer">−</button>
+            <input id="boardQty" value="1" readonly style="flex:1;width:100%;text-align:center;border:none;outline:none;font-size:15px;font-weight:800;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif"/>
+            <button type="button" onclick="boardQty(1)" style="width:38px;height:48px;border:none;background:#FFF0F5;color:#C41055;font-size:18px;font-weight:800;cursor:pointer">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 메모 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">총대에게 메모 (선택)</label>
+      <textarea id="boardMemo" rows="2" placeholder="추가 요청사항을 적어주세요 ✨"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;margin-bottom:16px"></textarea>
+
+      <!-- 결제 요약 -->
+      <div class="rounded-2xl px-4 py-3 mb-4 flex items-center justify-between" style="background:#FFF0F5">
+        <span style="font-size:12px;font-weight:700;color:#6B5B60">탑승비 (안심 수수료)</span>
+        <span style="font-size:15px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">300P</span>
+      </div>
+
+      <!-- 동의 -->
+      <label class="flex items-start gap-2 mb-4" style="cursor:pointer">
+        <input id="boardAgree" type="checkbox" required style="margin-top:2px;width:16px;height:16px;accent-color:#C41055;flex-shrink:0"/>
+        <span style="font-size:12px;color:#6B5B60;line-height:1.5">안심 공구 정책 및 환불 규정에 동의하며, 입력한 도수 정보가 정확함을 확인합니다.</span>
+      </label>
+
+      <button type="submit"
+        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9)">탑승 신청 완료 (300P) 🚌</button>
+    </form>
   </div>
 </div>
 
@@ -817,8 +905,8 @@ const ALIAS_BY_ID = (function(){
 /* ═══════════════════════════════════
    탭 전환
 ═══════════════════════════════════ */
-const TABS = {home:"tHome",map:"tMap",feed:"tFeed",fav:"tFav",cal:"tCal"};
-const NAVS = {home:"nb-home",map:"nb-map",feed:"nb-feed",fav:"nb-fav",cal:"nb-cal"};
+const TABS = {home:"tHome",map:"tMap",bus:"tBus",feed:"tFeed",fav:"tFav",cal:"tCal"};
+const NAVS = {home:"nb-home",map:"nb-map",bus:"nb-bus",feed:"nb-feed",fav:"nb-fav",cal:"nb-cal"};
 
 function go(t) {
   tab = t;
@@ -832,7 +920,11 @@ function go(t) {
     nb.style.color = k===t ? "#FF6FA8" : "#C4A8B0";
     nb.classList.toggle("active", k===t);
   });
+  // 공구 버튼의 떠 있는 핑크 원형 아이콘은 선택 시 살짝 커지며 강조
+  const busIcon = document.getElementById("nb-bus-icon");
+  if(busIcon) busIcon.style.transform = (t==="bus") ? "scale(1.12) translateY(-2px)" : "scale(1)";
   if(t==="map")  drawMap();
+  if(t==="bus")  drawBus();
   if(t==="feed") loadFeed();
   if(t==="fav")  drawFav();
   if(t==="cal")  drawCal();
@@ -855,6 +947,112 @@ function goHome() {
   drawFilter(); drawBanner(); drawBrands(); drawRanking();
   // 스크롤 맨 위로
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* ═══════════════════════════════════
+   공구(렌즈 버스) — MVP 더미 렌더링
+   추후 Supabase 'buses' 테이블로 교체 예정
+═══════════════════════════════════ */
+const BUSES = [
+  {
+    id: 1,
+    title: "[출발 임박🔥] 렌즈라라 밤비/플러리 무배 버스 타실 분!",
+    captain: "코코아맛젤리",
+    tier: "pro",          // 프로 총대
+    goal: 10000,
+    current: 8500,
+    fee: 300,
+  },
+  {
+    id: 2,
+    title: "[천천히 모아요] 지뢰계 렌즈 3명 구함",
+    captain: "우울한밤토끼",
+    tier: "beginner",     // 비기너 총대
+    goal: 10000,
+    current: 3000,
+    fee: 300,
+  },
+];
+
+const BUS_TIER = {
+  pro:      { label: "👑 프로 총대",   bg: "#FFF3D6", fg: "#B8860B", bd: "#F2D788" },
+  beginner: { label: "🐣 비기너 총대", bg: "#E3F6EC", fg: "#1A9E5E", bd: "#B6E6CA" },
+};
+
+function drawBus() {
+  const el = document.getElementById("busList");
+  if(!el) return;
+  if(!BUSES.length){
+    el.innerHTML = `<div style="text-align:center;padding:64px 24px"><div class="kw-float" style="font-size:54px;margin-bottom:12px">🚌</div><p style="font-size:14px;font-weight:700;color:#8D7B80;font-family:'M PLUS Rounded 1c',sans-serif">진행 중인 버스가 없어요</p><p style="font-size:12px;color:#C4A8B0;margin-top:6px">곧 새로운 공구가 출발해요!</p></div>`;
+    return;
+  }
+  el.innerHTML = BUSES.map((b)=>{
+    const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
+    const t = BUS_TIER[b.tier] || BUS_TIER.beginner;
+    return `
+    <div class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE">
+      <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h3>
+
+      <div class="flex items-center gap-1.5 mt-2.5">
+        <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
+        <span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:${t.bg};color:${t.fg};border:1px solid ${t.bd}">${t.label}</span>
+      </div>
+
+      <div class="mt-3">
+        <div class="flex items-end justify-between mb-1.5">
+          <span style="font-size:11px;font-weight:700;color:#C41055">달성률 ${pct}%</span>
+          <span style="font-size:11px;color:#8D7B80"><b style="color:#3A2B30">${b.current.toLocaleString()}</b> / ${b.goal.toLocaleString()}엔</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full overflow-hidden" style="height:10px">
+          <div class="rounded-full" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#FF9EC7,#FF6FA8 60%,#C41055);transition:width .6s var(--jelly)"></div>
+        </div>
+      </div>
+
+      <button onclick="boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">
+        지금 탑승하기 (${b.fee}P) 🚌
+      </button>
+    </div>`;
+  }).join("");
+}
+
+let _boardBusId = null;
+
+function boardBus(id){
+  const b = BUSES.find(x=>x.id===id);
+  if(!b) return;
+  // 로그인 가드 (소셜/이메일 공통 authUser 사용)
+  if(typeof authUser !== "undefined" && !authUser){
+    alert("탑승하려면 먼저 로그인해 주세요 🎀");
+    if(typeof openAuth === "function") openAuth("login");
+    return;
+  }
+  _boardBusId = id;
+  document.getElementById("boardBusTitle").textContent = b.title;
+  document.getElementById("boardBusCaptain").textContent = `총대 ${b.captain} · 달성률 ${Math.round(b.current/b.goal*100)}%`;
+  document.getElementById("boardForm").reset();
+  document.getElementById("boardQty").value = "1";
+  document.getElementById("boardOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+function closeBoard(){
+  document.getElementById("boardOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function boardQty(delta){
+  const el = document.getElementById("boardQty");
+  const n = Math.min(10, Math.max(1, (parseInt(el.value,10)||1) + delta));
+  el.value = String(n);
+}
+
+function submitBoard(e){
+  e.preventDefault();
+  const b = BUSES.find(x=>x.id===_boardBusId);
+  const qty = document.getElementById("boardQty").value;
+  // MVP: 백엔드 연동 전, 신청 접수 안내만 표시
+  closeBoard();
+  alert(`🚌 '${b ? b.title : "버스"}' 탑승 신청이 접수되었어요!\n수량 ${qty}개 · 탑승비 300P\n총대 확인 후 안심결제 안내를 드릴게요. (결제 연동 준비 중)`);
 }
 
 /* ═══════════════════════════════════
