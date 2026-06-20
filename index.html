@@ -1168,7 +1168,7 @@ const BUSES = [
     tier: "pro",          // 프로 총대
     goal: 10000,
     current: 8500,
-    mine: false,          // 방장 여부(데모용) — true 면 관리자 패널 노출
+    ownerId: "demo-host-1",   // 더미 방장(가상 유저) — 실제 로그인 유저와 불일치 → 일반 유저엔 패널 미노출
     notice: "오늘 밤 10시까지 입금 부탁드려요! 🌙 내일 오전 일괄 주문합니다.",
     ordered: false,
     hostAccount: { bankName:"신한은행", accountNumber:"110-234-567890", realName:"박서연" },
@@ -1185,7 +1185,7 @@ const BUSES = [
     tier: "beginner",     // 비기너 총대
     goal: 10000,
     current: 3000,
-    mine: true,           // ← 데모: 내가 연 공구방(방장 관리자 패널 미리보기용)
+    ownerId: "demo-host-2",   // 더미 방장(가상 유저) — 실제 로그인 유저와 불일치 → 일반 유저엔 패널 미노출
     notice: "현재 일본에서 배송 시작되었습니다! 조금만 기다려주세요 ✈️",
     ordered: false,
     hostAccount: { bankName:"국민은행", accountNumber:"123456-78-901234", realName:"김지수" },
@@ -1347,7 +1347,7 @@ function submitCreateBus(e){
     goal: goal,
     current: 0,
     deadlineH: deadlineH,
-    mine: true,
+    ownerId: (typeof authUser !== "undefined" && authUser && authUser.id) || "me",   // 개설자 = 방장
     notice: document.getElementById("cbNotice").value.trim(),  // 방장 공지
     ordered: false,                    // 렌즈라라 주문 완료 여부(수정 잠금 트리거)
     hostAccount: getMyHostAccount(),   // 방장 인증 계좌 자동 연동
@@ -1539,10 +1539,10 @@ function submitBoard(e){
 ═══════════════════════════════════ */
 let _roomBusId = null;
 
-// 방장(총대) 여부 — 데모용 mine 플래그 또는 실제 ownerId 매칭
+// 방장(총대) 여부 — 실제 소유자(ownerId)가 현재 로그인 유저와 일치할 때만 true
+// (탑승자에게 방장 패널이 노출되지 않도록 데모용 mine 단축은 제거)
 function isBusOwner(b){
   if(!b) return false;
-  if(b.mine) return true;
   return (typeof authUser !== "undefined" && authUser && b.ownerId && authUser.id === b.ownerId);
 }
 
