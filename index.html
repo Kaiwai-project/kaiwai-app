@@ -286,6 +286,12 @@
   <button id="nb-fav"  onclick="go('fav')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">❤️</span>즐겨찾기</button>
   <button id="nb-cal"  onclick="go('cal')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗓️</span>캘린더</button>
 </nav>
+
+<!-- ══ [공구] 탭 전용: 공구 열기 플로팅 버튼(FAB) ══ -->
+<button id="busFab" onclick="openCreateBus()" class="shadow-lg"
+  style="display:none;position:fixed;bottom:96px;right:max(16px,calc(50% - 199px));z-index:30;border:none;cursor:pointer;display:none;align-items:center;gap:7px;padding:14px 18px;border-radius:100px;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:14px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 12px 26px -8px rgba(196,16,85,.7)">
+  <span style="font-size:16px">➕</span> 공구 열기
+</button>
 </div>
 
 <!-- ══ 브랜드 모달 ══ -->
@@ -461,6 +467,68 @@
     <span style="font-size:15px;font-weight:800;color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">🚌 공구방</span>
   </div>
   <div id="busRoomBody"></div>
+</div>
+
+<!-- ══ 총대 인증 필요 경고 모달 ══ -->
+<div id="hostVerifyOverlay" onclick="closeHostVerify()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.45);z-index:58;align-items:center;justify-content:center;padding:24px">
+  <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#fff;border-radius:24px;padding:26px 22px;text-align:center;box-shadow:0 24px 60px -16px rgba(74,74,74,.4)">
+    <div style="font-size:46px;margin-bottom:10px">🛡️</div>
+    <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:18px;color:#3A2B30;margin:0 0 8px">총대 권한이 필요해요</h2>
+    <p style="font-size:13px;color:#6B5B60;line-height:1.6;margin:0 0 20px">앗! 안전한 공구 운영을 위해 <b style="color:#C41055">'총대 권한(본인인증)'</b>이 필요해요.</p>
+    <button onclick="goVerifyHost()" style="width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:14px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 12px 24px -10px rgba(168,85,247,.8)">인증하러 가기 →</button>
+    <button onclick="closeHostVerify()" style="width:100%;margin-top:8px;padding:10px;border:none;border-radius:12px;cursor:pointer;color:#8D7B80;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:700;font-size:13px;background:none">다음에 할게요</button>
+  </div>
+</div>
+
+<!-- ══ 공구방 개설 폼 모달 ══ -->
+<div id="createBusOverlay" onclick="closeCreateBus()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:58;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeCreateBus()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <form id="createBusForm" onsubmit="submitCreateBus(event)" style="padding:24px 24px 36px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">🚌 공구방 개설</h2>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 18px">새로운 렌즈 버스를 출발시켜 보세요!</p>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">플랫폼 선택 *</label>
+      <select id="cbPlatform" required
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:16px">
+        <option value="렌즈라라" selected>렌즈라라</option>
+        <option value="파스비">파스비</option>
+        <option value="기타">기타</option>
+      </select>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">버스 제목 *</label>
+      <input id="cbTitle" required maxlength="40" placeholder="ex. 밤비 아몬드 무배 버스 타실 분!"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">목표 금액 *</label>
+      <input id="cbGoal" required type="number" min="1" inputmode="numeric" placeholder="목표 엔화 (ex. 10000)"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif">마감 시간 *</label>
+      <div class="flex gap-2 mb-4">
+        <label class="flex-1" style="cursor:pointer">
+          <input type="radio" name="cbDeadline" value="12" checked style="display:none" onchange="syncDeadlineUI()"/>
+          <span class="cbdl flex items-center justify-center" style="padding:12px 0;border:1.5px solid #FFD6E8;border-radius:14px;font-size:13px;font-weight:700;color:#6B5B60">12시간 후</span>
+        </label>
+        <label class="flex-1" style="cursor:pointer">
+          <input type="radio" name="cbDeadline" value="24" style="display:none" onchange="syncDeadlineUI()"/>
+          <span class="cbdl flex items-center justify-center" style="padding:12px 0;border:1.5px solid #FFD6E8;border-radius:14px;font-size:13px;font-weight:700;color:#6B5B60">24시간 후</span>
+        </label>
+        <label class="flex-1" style="cursor:pointer">
+          <input type="radio" name="cbDeadline" value="48" style="display:none" onchange="syncDeadlineUI()"/>
+          <span class="cbdl flex items-center justify-center" style="padding:12px 0;border:1.5px solid #FFD6E8;border-radius:14px;font-size:13px;font-weight:700;color:#6B5B60">48시간 후</span>
+        </label>
+      </div>
+
+      <div class="rounded-xl px-4 py-3 mb-4" style="background:linear-gradient(120deg,#FFF3D6,#FFF0F5)">
+        <p style="font-size:12px;color:#7A6A4E;line-height:1.6">🎁 이 공구가 무사히 완료되어 KAIWAI 제휴 링크로 결제하시면, <b style="color:#C41055">총대 수고비(포인트)</b>가 지급됩니다.</p>
+      </div>
+
+      <button type="submit"
+        style="width:100%;padding:15px;border:none;border-radius:16px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:15px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 14px 26px -12px rgba(196,16,85,.9)">🚀 버스 출발시키기</button>
+    </form>
+  </div>
 </div>
 
 <!-- ══ 메뉴(공지/약관/문의) 모달 ══ -->
@@ -980,6 +1048,9 @@ function go(t) {
   // 공구 버튼의 떠 있는 핑크 원형 아이콘은 선택 시 살짝 커지며 강조
   const busIcon = document.getElementById("nb-bus-icon");
   if(busIcon) busIcon.style.transform = (t==="bus") ? "scale(1.12) translateY(-2px)" : "scale(1)";
+  // 공구 열기 FAB 는 공구 탭에서만 노출
+  const busFab = document.getElementById("busFab");
+  if(busFab) busFab.style.display = (t==="bus") ? "flex" : "none";
   if(t==="map")  drawMap();
   if(t==="bus")  drawBus();
   if(t==="feed") loadFeed();
@@ -1089,6 +1160,61 @@ function drawBus() {
       </button>
     </div>`;
   }).join("");
+}
+
+/* ═══════════════════════════════════
+   공구방 개설 (FAB → 인증분기 → 폼)
+═══════════════════════════════════ */
+// 총대(방장) 인증 여부 — 추후 Supabase 본인인증 결과로 교체
+let isVerifiedHost = false;
+
+function openCreateBus(){
+  if(!isVerifiedHost){
+    document.getElementById("hostVerifyOverlay").style.display = "flex";
+    document.body.style.overflow = "hidden";
+    return;
+  }
+  const f = document.getElementById("createBusForm");
+  if(f) f.reset();
+  syncDeadlineUI();
+  document.getElementById("createBusOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeCreateBus(){
+  document.getElementById("createBusOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+function closeHostVerify(){
+  document.getElementById("hostVerifyOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+function goVerifyHost(){
+  // 총대 권한 신청은 마이페이지(profile.html)의 배너에서 진행
+  location.href = "profile.html";
+}
+
+// 마감 시간 라디오 선택 UI 동기화
+function syncDeadlineUI(){
+  document.querySelectorAll('input[name="cbDeadline"]').forEach(r=>{
+    const chip = r.parentElement.querySelector(".cbdl");
+    if(!chip) return;
+    if(r.checked){
+      chip.style.background = "#FFE0EE";
+      chip.style.borderColor = "#FF6FA8";
+      chip.style.color = "#C41055";
+    } else {
+      chip.style.background = "#fff";
+      chip.style.borderColor = "#FFD6E8";
+      chip.style.color = "#6B5B60";
+    }
+  });
+}
+
+function submitCreateBus(e){
+  e.preventDefault();
+  // MVP: 백엔드 연동 전 — 개설 안내만 표시
+  closeCreateBus();
+  alert("공구방이 성공적으로 개설되었습니다!");
 }
 
 let _boardBusId = null;
