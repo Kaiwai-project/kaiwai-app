@@ -328,12 +328,11 @@
 <!-- ══ 하단 탭바 ══ -->
 <nav class="fixed bottom-0 z-20 w-full max-w-[430px] flex" style="background:#fff;border-top:1.5px solid #FFD6E8;box-shadow:0 -4px 20px rgba(255,150,180,.12)">
   <button id="nb-home" onclick="go('home')" class="active flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:700;color:#FF6FA8;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🎀</span>홈</button>
-  <button id="nb-map"  onclick="go('map')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗺️</span>쇼핑맵</button>
+  <button id="nb-feed" onclick="go('feed')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">📸</span>피드</button>
   <button id="nb-bus"  onclick="go('bus')"  class="flex-1 flex flex-col items-center justify-end py-2" style="border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif">
     <span id="nb-bus-icon" style="margin-top:-20px;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:23px;background:linear-gradient(135deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -5px rgba(196,16,85,.65);border:3px solid #fff;transition:transform .25s var(--jelly)">🚌</span>
     <span style="font-size:10px;font-weight:800;color:#C41055;margin-top:3px">공구</span>
   </button>
-  <button id="nb-feed" onclick="go('feed')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">📸</span>피드</button>
   <button id="nb-fav"  onclick="go('fav')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">❤️</span>즐겨찾기</button>
   <button id="nb-cal"  onclick="go('cal')"  class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:600;color:#C4A8B0;border:none;background:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif"><span style="font-size:18px">🗓️</span>캘린더</button>
 </nav>
@@ -1450,17 +1449,20 @@ const ALIAS_BY_ID = (function(){
    탭 전환
 ═══════════════════════════════════ */
 const TABS = {home:"tHome",map:"tMap",bus:"tBus",feed:"tFeed",fav:"tFav",cal:"tCal"};
-const NAVS = {home:"nb-home",map:"nb-map",bus:"nb-bus",feed:"nb-feed",fav:"nb-fav",cal:"nb-cal"};
+// 쇼핑맵(map)은 하단 바에서 제거되고 상단 카테고리 칩으로 진입 → NAVS 에는 두지 않음(하단 버튼 없음)
+const NAVS = {home:"nb-home",bus:"nb-bus",feed:"nb-feed",fav:"nb-fav",cal:"nb-cal"};
 
 function go(t) {
   tab = t;
   Object.entries(TABS).forEach(([k,id])=>{
     const el = document.getElementById(id);
+    if(!el) return;
     if(k===t){ el.style.display="flex"; el.style.flexDirection="column"; }
     else el.style.display="none";
   });
   Object.entries(NAVS).forEach(([k,id])=>{
     const nb=document.getElementById(id);
+    if(!nb) return;
     nb.style.color = k===t ? "#FF6FA8" : "#C4A8B0";
     nb.classList.toggle("active", k===t);
   });
@@ -3291,7 +3293,7 @@ function drag(el) {
 ═══════════════════════════════════ */
 function drawFilter() {
   const row = document.getElementById("filterRow");
-  row.innerHTML = FILTERS.map(f=>{
+  const chips = FILTERS.map(f=>{
     const m = CM[f], act = f===filt;
     const bg     = act ? m.c : "#fff";
     const col    = act ? "#fff" : "#8D7B80";
@@ -3299,6 +3301,9 @@ function drawFilter() {
     const sh     = act ? `0 4px 14px ${m.c}44` : "0 2px 8px rgba(255,150,180,.1)";
     return `<button onclick="setFilt('${f}')" style="flex-shrink:0;padding:8px 15px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:${bg};color:${col};border:${border};box-shadow:${sh};font-family:'M PLUS Rounded 1c',sans-serif">${m.e} ${f}</button>`;
   }).join("");
+  // 카테고리 맨 끝(오른쪽)에 '쇼핑' 진입 칩 — 하단 바에서 옮겨온 쇼핑맵 탭으로 이동
+  const shopChip = `<button onclick="go('map')" style="flex-shrink:0;padding:8px 15px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;background:#fff;color:#A855F7;border:1.5px solid #E9D5FF;box-shadow:0 2px 8px rgba(168,85,247,.12);font-family:'M PLUS Rounded 1c',sans-serif">🗺️ 쇼핑</button>`;
+  row.innerHTML = chips + shopChip;
   drag(row);
 }
 function setFilt(f){ filt=f; drawFilter(); drawBanner(); drawBrands(); }
