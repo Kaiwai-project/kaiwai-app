@@ -308,6 +308,7 @@
         <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">🚌 안심 렌즈 공구</h1>
         <p style="color:#8D7B80;font-size:10px;margin-top:2px">안전하고 저렴하게! 렌즈라라 무배 버스 🛒</p>
       </div>
+      <span id="busPointChip" title="내 포인트 (탑승 1회 300P)" style="display:none;align-items:center;gap:4px;background:linear-gradient(120deg,#FFF4C2,#FFE08A);border:1.5px solid #F2D27A;color:#8A6D1B;font-weight:800;font-size:13px;padding:7px 13px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;flex-shrink:0"><span style="font-size:13px">🪙</span> 0P</span>
     </div>
   </div>
   <div class="px-4 pt-1 pb-3">
@@ -525,8 +526,10 @@
         </div>
         <div id="bAddrHomeWrap">
           <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">일반택배 배송지 주소 * <span style="color:#8D7B80;font-weight:600">(자택/기타택배)</span></label>
-          <input id="bAddrHome" oninput="updateBoardBtn()" onclick="openAddrSearch('bAddrHome')" placeholder="클릭 → 주소 검색 후 상세주소(동/호) 추가"
+          <input id="bAddrHome" oninput="updateBoardBtn()" onclick="openAddrSearch('bAddrHome')" placeholder="클릭 → 도로명 주소 검색"
             style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px;cursor:pointer"/>
+          <input id="bAddrHomeDetail" oninput="updateBoardBtn()" placeholder="상세주소 (동, 호수)"
+            style="display:none;width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px"/>
         </div>
         <div class="rounded-xl px-3 py-2.5 mb-4" style="background:#F0ECEE">
           <p style="font-size:11px;color:#8D7B80;line-height:1.5">🔒 통관고유부호는 <b>총대 명의 통관</b>으로 진행되어 <b>수집하지 않습니다.</b></p>
@@ -1386,11 +1389,28 @@ function go(t) {
   // 공구 열기 FAB 는 공구 탭에서만 노출
   const busFab = document.getElementById("busFab");
   if(busFab) busFab.style.display = (t==="bus") ? "flex" : "none";
+  // 로그인 필요 탭 가드: 피드/공구/즐겨찾기는 세션 없으면 잠금 엠프티 + 로그인 유도
+  const loggedIn = (typeof authUser !== "undefined" && !!authUser);
+  const PROTECTED = { bus:["busList","공구"], feed:["feedGrid","피드"], fav:["favList","즐겨찾기"] };
   if(t==="map")  drawMap();
-  if(t==="bus")  loadBuses();
-  if(t==="feed") loadFeed();
-  if(t==="fav")  drawFav();
+  if(t==="bus")  loggedIn ? loadBuses() : _lockTab("busList","공구");
+  if(t==="feed") loggedIn ? loadFeed()  : _lockTab("feedGrid","피드");
+  if(t==="fav")  loggedIn ? drawFav()   : _lockTab("favList","즐겨찾기");
   if(t==="cal")  drawCal();
+  if(PROTECTED[t] && !loggedIn){
+    if(typeof openAuth === "function") openAuth("login");
+    else alert("로그인이 필요한 서비스입니다.");
+  }
+}
+
+// 비로그인 시 보호 탭에 표시할 잠금 엠프티 스테이트
+function _lockTab(containerId, label){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:72px 24px"><div class="kw-float" style="font-size:52px;margin-bottom:14px">🔒</div>`
+    + `<p style="font-size:15px;font-weight:800;color:#8D7B80;font-family:'M PLUS Rounded 1c',sans-serif">로그인이 필요한 탭입니다.</p>`
+    + `<p style="font-size:12px;color:#C4A8B0;margin-top:8px">${label} 기능은 로그인 후 이용할 수 있어요</p>`
+    + `<button onclick="if(typeof openAuth==='function')openAuth('login')" style="margin-top:18px;border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);padding:11px 24px;border-radius:100px;box-shadow:0 8px 18px -8px rgba(196,16,85,.6)">로그인 / 회원가입</button></div>`;
 }
 
 /* KAIWAI 로고 클릭 → 앱 초기 상태(홈)로 리셋 */
@@ -1460,9 +1480,12 @@ function drawBus() {
     const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
     const t = BUS_TIER[b.tier] || BUS_TIER.beginner;
     const riders = b.riders ? b.riders.length : 0;
-    const isMyRoom = isBusOwner(b);   // 접속 유저가 이 방의 총대인가
+    const isMyRoom = isBusOwner(b);                     // 접속 유저가 이 방의 총대인가
+    const amBoarded = (b.riders || []).some(r=>r.me);   // 내가 이미 탑승했는가 (중복 탑승 방지)
     const cardBtn = isMyRoom
       ? `<button onclick="event.stopPropagation();openBusRoom(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#7E3AA8,#2B2330);box-shadow:0 8px 18px -8px rgba(43,35,48,.6)">👑 내 공구 관리하기</button>`
+      : amBoarded
+      ? `<button onclick="event.stopPropagation();openBusRoom(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#9AA0A6,#6B7280);box-shadow:0 8px 18px -8px rgba(107,114,128,.5)">🚌 내가 탑승한 버스 입장</button>`
       : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>`;
     return `
     <div onclick="openBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer">
@@ -1555,6 +1578,7 @@ function _mapBus(row, localId, riders){
 
 // 공구 탭 진입 시: buses + 장부(+ 방장/본인이면 PII) 로드 후 렌더
 async function loadBuses(){
+  if(typeof renderPoints === "function") renderPoints();   // 공구 탭 헤더 포인트 칩 동기화
   const el = document.getElementById("busList");
   if(!window.sb){ if(el) el.innerHTML = _busErrCard("공구 목록을 불러올 수 없어요"); return; }
   try{
@@ -1607,11 +1631,14 @@ async function reloadBusRoom(localId){
 
 // 현재 로그인 유저의 총대 인증 상태를 DB(profiles.verified_host)에서 갱신
 async function refreshVerifiedHost(){
+  // profiles.verified_host 가 유일한 진실 소스. localStorage 의존 없음.
+  // 보안 게이트이므로 fail-closed: 에러/비로그인 시 false 로 간주(차단).
   try{
     if(!window.sb || !_busUid()){ isVerifiedHost = false; return false; }
-    const { data } = await window.sb.from("profiles").select("verified_host").eq("id", _busUid()).maybeSingle();
+    const { data, error } = await window.sb.from("profiles").select("verified_host").eq("id", _busUid()).maybeSingle();
+    if(error) throw error;
     isVerifiedHost = !!(data && data.verified_host);
-  }catch(_){ /* 오류 시 캐시 유지 */ }
+  }catch(_){ isVerifiedHost = false; }
   return isVerifiedHost;
 }
 
@@ -1640,8 +1667,17 @@ let isVerifiedHost = false;
 const REWARDS_ENABLED = true;
 
 async function openCreateBus(){
-  await refreshVerifiedHost();              // DB(profiles.verified_host) 기준으로 게이트
-  if(!isVerifiedHost && !isAdminUser()){    // 관리자(God Mode)는 폼 열기만 우회(INSERT 는 여전히 DB RLS 검증)
+  // 로그인 가드
+  if(!window.sb || !_busUid()){
+    showToast("로그인이 필요해요");
+    if(typeof openAuth === "function") openAuth("login");
+    return;
+  }
+  // 게이트 = DB(profiles.verified_host) 단일 기준. 관리자 예외 없음(폼만 열리고 INSERT 가
+  // RLS 로 막히는 불일치 제거). God Mode 관리자는 godToggleVerified→RPC 로 실제 승격해야 통과.
+  const verified = await refreshVerifiedHost();
+  if(verified !== true){
+    showToast("총대 인증이 필요합니다.");
     document.getElementById("hostVerifyOverlay").style.display = "flex";
     document.body.style.overflow = "hidden";
     return;
@@ -1799,7 +1835,7 @@ async function capSubmit(e){
     if(error) throw error;
   }catch(err){
     if(btn) btn.disabled = false;
-    alert(_busDbError(err, "총대 인증 처리 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요."));
+    showToast("총대 인증 처리에 실패했어요. 잠시 후 다시 시도해 주세요.");
     return;
   }
   isVerifiedHost = true;
@@ -1929,7 +1965,11 @@ async function submitCreateBus(e){
     if(error) throw error;
   }catch(err){
     if(btn) btn.disabled = false;
-    alert(_busDbError(err, "공구방 개설에 실패했어요. 총대 인증 상태를 확인해 주세요."));
+    // RLS 거부(42501) = verified_host=false → 권한 안내 토스트로 친절히 차단
+    const msg = (err && err.code === "42501")
+      ? "권한이 없거나 만료되었습니다. 총대 인증을 다시 확인해 주세요."
+      : _busDbError(err, "공구방 개설에 실패했어요. 잠시 후 다시 시도해 주세요.");
+    showToast(msg);
     return;
   }
   closeCreateBus();
@@ -2086,6 +2126,9 @@ function updateReceipt(){
     convWrap.style.display = isConv ? "block" : "none";
     homeWrap.style.display = isConv ? "none" : "block";
   }
+  // 상세주소(동/호)는 '일반택배(home)' 선택 시에만 노출
+  const detailEl = document.getElementById("bAddrHomeDetail");
+  if(detailEl) detailEl.style.display = (method === "home") ? "block" : "none";
 
   const yen = _boardYen();
   const qty = _boardQty();
@@ -2113,9 +2156,15 @@ function riderNeedsCheck(r){
 }
 // 수령 방법에 맞는 주소칸 값 (편의점 반택 → bAddr / 자택·기타 → bAddrHome)
 function _boardAddr(){
-  return (getShipMethod()==="conv"
-    ? document.getElementById("bAddr").value
-    : document.getElementById("bAddrHome").value).trim();
+  const m = getShipMethod();
+  if(m === "conv") return document.getElementById("bAddr").value.trim();
+  // home/etc 는 일반택배 주소칸. home 이면 기본주소 + 상세주소(동/호) 를 합쳐서 전송.
+  const base = document.getElementById("bAddrHome").value.trim();
+  if(m === "home"){
+    const detail = (document.getElementById("bAddrHomeDetail") || {}).value || "";
+    return (base + " " + detail.trim()).trim();
+  }
+  return base;
 }
 // 다음(카카오) 우편번호 검색 → 입력칸에 도로명 주소 자동 입력
 function openAddrSearch(targetId){
@@ -2172,6 +2221,18 @@ async function submitBoard(e){
   // 탑승 수수료 300P 검사 (로컬 유지) — 관리자는 우회. 실제 차감은 DB 저장 성공 후에만.
   if(!isAdminUser() && getPoints() < 300){ alert("포인트가 부족합니다. 매일 로그인하여 포인트를 모아보세요!"); return; }
 
+  // ── 입력 유효성 강제 검증 (Garbage Input 방어) — 관리자(God Mode)는 우회 ──
+  if(!isAdminUser()){
+    const NAME_RE = /^[가-힣a-zA-Z\s]+$/;   // 한글/영문만 (자음·모음 단독 ㅇㅇㅇ 등 차단)
+    const payerV = document.getElementById("bPayer").value.trim();
+    const nameV  = document.getElementById("bName").value.trim();
+    const phoneD = document.getElementById("bPhone").value.replace(/[^0-9]/g,"");
+    if(_noSpaceLen(payerV) < 2 || !NAME_RE.test(payerV)){ alert("입금자명을 정확히 입력해주세요. (한글/영문 2자 이상)"); return; }
+    if(_noSpaceLen(nameV)  < 2 || !NAME_RE.test(nameV)){  alert("수령인 실명을 정확히 입력해주세요. (한글/영문 2자 이상)"); return; }
+    if(!/^01[016789]\d{7,8}$/.test(phoneD)){ alert("올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)"); return; }
+    if(_noSpaceLen(_boardAddr()) < 4){ alert("배송지 주소를 정확히 입력해주세요."); return; }
+  }
+
   const method = getShipMethod();
   const fee = getShipFee(method);
   const goods = yen * qty * YEN_TO_KRW;   // 상품가(원화) = 엔화 × 수량 × 9
@@ -2205,8 +2266,9 @@ async function submitBoard(e){
     return;
   }
 
-  // 여기 도달 = DB 저장 확정. 이제서야 포인트 차감.
-  if(!isAdminUser()) spendPoints(300);
+  // 여기 도달 = DB 저장 확정. 이제서야 포인트 차감 + 헤더 포인트칩 즉시 갱신.
+  if(!isAdminUser()) spendPoints(300);   // spendPoints 내부에서 renderPoints() 호출
+  renderPoints();                        // 방어적 재갱신 (헤더 #pointChip 즉시 반영)
   const dbId = bus.dbId;
   closeBoard();
   alert("탑승이 완료되었습니다! 방장의 입금 안내를 확인해주세요.");
@@ -4503,11 +4565,15 @@ function spendPoints(n){
 }
 function _todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function renderPoints(){
-  const chip=document.getElementById("pointChip");
-  if(!chip) return;
-  if(!authUser){ chip.style.display="none"; return; }
-  chip.style.display="inline-flex";
-  chip.innerHTML=`<span style="font-size:13px">🪙</span> ${getPoints().toLocaleString()}P`;
+  const show = !!authUser;
+  const html = `<span style="font-size:13px">🪙</span> ${getPoints().toLocaleString()}P`;
+  // 헤더 칩 + 공구 탭 칩 동시 갱신 (둘 다 비로그인 시 숨김)
+  ["pointChip","busPointChip"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.style.display = show ? "inline-flex" : "none";
+    if(show) el.innerHTML = html;
+  });
 }
 function checkDailyAttendance(){
   const k=_pointsKey(); if(!k){ renderPoints(); return; }

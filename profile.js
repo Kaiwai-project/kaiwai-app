@@ -288,6 +288,14 @@
 
     // 유저 이메일 (더미 이메일이면 '비공개 이메일'로 대체)
     if (els.email) els.email.textContent = displayEmail(user.email);
+
+    // 보유 포인트 (index.html 과 동일한 localStorage 키 kaiwai_points_<uid>)
+    const ptsEl = document.getElementById("profPoints");
+    if (ptsEl) {
+      let pts = 0;
+      try { pts = (JSON.parse(localStorage.getItem("kaiwai_points_" + user.id) || "{}").points) || 0; } catch (_) {}
+      ptsEl.textContent = pts.toLocaleString();
+    }
   }
 
   /* ── 6.5 닉네임 인라인 편집 ───────────────────────────── */
