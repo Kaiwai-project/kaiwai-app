@@ -839,6 +839,65 @@
   </div>
 </div>
 
+<!-- ══ 파티원 본인 정보 수정 모달 (Slice 3) ══ -->
+<div id="editMyInfoOverlay" onclick="closeEditMyInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeEditMyInfo()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:20px 22px 28px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 정보 수정</h2>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 수정할 수 있어요. 상품·금액은 변경할 수 없습니다.</p>
+
+      <!-- 도수 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 (좌 / 우) *</label>
+      <div class="flex gap-2" style="margin-bottom:16px">
+        <select id="emPowerL" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+        <select id="emPowerR" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+      </div>
+
+      <!-- 수령 방법 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수령 방법 *</label>
+      <div class="flex gap-2" style="margin-bottom:6px">
+        <label style="flex:1;display:flex;align-items:center;gap:7px;padding:11px 13px;border:1.5px solid #FFD6E8;border-radius:14px;cursor:pointer;font-size:13px;color:#4A4A4A">
+          <input type="radio" name="emShip" value="conv" checked onchange="_emToggleShip()" style="width:16px;height:16px;accent-color:#C41055"/> 편의점 반택
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:7px;padding:11px 13px;border:1.5px solid #FFD6E8;border-radius:14px;cursor:pointer;font-size:13px;color:#4A4A4A">
+          <input type="radio" name="emShip" value="home" onchange="_emToggleShip()" style="width:16px;height:16px;accent-color:#C41055"/> 일반택배
+        </label>
+      </div>
+      <p style="font-size:11px;color:#C77800;line-height:1.5;margin:0 0 14px">⚠️ 수령 방법을 바꾸면 배송비 차액은 결제액에 자동 반영되지 않아요. 총대와 조율해 주세요.</p>
+
+      <!-- 주소 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">배송지 주소 *</label>
+      <input id="emAddr" onclick="openAddrSearch('emAddr')" placeholder="클릭 → 주소 검색 / 편의점이면 점포명 추가"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:8px;cursor:pointer"/>
+      <input id="emAddrDetail" placeholder="상세주소 (동, 호수)"
+        style="display:none;width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:16px"/>
+
+      <!-- 실명/전화/입금자명 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수령인 실명 *</label>
+      <input id="emName" placeholder="택배 수령인 실명"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:14px"/>
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">전화번호 *</label>
+      <input id="emPhone" type="tel" inputmode="numeric" placeholder="01012345678"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:14px"/>
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">입금자명 *</label>
+      <input id="emPayer" placeholder="방장이 통장에서 확인할 이름"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:14px"/>
+
+      <!-- 메모 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">총대에게 남길 메모 (선택)</label>
+      <textarea id="emMemo" rows="2" placeholder="예) 도수 변경 가능할까요?"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;margin-bottom:20px"></textarea>
+
+      <div class="flex gap-2">
+        <button onclick="closeEditMyInfo()" class="flex-1 rounded-xl py-3" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">취소</button>
+        <button id="emSaveBtn" onclick="saveEditMyInfo()" class="flex-1 rounded-xl py-3" style="border:none;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">저장하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 문제 발생(Issue) 사유 선택 모달 ══ -->
 <div id="issueOverlay" onclick="closeIssue()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:center;justify-content:center;padding:24px">
   <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#fff;border-radius:22px;padding:22px">
@@ -2888,10 +2947,120 @@ async function updateNotice(busId){
 }
 
 // ── 파티원: 내 정보 수정 (주문 완료 전까지만) ──
-function editMyInfo(busId, idx){
+let _editTarget = { busId:null, idx:null };
+
+// 일반택배 선택 시에만 상세주소 칸 노출
+function _emToggleShip(){
+  const m = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
+  const d = document.getElementById("emAddrDetail");
+  if(d) d.style.display = (m === "home") ? "block" : "none";
+}
+// 최종 주소 합치기 (home 이면 기본주소 + 상세주소)
+function _emAddr(){
+  const base = document.getElementById("emAddr").value.trim();
+  const m = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
+  if(m === "home"){
+    const det = document.getElementById("emAddrDetail").value.trim();
+    return (base + " " + det).trim();
+  }
+  return base;
+}
+function closeEditMyInfo(){
+  document.getElementById("editMyInfoOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// 모달 오픈 → DB 에서 기존 값 prefill
+async function editMyInfo(busId, idx){
   const b = BUSES.find(x=>x.id===busId);
-  if(!b || (b.ordered && !isAdminUser())){ alert("주문이 완료되어 더 이상 수정할 수 없어요."); return; }
-  alert("내 정보 수정 기능은 준비 중입니다. 변경이 필요하면 총대에게 메모로 요청해주세요!");
+  const r = b && b.riders && b.riders[idx];
+  if(!r) return;
+  // UX 사전 차단 (DB RLS 로도 막히지만 먼저 튕겨냄)
+  if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다. 총대에게 문의하세요."); return; }
+  _editTarget = { busId, idx };
+
+  // 도수 셀렉트 채우고 기존값 파싱("좌 X / 우 Y")
+  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
+  document.getElementById("emPowerL").innerHTML = opts;
+  document.getElementById("emPowerR").innerHTML = opts;
+  const pm = /좌\s*(\S+)\s*\/\s*우\s*(\S+)/.exec(r.power || "");
+  document.getElementById("emPowerL").value = (pm && POWER_OPTIONS.includes(pm[1])) ? pm[1] : "0.00";
+  document.getElementById("emPowerR").value = (pm && POWER_OPTIONS.includes(pm[2])) ? pm[2] : "0.00";
+
+  // 수령방법 (etc 는 모달에 없으므로 home 으로 취급)
+  const method = (r.method === "home" || r.method === "etc") ? "home" : "conv";
+  const radio = document.querySelector(`input[name="emShip"][value="${method}"]`);
+  if(radio) radio.checked = true;
+
+  // PII 는 룸 뷰에 본인 것이 안 실려있을 수 있어 직접 조회 (RLS: 본인 허용)
+  let priv = { real_name:r.realName, phone:r.phone, address:r.store, payer:r.payer };
+  if(window.sb){
+    try{
+      const { data } = await window.sb.from("bus_rider_private").select("*").eq("rider_id", r.id).maybeSingle();
+      if(data) priv = data;
+    }catch(_){}
+  }
+  document.getElementById("emName").value  = priv.real_name || "";
+  document.getElementById("emPhone").value = priv.phone || "";
+  document.getElementById("emPayer").value = priv.payer || "";
+  document.getElementById("emAddr").value  = priv.address || "";
+  document.getElementById("emAddrDetail").value = "";
+  document.getElementById("emMemo").value  = r.memo || "";
+  _emToggleShip();
+
+  document.getElementById("editMyInfoOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+// 저장 → bus_riders(비금융) + bus_rider_private(PII) UPDATE
+async function saveEditMyInfo(){
+  const b = BUSES.find(x=>x.id===_editTarget.busId);
+  const r = b && b.riders && b.riders[_editTarget.idx];
+  if(!r){ closeEditMyInfo(); return; }
+  if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다. 총대에게 문의하세요."); return; }
+  if(!window.sb){ alert("연결 오류로 저장하지 못했어요."); return; }
+
+  const name   = document.getElementById("emName").value.trim();
+  const payer  = document.getElementById("emPayer").value.trim();
+  const phoneD = document.getElementById("emPhone").value.replace(/[^0-9]/g,"");
+  const addr   = _emAddr();
+  // 입력 검증 (탑승 폼과 동일 규칙) — 관리자 우회
+  if(!isAdminUser()){
+    const RE = /^[가-힣a-zA-Z\s]+$/;
+    if(_noSpaceLen(payer) < 2 || !RE.test(payer)){ alert("입금자명을 정확히 입력해주세요. (한글/영문 2자 이상)"); return; }
+    if(_noSpaceLen(name)  < 2 || !RE.test(name)){  alert("수령인 실명을 정확히 입력해주세요. (한글/영문 2자 이상)"); return; }
+    if(!/^01[016789]\d{7,8}$/.test(phoneD)){ alert("올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)"); return; }
+    if(_noSpaceLen(addr) < 4){ alert("배송지 주소를 정확히 입력해주세요."); return; }
+  }
+  const method = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
+  const power  = `좌 ${document.getElementById("emPowerL").value} / 우 ${document.getElementById("emPowerR").value}`;
+  const memo   = document.getElementById("emMemo").value.trim() || null;
+
+  const btn = document.getElementById("emSaveBtn");
+  if(btn) btn.disabled = true;
+  let piiSaved = true;
+  try{
+    // ① 장부: power/method/memo (트리거가 본인 power/method 허용, amount/qty/yen 동결)
+    const { error: e1 } = await window.sb.from("bus_riders")
+      .update({ power, method, memo }).eq("id", r.id);
+    if(e1) throw e1;
+    // ② 개인정보: RLS 잠금(ordered=false AND 본인 paid=false) 통과 시에만 반영
+    const { data: pd, error: e2 } = await window.sb.from("bus_rider_private")
+      .update({ real_name:name, phone:phoneD, address:addr, payer }).eq("rider_id", r.id).select("rider_id");
+    if(e2) throw e2;
+    piiSaved = !!(pd && pd.length);
+  }catch(err){
+    if(btn) btn.disabled = false;
+    showToast(_busDbError(err, "정보 수정에 실패했어요.")); return;
+  }
+  if(btn) btn.disabled = false;
+
+  // 클라 즉시 반영
+  r.power = power; r.method = method; r.memo = memo;
+  if(piiSaved){ r.realName = name; r.phone = phoneD; r.store = addr; r.payer = payer; }
+  closeEditMyInfo();
+  showToast(piiSaved ? "내 정보를 수정했어요 ✏️" : "입금 완료 후엔 배송정보가 잠겨 도수/메모만 변경했어요.");
+  renderBusRoom(b);
 }
 
 // 📋 주소록 복사 — 국내 편의점 택배 양식
