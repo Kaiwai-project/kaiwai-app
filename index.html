@@ -214,7 +214,7 @@
     <div class="flex items-end justify-between mb-4">
       <span class="logo-font text-[32px] leading-none pop" onclick="goHome()" title="홈으로" role="button" style="color:#4A4A4A;cursor:pointer;display:inline-block">KAIWAI <span style="color:#FF6FA8">🎀</span></span>
       <div style="display:flex;align-items:center;gap:8px">
-        <span id="pointChip" title="내 포인트"><span style="font-size:13px">🪙</span> 0P</span>
+        <span id="pointChip" title="내 포인트 내역 보기" onclick="openPointHistory()" style="cursor:pointer"><span style="font-size:13px">🪙</span> 0P</span>
         <button id="notifBell" onclick="openNotifs()" title="알림함" style="position:relative;background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center">🔔
           <span id="notifCount" style="display:none;position:absolute;top:-4px;right:-4px;min-width:17px;height:17px;padding:0 4px;border-radius:100px;background:#E5484D;color:#fff;font-size:10px;font-weight:800;align-items:center;justify-content:center;font-family:'M PLUS Rounded 1c',sans-serif">0</span>
         </button>
@@ -308,7 +308,7 @@
         <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'M PLUS Rounded 1c',sans-serif">🚌 안심 렌즈 공구</h1>
         <p style="color:#8D7B80;font-size:10px;margin-top:2px">안전하고 저렴하게! 렌즈라라 무배 버스 🛒</p>
       </div>
-      <span id="busPointChip" title="내 포인트 (탑승 1회 300P)" style="display:none;align-items:center;gap:4px;background:linear-gradient(120deg,#FFF4C2,#FFE08A);border:1.5px solid #F2D27A;color:#8A6D1B;font-weight:800;font-size:13px;padding:7px 13px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;flex-shrink:0"><span style="font-size:13px">🪙</span> 0P</span>
+      <span id="busPointChip" title="내 포인트 내역 보기 (탑승 1회 300P)" onclick="openPointHistory()" style="display:none;cursor:pointer;align-items:center;gap:4px;background:linear-gradient(120deg,#FFF4C2,#FFE08A);border:1.5px solid #F2D27A;color:#8A6D1B;font-weight:800;font-size:13px;padding:7px 13px;border-radius:100px;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;flex-shrink:0"><span style="font-size:13px">🪙</span> 0P</span>
     </div>
   </div>
   <div class="px-4 pt-1 pb-3">
@@ -935,6 +935,23 @@
     <div style="padding:22px 24px 40px">
       <h2 id="menuTitle" style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:21px;color:#4A4A4A;margin:6px 0 18px"></h2>
       <div id="menuBody" style="font-family:'Noto Sans KR',sans-serif;font-size:13px;color:#6B5B5F;line-height:1.75"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 포인트 내역 모달 (바텀시트) ══ -->
+<div id="pointHistoryOverlay" onclick="closePointHistory()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:56;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;display:flex;flex-direction:column;max-height:80vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closePointHistory()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:18px 24px 10px;flex-shrink:0">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A;margin:6px 0 2px">🪙 내 포인트 내역</h2>
+      <p style="font-size:13px;color:#8D7B80;margin:0">현재 잔액 <b id="phBalance" style="color:#C41055">0P</b></p>
+    </div>
+    <div id="phList" style="overflow-y:auto;padding:6px 16px 8px;flex:1"></div>
+    <div style="padding:10px 24px 28px;flex-shrink:0">
+      <button id="phMore" onclick="loadPointHistory(false)" style="display:none;width:100%;padding:12px;border-radius:14px;border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px">더 보기</button>
+      <p id="phEnd" style="display:none;text-align:center;font-size:12px;color:#C4A8B0;margin:6px 0 0">마지막 내역이에요</p>
     </div>
   </div>
 </div>
@@ -4886,6 +4903,95 @@ async function checkDailyAttendance(){
     }
   } catch (e) { console.warn("Attendance error:", e); }
   await _refreshWalletBalance();
+}
+
+/* ═══════════════════════════════════
+   포인트 내역 (원장 point_transactions 조회)
+   · 새 RPC 없이 RLS(본인행만 SELECT)로 직접 조회 → 보안 표면 최소화
+   · keyset(cursor) 페이지네이션 — created_at 커서 + LIMIT 30 ("더 보기")
+═══════════════════════════════════ */
+const PH_PAGE = 30;
+let _phCursor = null;     // 마지막 created_at (키셋 커서)
+let _phTotal = 0;         // 현재까지 렌더된 실제 내역 수
+let _phLoading = false;
+const REASON_LABEL = {
+  attendance:         { icon:"🎁", label:"출석 보상" },
+  sync:               { icon:"🔄", label:"기존 포인트 전환" },
+  board:              { icon:"🚌", label:"안심 탑승 수수료" },
+  refund:             { icon:"↩️", label:"환불" },
+  host_cancel_refund: { icon:"↩️", label:"공구 무산 환불" },
+  admin_grant:        { icon:"👑", label:"운영 지급" },
+};
+function _phFmtDate(iso){
+  try{
+    const k = new Date(new Date(iso).toLocaleString("en-US",{timeZone:"Asia/Seoul"}));
+    const p = (n)=>String(n).padStart(2,"0");
+    return `${k.getFullYear()}-${p(k.getMonth()+1)}-${p(k.getDate())} ${p(k.getHours())}:${p(k.getMinutes())}`;
+  }catch(_){ return ""; }
+}
+function _phRow(t){
+  const meta = REASON_LABEL[t.reason] || { icon:"•", label:t.reason };
+  const plus = t.delta > 0;
+  const color = plus ? "#C41055" : "#6B5B60";
+  const sign  = plus ? "+" : "−";
+  return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-bottom:1px solid #FBE9F1">
+    <div style="min-width:0">
+      <div style="font-size:14px;font-weight:700;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${meta.icon} ${escapeHtml(meta.label)}</div>
+      <div style="font-size:11px;color:#A99CA0;margin-top:2px">${_phFmtDate(t.created_at)}</div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:15px;font-weight:800;color:${color};font-family:'M PLUS Rounded 1c',sans-serif">${sign}${Math.abs(t.delta).toLocaleString()}P</div>
+      <div style="font-size:11px;color:#8D7B80;margin-top:2px">잔액 ${Number(t.balance_after).toLocaleString()}P</div>
+    </div>
+  </div>`;
+}
+async function openPointHistory(){
+  if(!authUser){ showToast("로그인이 필요해요"); return; }
+  document.getElementById("phBalance").textContent = _serverPoints.toLocaleString()+"P";
+  document.getElementById("phList").innerHTML = `<div style="text-align:center;padding:40px 0;color:#C4A8B0;font-size:13px">불러오는 중…</div>`;
+  document.getElementById("phMore").style.display = "none";
+  document.getElementById("phEnd").style.display = "none";
+  document.getElementById("pointHistoryOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+  _phCursor = null; _phTotal = 0;
+  await loadPointHistory(true);
+}
+function closePointHistory(){
+  document.getElementById("pointHistoryOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+async function loadPointHistory(reset){
+  if(_phLoading || !window.sb || !authUser) return;
+  _phLoading = true;
+  const listEl = document.getElementById("phList");
+  const moreBtn = document.getElementById("phMore");
+  if(!reset){ moreBtn.disabled = true; moreBtn.textContent = "불러오는 중…"; }
+  try{
+    let q = window.sb.from("point_transactions")
+      .select("delta,reason,balance_after,created_at")
+      .order("created_at", { ascending:false })
+      .limit(PH_PAGE);
+    if(_phCursor) q = q.lt("created_at", _phCursor);   // 키셋 커서(offset 미사용)
+    const { data, error } = await q;
+    if(error) throw error;
+    const rows = data || [];
+    if(reset) listEl.innerHTML = "";
+    listEl.insertAdjacentHTML("beforeend", rows.map(_phRow).join(""));
+    _phTotal += rows.length;
+    if(rows.length) _phCursor = rows[rows.length-1].created_at;
+    if(_phTotal === 0){
+      listEl.innerHTML = `<div style="text-align:center;padding:48px 0;color:#C4A8B0;font-size:13px">아직 포인트 내역이 없어요 🐣</div>`;
+    }
+    const hasMore = rows.length === PH_PAGE;
+    moreBtn.style.display = hasMore ? "block" : "none";
+    document.getElementById("phEnd").style.display = (!hasMore && _phTotal > 0) ? "block" : "none";
+  }catch(err){
+    if(reset) listEl.innerHTML = `<div style="text-align:center;padding:40px 0;color:#8D7B80;font-size:13px">내역을 불러오지 못했어요 😢</div>`;
+    else showToast("내역을 더 불러오지 못했어요");
+  }finally{
+    moreBtn.disabled = false; moreBtn.textContent = "더 보기";
+    _phLoading = false;
+  }
 }
 
 /* ═══════════════════════════════════
