@@ -773,7 +773,7 @@
 
     <div class="rounded-xl p-4 mb-3" style="background:#FFF8E8;border:1.5px solid #F7E4B0">
       <p style="font-size:14px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin-bottom:6px">② 300P 탑승 수수료 & 3진 아웃제 <span style="color:#8D7B80;font-size:12px">(노쇼 차단)</span></p>
-      <p style="font-size:12px;color:#6B5B60;line-height:1.65">공구 탑승 시 <b>300P가 안심 수수료</b>로 차감되어 총대님께 수고비로 100% 전달됩니다. 또한, 정해진 기한 내 입금하지 않는 노쇼(잠수) 적발 시 1회 경고가 부여되며, <b>누적 3회 시 영구 퇴출(3 OUT)</b>됩니다.</p>
+      <p style="font-size:12px;color:#6B5B60;line-height:1.65">공구 탑승 시 <b>300P가 안심 수수료</b>로 차감되며, 공구가 무사히 완료되면 그 중 <b>50%가 총대님 수고비</b>로 지급됩니다. 또한, 정해진 기한 내 입금하지 않는 노쇼(잠수) 적발 시 1회 경고가 부여되며, <b>누적 3회 시 영구 퇴출(3 OUT)</b>됩니다.</p>
     </div>
 
     <div class="rounded-xl p-4" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
@@ -2981,7 +2981,10 @@ async function goOrderAndFinalize(){
   b.ordered = true;                                    // 클라 즉시 반영
   (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "렌즈라라 일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 일본에서 발송됩니다 ✈️"));
   closeOrderProcess();
-  alert("주문이 완료 처리되었습니다! 파티원 정보가 잠겼어요 🔒");
+  // 완료 시 총대 수고비(수수료 50% × 인원)가 서버 트리거로 적립됨 → 잔액 즉시 갱신
+  if(typeof _refreshWalletBalance === "function") await _refreshWalletBalance();
+  const _reward = (b.riders||[]).length * 150;
+  alert("주문이 완료 처리되었습니다! 파티원 정보가 잠겼어요 🔒" + (_reward>0 ? ("\n💰 총대 수고비 " + _reward.toLocaleString() + "P가 적립되었어요!") : ""));
   renderBusRoom(b);
 }
 
@@ -5021,6 +5024,7 @@ let _phTotal = 0;         // 현재까지 렌더된 실제 내역 수
 let _phLoading = false;
 const REASON_LABEL = {
   attendance:         { icon:"🎁", label:"출석 보상" },
+  host_reward:        { icon:"💰", label:"총대 수고비" },
   sync:               { icon:"🔄", label:"기존 포인트 전환" },
   board:              { icon:"🚌", label:"안심 탑승 수수료" },
   refund:             { icon:"↩️", label:"환불" },
