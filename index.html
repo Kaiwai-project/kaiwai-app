@@ -443,6 +443,12 @@
         <button type="button" id="boardFetchBtn" onclick="autofillBoardFromUrl()"
           style="width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 8px 18px -8px rgba(168,85,247,.7);margin-bottom:10px">✨ 내 렌즈 불러오기</button>
 
+        <!-- 추천 렌즈 빠른 담기 (lens_catalog SWR) -->
+        <div id="boardCuratedWrap" style="margin-bottom:12px">
+          <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">✨ 추천 렌즈에서 빠르게 담기</label>
+          <div id="boardCurated" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch"></div>
+        </div>
+
         <!-- 상품 미리보기 썸네일 -->
         <div id="boardImgWrap" style="display:none;margin-bottom:12px;text-align:center">
           <img id="boardImgPreview" alt="렌즈 미리보기" style="max-width:100%;max-height:150px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
@@ -2142,14 +2148,67 @@ async function submitCreateBus(e){
 let _boardBusId = null;
 
 // 큐레이션 렌즈 더미 데이터 (추후 Supabase 'lens_catalog' 로 교체 예정)
-const curatedLenses = [
-  { id: 'L01', name: 'Flurry 원데이 (칭찬받는 판다)', price: 1760 },
-  { id: 'L02', name: 'Flurry 먼슬리 (사랑받는 링고)', price: 1320 },
-  { id: 'L03', name: 'Bambi Series 원데이 (아몬드)', price: 1760 },
-  { id: 'L04', name: 'Bambi Series 먼슬리 (스완 블루)', price: 1650 },
-  { id: 'L05', name: "Chu's Lens 원데이 (모테 브라운)", price: 1705 },
-  { id: 'L06', name: 'Majolica Majorca (지뢰계 블랙)', price: 1600 },
+// 추천 렌즈 — 서버 lens_catalog(SSOT)에서 SWR 로드. 아래는 첫 로드/오프라인 폴백.
+let curatedLenses = [
+  { id: 'L01', name: 'Flurry 원데이 (칭찬받는 판다)', price: 1760, category: '갸루' },
+  { id: 'L02', name: 'Flurry 먼슬리 (사랑받는 링고)', price: 1320, category: '내추럴' },
+  { id: 'L03', name: 'Bambi Series 원데이 (아몬드)', price: 1760, category: '내추럴' },
+  { id: 'L04', name: 'Bambi Series 먼슬리 (스완 블루)', price: 1650, category: '양산형' },
+  { id: 'L05', name: "Chu's Lens 원데이 (모테 브라운)", price: 1705, category: '양산형' },
+  { id: 'L06', name: 'Majolica Majorca (지뢰계 블랙)', price: 1600, category: '지뢰계' },
 ];
+
+/* 렌즈 카탈로그 SWR(Stale-While-Revalidate) — 캐시 즉시 표시 + 백그라운드 갱신.
+   관리자가 lens_catalog(DB)만 수정해도 다음 방문 시 동적 반영. */
+const LENS_CACHE_KEY = "kaiwai_lens_catalog";
+function _mapLens(row){
+  return { id: row.code || row.id, name: row.name, price: row.price_yen,
+           brand: row.brand || "", image: row.image_url || "", category: row.category || "" };
+}
+async function loadLensCatalog(){
+  // 1) 캐시 즉시 반영(있으면)
+  try{
+    const c = JSON.parse(localStorage.getItem(LENS_CACHE_KEY) || "null");
+    if(c && Array.isArray(c.data) && c.data.length){ curatedLenses = c.data; renderLensPicker(); }
+  }catch(_){}
+  // 2) 백그라운드 갱신(SWR) — 활성 행만, sort_order
+  if(!window.sb) return;
+  try{
+    const { data, error } = await window.sb.from("lens_catalog")
+      .select("code,brand,name,price_yen,image_url,category")
+      .eq("is_active", true).order("sort_order", { ascending:true });
+    if(error) throw error;
+    if(Array.isArray(data) && data.length){
+      curatedLenses = data.map(_mapLens);
+      localStorage.setItem(LENS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: curatedLenses }));
+      renderLensPicker();
+    }
+  }catch(_){ /* 실패 시 캐시/폴백 유지(graceful) */ }
+}
+// 탑승 모달 '✨ 추천 렌즈에서 빠르게 담기' 칩 렌더
+function renderLensPicker(){
+  const el = document.getElementById("boardCurated");
+  if(!el) return;
+  el.innerHTML = (curatedLenses || []).map((l,i)=>{
+    const cat = l.category ? `<span style="margin-left:5px;font-size:9px;font-weight:800;color:#A855F7">${escapeHtml(l.category)}</span>` : "";
+    return `<button type="button" onclick="pickCuratedLens(${i})" style="flex-shrink:0;max-width:200px;text-align:left;border:1.5px solid #F2B8DC;background:#fff;border-radius:12px;padding:8px 11px;cursor:pointer;font-family:'Noto Sans KR',sans-serif">
+      <span style="display:block;font-size:11px;font-weight:700;color:#4A4A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:178px">${escapeHtml(l.name)}</span>
+      <span style="font-size:11px;font-weight:800;color:#C41055">¥${Number(l.price||0).toLocaleString()}</span>${cat}</button>`;
+  }).join("");
+}
+// 추천 렌즈 선택 → 수동 폼 자동 채움
+function pickCuratedLens(i){
+  const l = (curatedLenses || [])[i]; if(!l) return;
+  const n = document.getElementById("boardProdName"); if(n) n.value = l.name || "";
+  const p = document.getElementById("boardProdPrice"); if(p) p.value = l.price || "";
+  if(l.image){
+    const w = document.getElementById("boardImgWrap"), im = document.getElementById("boardImgPreview");
+    if(w && im){ im.src = l.image; w.style.display = "block"; }
+  }
+  if(typeof updateBoardBtn === "function") updateBoardBtn();
+  if(typeof updateReceipt === "function") updateReceipt();
+  showToast("추천 렌즈를 담았어요 ✨ 도수·수량을 확인해 주세요");
+}
 
 // 결제 계산 상수 (고정 환율 100엔=900원 → ×9)
 const YEN_TO_KRW = 9;
@@ -2190,6 +2249,7 @@ function boardBus(id){
   document.getElementById("boardBusTitle").textContent = b.title;
   document.getElementById("boardBusCaptain").textContent = `총대 ${b.captain} · 달성률 ${Math.round(b.current/b.goal*100)}%`;
   document.getElementById("boardForm").reset();
+  renderLensPicker();   // 추천 렌즈 픽커 갱신(SWR 로 로드된 최신 카탈로그)
   // 링크/미리보기 초기화
   document.getElementById("boardUrl").value = "";
   const biw = document.getElementById("boardImgWrap"); if(biw) biw.style.display = "none";
@@ -4924,8 +4984,8 @@ async function checkDailyAttendance(){
     if (!error && data) {
       if (data.awarded) {
         _serverPoints = data.balance; renderPoints();
-        showToast("🎁 출석 완료! +" + (data.points || 50) + "P");
-        _floatPoints("+" + (data.points || 50) + "P");
+        showToast("🎁 출석 완료! +" + (data.points || 100) + "P");
+        _floatPoints("+" + (data.points || 100) + "P");
       } else if (typeof data.balance === "number") {
         // 오늘 이미 출석 → 자동 호출이라 토스트 없이 잔액만 반영
         _serverPoints = data.balance; renderPoints();
@@ -5046,6 +5106,7 @@ function _checkMonthlyLikeReset(){
 _checkMonthlyLikeReset();
 drawFilter(); drawBanner(); drawBrands(); drawRanking(); go("home"); updateAuthBtn();
 renderPoints(); renderNotifBadge(); showGodFab(); if(authUser) checkDailyAttendance();
+loadLensCatalog();   // 추천 렌즈 카탈로그 SWR 로드(공개 — 로그인 불필요)
 
 /* ═══════════════════════════════════
    Supabase 세션 → authUser 브리지
