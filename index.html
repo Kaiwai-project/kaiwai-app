@@ -673,6 +673,16 @@
       <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">🚌 공구방 개설</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 18px">새로운 렌즈 버스를 출발시켜 보세요!</p>
 
+      <!-- 플랫폼 선택 (최상단) — '렌즈라라' 선택 시에만 링크 파싱·도수 입력 활성화 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">플랫폼 선택 *</label>
+      <select id="cbPlatform" required onchange="onPlatformChange()"
+        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:16px">
+        <option value="렌즈라라" selected>렌즈라라</option>
+        <option value="기타">기타</option>
+      </select>
+
+      <!-- 렌즈라라 전용 섹션: 링크 자동 파싱 + 좌/우 도수 -->
+      <div id="cbLenslalaSection">
       <!-- 🔗 상품 링크 자동 불러오기 -->
       <div class="rounded-xl p-3 mb-4" style="background:linear-gradient(120deg,#F5E0FF,#FFE0EE);border:1.5px solid #EBC9F5">
         <label style="display:block;font-size:12px;font-weight:800;color:#7733BB;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">🔗 상품 링크(URL) 입력</label>
@@ -686,6 +696,20 @@
         </div>
         <input id="cbImage" type="hidden"/>
       </div>
+
+      <!-- 좌/우 렌즈 도수 (렌즈라라 전용) -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">렌즈 도수 (좌/우) *</label>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <div style="flex:1">
+          <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">좌 (Left)</span>
+          <select id="cbPowerL" style="width:100%;padding:12px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+        </div>
+        <div style="flex:1">
+          <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">우 (Right)</span>
+          <select id="cbPowerR" style="width:100%;padding:12px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+        </div>
+      </div>
+      </div><!-- /#cbLenslalaSection -->
 
       <!-- 직접 입력 토글 -->
       <div style="margin:-4px 0 14px;text-align:right">
@@ -709,13 +733,6 @@
             style="width:100%;padding:11px 12px 11px 28px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:13px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"/>
         </div>
       </div>
-
-      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">플랫폼 선택 *</label>
-      <select id="cbPlatform" required
-        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:16px">
-        <option value="렌즈라라" selected>렌즈라라</option>
-        <option value="기타">기타</option>
-      </select>
 
       <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">버스 제목 *</label>
       <input id="cbTitle" required maxlength="40" placeholder="ex. 밤비 아몬드 무배 버스 타실 분!"
@@ -1704,6 +1721,9 @@ function _mapBus(row, localId, riders){
     productName: row.product_name,
     productImg: row.product_img,
     productPrice: row.product_price,
+    platform: row.platform || "렌즈라라",
+    hostPowerL: row.host_power_l || null,
+    hostPowerR: row.host_power_r || null,
     ownerId: row.owner_id,
     notice: row.notice || "",
     ordered: row.ordered,
@@ -1813,6 +1833,31 @@ let isVerifiedHost = false;
 // 300P 탑승 수수료 → 총대 수고비 지급 구조가 부활하여 true (관련 안내 노출).
 const REWARDS_ENABLED = true;
 
+// 개설 폼 좌/우 도수 옵션: 0.00 + 0.5단위(-1.00 ~ -8.00), 단 -0.50(시력 0.5)은 제외. 기본 0.00
+const CB_POWER_OPTIONS = (function(){
+  const arr = ["0.00"];
+  for(let v=0.5; v<=8.0001; v+=0.5){
+    if(Math.abs(v-0.5) < 1e-9) continue;   // 좌우 시력 0.5(-0.50) 제외
+    arr.push("-" + v.toFixed(2));
+  }
+  return arr;
+})();
+function _fillCbPower(){
+  ["cbPowerL","cbPowerR"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = CB_POWER_OPTIONS.map(p=>`<option value="${p}">${p}</option>`).join("");
+    el.value = "0.00";
+  });
+}
+// 플랫폼 변경 → '렌즈라라'만 링크 파싱/도수 활성. '기타'는 스크래핑 불가라 수동 입력 폼 노출.
+function onPlatformChange(){
+  const sel = document.getElementById("cbPlatform");
+  const isLens = (sel && sel.value === "렌즈라라");
+  const sec = document.getElementById("cbLenslalaSection");
+  if(sec) sec.style.display = isLens ? "block" : "none";
+  if(!isLens && typeof toggleManualForm === "function") toggleManualForm(true);
+}
 async function openCreateBus(){
   // 로그인 가드
   if(!window.sb || !_busUid()){
@@ -1837,6 +1882,9 @@ async function openCreateBus(){
   const ci = document.getElementById("cbImage"); if(ci) ci.value = "";
   const rn = document.getElementById("cbRewardNote");
   if(rn) rn.style.display = REWARDS_ENABLED ? "block" : "none";
+  _fillCbPower();                                            // 좌/우 도수 옵션 채움(기본 0.00)
+  const pf = document.getElementById("cbPlatform"); if(pf) pf.value = "렌즈라라";
+  onPlatformChange();                                        // 렌즈라라 기준 섹션 표시
   syncDeadlineUI();
   document.getElementById("createBusOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -2127,11 +2175,14 @@ async function submitCreateBus(e){
 
   // 물품 정보 (상품명/이미지/가격) — 자동 또는 수동
   const prodName  = (document.getElementById("cbProdName").value || "").trim();
-  const prodImg   = (document.getElementById("cbProdImg").value || "").trim();
+  const prodImg   = (document.getElementById("cbProdImg").value || "").trim();   // 선택(렌즈랄라 og:image 누락 잦음)
   const prodPrice = parseInt(document.getElementById("cbProdPrice").value, 10);
-  // 방어: 3가지 중 하나라도 비어있으면 생성 차단
-  if(!prodName || !prodImg || !prodPrice || prodPrice < 1){
-    alert("물품 정보를 정확히 입력해주세요.");
+  const platform  = (document.getElementById("cbPlatform").value || "렌즈라라");
+  const powerL    = (document.getElementById("cbPowerL").value || "0.00");
+  const powerR    = (document.getElementById("cbPowerR").value || "0.00");
+  // 방어: 상품명/가격은 필수(이미지는 선택 — 스크래핑 실패/누락 허용)
+  if(!prodName || !prodPrice || prodPrice < 1){
+    alert("상품명과 가격을 정확히 입력해주세요.");
     toggleManualForm(true);
     return;
   }
@@ -2150,8 +2201,11 @@ async function submitCreateBus(e){
       notice: document.getElementById("cbNotice").value.trim() || null,
       goal: goal,
       product_name: prodName,
-      product_img: prodImg,
+      product_img: prodImg || null,
       product_price: prodPrice,
+      platform: platform,
+      host_power_l: (platform === "렌즈라라") ? powerL : null,
+      host_power_r: (platform === "렌즈라라") ? powerR : null,
       ordered: false,
       // 계좌 스냅샷은 서버 트리거(_snapshot_bus_host_account)가 host_accounts 에서 복사 — 클라 미전송
     });
