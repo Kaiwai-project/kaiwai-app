@@ -1856,13 +1856,19 @@ async function godToggleVerified(){
   showToast("총대 인증: " + (isVerifiedHost ? "ON ✅ (DB 승격됨)" : "OFF (로컬 캐시만)"));
   renderGodState();
 }
-function godAddPoints(){
-  const k = (typeof _pointsKey==="function") ? _pointsKey() : null;
-  if(!k){ showToast("로그인 후 사용하세요"); return; }
-  const o = _pointsObj(); o.points = (o.points||0) + 1000;
-  localStorage.setItem(k, JSON.stringify(o));
-  renderPoints(); renderGodState();
-  showToast("🪙 +1000P 지급 (누적 " + o.points.toLocaleString() + "P)");
+async function godAddPoints(){
+  if(!window.sb || !authUser){ showToast("로그인 후 사용하세요"); return; }
+  try{
+    // 서버 지갑에 적립(원장 'admin_grant' 기록). 관리자 화이트리스트는 RPC 내부에서 강제.
+    const { data, error } = await window.sb.rpc('admin_grant_points', { p_amount: 1000 });
+    if(error) throw error;
+    _serverPoints = Number(data) || 0; renderPoints();
+    if(typeof renderGodState==="function") renderGodState();
+    showToast("🪙 +1000P 지급 (잔액 " + _serverPoints.toLocaleString() + "P)");
+    _floatPoints("+1000P");
+  }catch(err){
+    showToast((typeof _busDbError==="function") ? _busDbError(err, "포인트 지급에 실패했어요.") : "포인트 지급에 실패했어요.");
+  }
 }
 function godRunTest(){
   if(typeof runCoopAutoTest!=="function"){ showToast("테스트 모듈 미로드"); return; }
@@ -4819,33 +4825,67 @@ function renderPoints(){
     if(show) el.innerHTML = html;
   });
 }
-async function fetchServerPoints() {
+// 기존 localStorage 잔액 → 서버 지갑 1회 이관 (멱등: sync_local_points 가 플래그로 차단)
+async function _syncLocalPointsOnce() {
   if (!window.sb || !authUser) return;
   const k = "kaiwai_points_" + authUser.id;
   try {
     const localStr = localStorage.getItem(k);
     if (localStr) {
       const o = JSON.parse(localStr);
-      if (o.points > 0) {
-        // 기존 localStorage 잔액 1회 동기화
-        await window.sb.rpc('sync_local_points', { p_points: o.points });
-      }
-      localStorage.removeItem(k); // 동기화 완료 후 파기
+      if (o && o.points > 0) await window.sb.rpc('sync_local_points', { p_points: o.points });
+      localStorage.removeItem(k); // 동기화 시도 후 파기
     }
   } catch (e) { console.warn("Local points migration error:", e); }
-
+}
+// 서버 지갑 잔액 → 헤더 칩 반영
+async function _refreshWalletBalance() {
+  if (!window.sb || !authUser) return;
   try {
     const { data, error } = await window.sb.from('user_wallets').select('balance').eq('user_id', authUser.id).maybeSingle();
-    if (!error && data) {
-      _serverPoints = data.balance || 0;
-      renderPoints();
-    }
+    if (!error && data) { _serverPoints = data.balance || 0; renderPoints(); }
   } catch(e) { console.warn("Wallet fetch error:", e); }
 }
-function checkDailyAttendance(){
-  // 출석 체크(포인트 지급)는 추후 서버 RPC 연동으로 완전히 이관될 예정입니다.
-  // 여기서는 로그인 후 서버 지갑 잔액을 가져오는 로직을 실행합니다.
-  fetchServerPoints();
+// (호환) 기존 호출부용 — 이관 + 잔액 조회
+async function fetchServerPoints() { await _syncLocalPointsOnce(); await _refreshWalletBalance(); }
+
+// 헤더 포인트칩 주변에 '+50P' 가 떠오르는 마이크로 플로팅 (적립 "손맛")
+function _floatPoints(text){
+  const anchor = document.getElementById("pointChip");
+  if(!anchor) return;
+  if(!document.getElementById("kwFloatAnim")){
+    const st = document.createElement("style"); st.id = "kwFloatAnim";
+    st.textContent = "@keyframes kwFloatUp{0%{opacity:0;transform:translate(-50%,6px) scale(.7)}18%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px) scale(1.15)}}";
+    document.head.appendChild(st);
+  }
+  const r = anchor.getBoundingClientRect();
+  const el = document.createElement("div");
+  el.textContent = text;
+  el.style.cssText = "position:fixed;left:"+(r.left + r.width/2)+"px;top:"+r.top+"px;z-index:9999;pointer-events:none;"
+    + "font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:14px;color:#C41055;"
+    + "text-shadow:0 1px 3px rgba(255,255,255,.9);animation:kwFloatUp 1.2s ease-out forwards";
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1300);
+}
+
+// 로그인 직후 자동 호출 — (1)로컬 1회 이관 → (2)출석 적립(KST 하루1회, 서버강제) → (3)잔액 보강
+async function checkDailyAttendance(){
+  if (!window.sb || !authUser) return;
+  await _syncLocalPointsOnce();
+  try {
+    const { data, error } = await window.sb.rpc('add_attendance_points');
+    if (!error && data) {
+      if (data.awarded) {
+        _serverPoints = data.balance; renderPoints();
+        showToast("🎁 출석 완료! +" + (data.points || 50) + "P");
+        _floatPoints("+" + (data.points || 50) + "P");
+      } else if (typeof data.balance === "number") {
+        // 오늘 이미 출석 → 자동 호출이라 토스트 없이 잔액만 반영
+        _serverPoints = data.balance; renderPoints();
+      }
+    }
+  } catch (e) { console.warn("Attendance error:", e); }
+  await _refreshWalletBalance();
 }
 
 /* ═══════════════════════════════════
