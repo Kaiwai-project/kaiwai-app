@@ -2957,13 +2957,26 @@ function closeOrderProcess(){
 async function goOrderAndFinalize(){
   const b = BUSES.find(x=>x.id===_orderProcBusId);
   if(!b) return;
+  // 사전 가드: 목표 미달 출발 차단(관리자는 우회). 백엔드 트리거가 최종 강제.
+  const _isAdmin = (typeof isAdminUser === "function") && isAdminUser();
+  if(!_isAdmin){
+    const cur = (b.riders||[]).reduce((s,r)=> s + (r.yen||0)*(r.qty||1), 0);
+    if(cur < b.goal){
+      alert("아직 목표 금액을 달성하지 못했어요 🚌\n(현재 " + cur.toLocaleString() + "엔 / 목표 " + b.goal.toLocaleString() + "엔)\n목표 달성 후 출발할 수 있어요!");
+      return;
+    }
+  }
   if(!confirm("렌즈라라로 이동하며 주문을 완료 처리할까요?\n참여자 정보가 잠기고 모든 참여자에게 알림이 발송됩니다.")) return;
   if(!window.sb){ alert("연결 오류로 주문 완료 처리를 못했어요."); return; }
   try{
-    // ordered=true 로 잠금 (RLS: 방장만). 이후 신규 탑승·PII 수정이 DB 단에서 차단됨.
+    // ordered=true 로 잠금 (RLS: 방장만 + 트리거: 목표달성/관리자). 이후 신규 탑승·PII 수정 차단.
     const { error } = await window.sb.from("buses").update({ ordered:true }).eq("id", b.dbId);
     if(error) throw error;
-  }catch(err){ alert(_busDbError(err, "주문 완료 처리에 실패했어요.")); return; }
+  }catch(err){
+    // 트리거의 목표 미달 차단 메시지는 그대로 노출
+    const m = (err && err.message && err.message.includes("목표")) ? err.message : _busDbError(err, "주문 완료 처리에 실패했어요.");
+    alert(m); return;
+  }
   window.open(platformUrl(b), "_blank", "noopener");   // 렌즈라라 바로가기
   b.ordered = true;                                    // 클라 즉시 반영
   (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "렌즈라라 일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 일본에서 발송됩니다 ✈️"));
@@ -4910,10 +4923,10 @@ function updMFav(id){
 }
 
 /* ═══════════════════════════════════
-   포인트 제도 (일일 출석) — 로그인 유저별 localStorage 보관
-   · 자정 이후 '하루 첫 로그인/접속' 시 50P 지급 + "+50P 출석 완료!" 토스트
-   · 헤더 포인트 칩에 현재 포인트 표시 (비로그인 시 숨김)
-   · DB 연동 시: profiles.points 컬럼 + 출석 RPC 로 이전 가능(아래 SQL 제안 참고)
+   포인트 제도 (일일 출석) — 서버 지갑(user_wallets) 기반
+   · 로그인 시 add_attendance_points RPC 호출 → KST 하루 1회 100P 지급(서버 강제)
+   · 적립액은 서버 상수(마이그25) — 클라는 RPC 반환값(data.points)을 그대로 표시
+   · 헤더 포인트 칩에 현재 잔액 표시 (비로그인 시 숨김)
 ═══════════════════════════════════ */
 let _serverPoints = 0;
 function getPoints(){ return _serverPoints; }
@@ -4958,7 +4971,7 @@ async function _refreshWalletBalance() {
 // (호환) 기존 호출부용 — 이관 + 잔액 조회
 async function fetchServerPoints() { await _syncLocalPointsOnce(); await _refreshWalletBalance(); }
 
-// 헤더 포인트칩 주변에 '+50P' 가 떠오르는 마이크로 플로팅 (적립 "손맛")
+// 헤더 포인트칩 주변에 적립액(+NNN P)이 떠오르는 마이크로 플로팅 (적립 "손맛")
 function _floatPoints(text){
   const anchor = document.getElementById("pointChip");
   if(!anchor) return;
