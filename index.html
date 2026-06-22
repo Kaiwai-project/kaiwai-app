@@ -316,6 +316,11 @@
     <div class="rounded-xl p-4 mb-2" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
       <p style="font-size:14px;font-weight:800;color:#1E40AF;font-family:'M PLUS Rounded 1c',sans-serif;line-height:1.45">먹튀 0%, 잠수 0%. 스트레스 없는 KAIWAI 안심 버스 🚌 <i class="fa-solid fa-circle-question text-gray-400 cursor-pointer" onclick="openRuleModal()" role="button" title="안심 공구 3대 철칙 보기" style="font-size:15px;vertical-align:middle"></i></p>
     </div>
+    <!-- 이용 가이드라인(설명서) 진입 버튼 -->
+    <button onclick="openGuideModal()" class="w-full rounded-xl p-3.5 mb-2" style="display:flex;align-items:center;justify-content:space-between;gap:10px;border:1.5px solid #FCE3A8;cursor:pointer;text-align:left;background:linear-gradient(120deg,#FFF7E6,#FFEFD0);font-family:'M PLUS Rounded 1c',sans-serif">
+      <span style="font-size:13px;font-weight:800;color:#B8860B;line-height:1.35">📖 카이와이 안심 공구 가이드 <span style="color:#C41055">(필독)</span></span>
+      <span style="flex-shrink:0;font-size:11px;font-weight:800;color:#B8860B;background:rgba(184,134,11,.12);border:1px solid #F2D27A;padding:6px 11px;border-radius:100px;white-space:nowrap">읽어보기 ›</span>
+    </button>
     <!-- 총대 권한 신청 배너 (마이페이지 → 공구 탭으로 이동) -->
     <button onclick="openCaptainVerify()" class="w-full rounded-xl p-4" style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:none;cursor:pointer;text-align:left;background:linear-gradient(to right,#A855F7,#EC4899);box-shadow:0 10px 24px -10px rgba(168,85,247,.55);font-family:'M PLUS Rounded 1c',sans-serif">
       <span style="font-size:14px;font-weight:800;color:#fff;line-height:1.35">🛡️ 나도 총대 되어 안전한 공구 열기!</span>
@@ -871,6 +876,61 @@
 </div>
 
 <!-- ══ 파티원 본인 정보 수정 모달 (Slice 3) ══ -->
+<!-- ══ 이용 가이드라인(설명서) 모달 ══ -->
+<div id="guideOverlay" onclick="closeGuideModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:62;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeGuideModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:22px 22px 32px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:21px;color:#3A2B30;margin:2px 0 4px">📖 카이와이 안심 공구 가이드</h2>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 18px;line-height:1.5">공구를 이용하기 전에 꼭 읽어주세요. 포인트 정책과 총대·탑승자 역할을 안내해요.</p>
+
+      <!-- 💰 포인트 정책 -->
+      <div class="rounded-2xl p-4 mb-4" style="background:#FFF7E6;border:1.5px solid #FCE3A8">
+        <p style="font-size:15px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin:0 0 12px">💰 핵심! 공구 포인트 정책</p>
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">🛡️ 총대 보증금</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">공구방 개설 시 <b style="color:#C41055">300P가 '보증금'으로 우선 차감</b>돼요. 공구를 무사히 마치고 발송을 완료하면 <b style="color:#1A9E5E">100% 전액 환급</b>됩니다!</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">🎟️ 탑승자 수수료</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">버스 탑승 시 <b style="color:#C41055">300P가 탑승 수수료로 완전히 차감</b>됩니다.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">👑 총대 특별 보상</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">총대님은 보증금 반환에 더해, 무거운 짐을 책임진 수고로움의 감사로 <b style="color:#C41055">탑승자 수수료 총합의 50%</b>를 추가 보상으로 받아요! <span style="color:#9A8D93">(추후 제휴 브랜드 쿠폰 교환 가능)</span></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 👑 총대 가이드 -->
+      <div class="rounded-2xl p-4 mb-4" style="background:#F6F0FF;border:1.5px solid #E3D3F5">
+        <p style="font-size:15px;font-weight:800;color:#7733BB;font-family:'M PLUS Rounded 1c',sans-serif;margin:0 0 12px">👑 총대(주최자) 전용 가이드</p>
+        <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;counter-reset:gnum">
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">1</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">공구방 개설(도메인 고정)</b> — 개설 시 첫 번째 입력한 '상품주소(URL)'의 <b style="color:#7733BB">사이트에서만 탑승자가 물건을 고를 수 있게</b> 강제 차단해 발주 혼선을 막아요.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">2</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">정보 변경 결재 시스템</b> — 탑승자의 도수/수량 수정은 즉시 반영되지 않고, 총대님 화면 최상단에 <b style="color:#E5484D">🚨 [수정 요청] 배너</b>로 떠요. 확인 후 <b style="color:#1A9E5E">[승인]</b>해야 장부에 반영됩니다.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">3</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">마감 및 발주</b> — '주문 완료' 시 방이 닫혀요. 탑승자의 민감한 개인정보(주소·번호)는 <b style="color:#7733BB">오직 총대님에게만</b> 안전하게 보입니다.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">4</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">안전 발송의 책임</b> — 물건을 수령해 탑승자에게 재발송할 책임이 있으며, 완수 시 <b style="color:#C41055">포인트 보상</b>이 주어져요.</p></li>
+        </ol>
+      </div>
+
+      <!-- 🙋‍♀️ 탑승자 가이드 -->
+      <div class="rounded-2xl p-4 mb-2" style="background:#FFF0F6;border:1.5px solid #FFD6E8">
+        <p style="font-size:15px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;margin:0 0 12px">🙋‍♀️ 탑승자(참여자) 전용 가이드</p>
+        <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px">
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#FF6FA8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">1</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">버스 탑승</b> — 총대님이 지정한 <b style="color:#C41055">사이트의 링크만</b> 넣을 수 있고, 수령 방법에 따라 배송지 입력 라벨이 자동으로 바뀌어요.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#FF6FA8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">2</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">수정은 '요청'으로</b> — 정보 수정 시 총대님께 <b style="color:#C41055">'수정 요청'</b>이 전송되고, 승인해야 최종 반영돼요. 금액 변동 시 차액을 소통해 주세요.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#FF6FA8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">3</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">개인정보 보호</b> — 장부는 투명하게 공개되지만, 진짜 개인정보(이름·주소)는 발송을 위해 <b style="color:#1A9E5E">총대님에게만 암호화되어 전달</b>되니 안심하세요!</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#FF6FA8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">4</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">총대 감사 보상</b> — 탑승 수수료의 50%는 고생하시는 총대님께 보상으로 지급돼요. 렌즈를 무사히 받으셨다면 <b style="color:#C41055">감사 인사</b>를 잊지 마세요 💕</p></li>
+        </ol>
+      </div>
+
+      <button onclick="closeGuideModal()" class="w-full rounded-xl py-3.5 mt-4" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.6)">확인했어요!</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 수정 요청 승인 모달 (총대 전용) ══ -->
 <div id="modReqOverlay" onclick="closeModRequests()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:61;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
@@ -1849,6 +1909,18 @@ function openRuleModal(){
 }
 function closeRuleModal(){
   document.getElementById("ruleOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// 이용 가이드라인(설명서) 모달 — 하단에서 부드럽게 올라옴 (뒷배경 클릭 시 닫힘)
+function openGuideModal(){
+  const ov = document.getElementById("guideOverlay");
+  ov.style.display = "flex";
+  const sheet = ov.firstElementChild; if(sheet) sheet.scrollTop = 0;
+  document.body.style.overflow = "hidden";
+}
+function closeGuideModal(){
+  document.getElementById("guideOverlay").style.display = "none";
   document.body.style.overflow = "";
 }
 
