@@ -1054,13 +1054,40 @@
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
     <button onclick="closePointHistory()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
     <div style="padding:18px 24px 10px;flex-shrink:0">
-      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A;margin:6px 0 2px">🪙 내 포인트 내역</h2>
-      <p style="font-size:13px;color:#8D7B80;margin:0">현재 잔액 <b id="phBalance" style="color:#C41055">0P</b></p>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div style="min-width:0">
+          <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A;margin:6px 0 2px">🪙 내 포인트 내역</h2>
+          <p style="font-size:13px;color:#8D7B80;margin:0">현재 잔액 <b id="phBalance" style="color:#C41055">0P</b></p>
+        </div>
+        <button onclick="openRewardShop()" style="flex-shrink:0;margin-top:4px;display:inline-flex;align-items:center;gap:5px;padding:9px 14px;border-radius:100px;border:none;cursor:pointer;background:linear-gradient(120deg,#FF8FC4,#FFC2DD);color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;box-shadow:0 4px 12px rgba(255,143,196,.4);transition:transform .12s,box-shadow .12s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 16px rgba(255,143,196,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 12px rgba(255,143,196,.4)'">🛍️ 리워드 상점</button>
+      </div>
     </div>
     <div id="phList" style="overflow-y:auto;padding:6px 16px 8px;flex:1"></div>
     <div style="padding:10px 24px 28px;flex-shrink:0">
       <button id="phMore" onclick="loadPointHistory(false)" style="display:none;width:100%;padding:12px;border-radius:14px;border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px">더 보기</button>
       <p id="phEnd" style="display:none;text-align:center;font-size:12px;color:#C4A8B0;margin:6px 0 0">마지막 내역이에요</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 리워드 상점(교환소) 모달 ══ -->
+<div id="rewardShopOverlay" onclick="closeRewardShop()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.45);z-index:58;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#FFF8FB;border-radius:28px 28px 0 0;display:flex;flex-direction:column;max-height:90vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0;flex-shrink:0"></div>
+    <button onclick="closeRewardShop()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:16px 24px 6px;flex-shrink:0">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A;margin:6px 0 2px">🛍️ 리워드 상점</h2>
+      <p style="font-size:12.5px;color:#8D7B80;margin:0">모은 포인트로 제휴 혜택을 교환하세요 🎀</p>
+    </div>
+    <!-- 탭 스위치 -->
+    <div style="display:flex;gap:6px;margin:10px 16px 8px;padding:5px;background:#FCE4EF;border-radius:100px;flex-shrink:0">
+      <button id="rsTabExchange" onclick="switchRewardTab('exchange')" style="flex:1;padding:10px;border:none;border-radius:100px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;transition:background .15s,color .15s">🎁 리워드 교환</button>
+      <button id="rsTabCoupons" onclick="switchRewardTab('coupons')" style="flex:1;padding:10px;border:none;border-radius:100px;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;transition:background .15s,color .15s">🎫 내 쿠폰함</button>
+    </div>
+    <div id="rsBody" style="overflow-y:auto;padding:6px 16px 10px;flex:1"></div>
+    <!-- 하단 고정: 보유 포인트 -->
+    <div style="padding:13px 24px 26px;flex-shrink:0;border-top:1px solid #FBE0EC;background:#fff;border-radius:0">
+      <div id="rsFooter" style="display:flex;align-items:center;justify-content:center;gap:6px;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:14px;color:#4A4A4A">보유 포인트: <b style="color:#C41055">0 P</b></div>
     </div>
   </div>
 </div>
@@ -5698,6 +5725,7 @@ const REASON_LABEL = {
   refund:             { icon:"↩️", label:"환불" },
   host_cancel_refund: { icon:"↩️", label:"공구 무산 환불" },
   admin_grant:        { icon:"👑", label:"운영 지급" },
+  exchange:           { icon:"🛍️", label:"리워드 교환" },
 };
 function _phFmtDate(iso){
   try{
@@ -5768,6 +5796,172 @@ async function loadPointHistory(reset){
   }finally{
     moreBtn.disabled = false; moreBtn.textContent = "더 보기";
     _phLoading = false;
+  }
+}
+
+/* ═══════════════════════════════════
+   리워드 상점(교환소) — 마이그40 reward_items / reward_coupons
+   · 교환 탭: RPC reward_shop_items()(활성상품+미사용재고 개수, 코드 비노출)
+   · 쿠폰함 탭: reward_coupons 본인 교환분만(RLS) + 상품명 임베드
+   · 교환: RPC exchange_reward(p_item_id)(서버단 차감·재고락·쿠폰매핑 원자적)
+═══════════════════════════════════ */
+let _rsTab = "exchange";     // 현재 탭
+let _rsBusy = false;         // 교환 중복요청 가드
+function _rewardEmoji(brand, title){
+  const s = ((brand||"") + " " + (title||"")).toUpperCase();
+  if(s.includes("스타벅스") || s.includes("STARBUCKS")) return "☕";
+  if(s.includes("GS25") || s.includes("GS 25")) return "🏪";
+  return "🎁";
+}
+function _rsJsStr(s){ return String(s ?? "").replace(/\\/g,"\\\\").replace(/'/g,"\\'"); }
+function _rsRenderFooter(){
+  const f = document.getElementById("rsFooter");
+  if(f) f.innerHTML = `보유 포인트: <b style="color:#C41055">${_serverPoints.toLocaleString()} P</b>`;
+}
+function _rsTabStyle(active){
+  // 활성 탭 = 흰 알약 + 핑크 글씨 / 비활성 = 투명 + 회색
+  return active
+    ? "background:#fff;color:#C41055;box-shadow:0 2px 6px rgba(196,16,85,.12)"
+    : "background:transparent;color:#A6899A";
+}
+async function openRewardShop(){
+  if(!authUser){ showToast("로그인이 필요해요"); return; }
+  document.getElementById("rewardShopOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+  _rsRenderFooter();
+  await switchRewardTab("exchange");
+}
+function closeRewardShop(){
+  document.getElementById("rewardShopOverlay").style.display = "none";
+  // 포인트 내역 모달이 뒤에 떠 있으면 스크롤 락 유지, 아니면 해제
+  const ph = document.getElementById("pointHistoryOverlay");
+  document.body.style.overflow = (ph && ph.style.display === "flex") ? "hidden" : "";
+}
+async function switchRewardTab(tab){
+  _rsTab = tab;
+  document.getElementById("rsTabExchange").style.cssText += ";" + _rsTabStyle(tab === "exchange");
+  document.getElementById("rsTabCoupons").style.cssText  += ";" + _rsTabStyle(tab === "coupons");
+  const body = document.getElementById("rsBody");
+  body.innerHTML = `<div style="text-align:center;padding:44px 0;color:#C4A8B0;font-size:13px">불러오는 중…</div>`;
+  if(tab === "exchange") await loadRewardItems();
+  else await loadMyCoupons();
+}
+async function loadRewardItems(){
+  const body = document.getElementById("rsBody");
+  if(!window.sb || !authUser){ body.innerHTML = ""; return; }
+  try{
+    const { data, error } = await window.sb.rpc("reward_shop_items");
+    if(error) throw error;
+    const items = data || [];
+    if(_rsTab !== "exchange") return; // 그 사이 탭 전환됐으면 무시
+    if(!items.length){
+      body.innerHTML = `<div style="text-align:center;padding:48px 0;color:#C4A8B0;font-size:13px">아직 교환 가능한 리워드가 없어요 🐣</div>`;
+      return;
+    }
+    body.innerHTML = items.map(_rewardCard).join("");
+  }catch(err){
+    if(_rsTab === "exchange")
+      body.innerHTML = `<div style="text-align:center;padding:40px 0;color:#8D7B80;font-size:13px">상품을 불러오지 못했어요 😢</div>`;
+  }
+}
+function _rewardCard(it){
+  const emoji = _rewardEmoji(it.brand_name, it.title);
+  const cost  = Number(it.points_cost) || 0;
+  const stock = Number(it.stock) || 0;
+  const sold  = stock <= 0;
+  const afford = _serverPoints >= cost;
+  let btn;
+  if(sold){
+    btn = `<button disabled style="width:100%;margin-top:11px;padding:11px;border:none;border-radius:13px;background:#ECE2E7;color:#A99CA0;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;cursor:not-allowed">품절</button>`;
+  } else if(!afford){
+    btn = `<button disabled style="width:100%;margin-top:11px;padding:11px;border:none;border-radius:13px;background:#ECE2E7;color:#A99CA0;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;cursor:not-allowed">포인트 부족</button>`;
+  } else {
+    btn = `<button onclick="requestExchangeReward('${it.id}',${cost},'${_rsJsStr(it.title)}')" style="width:100%;margin-top:11px;padding:11px;border:none;border-radius:13px;background:linear-gradient(120deg,#FF6FB0,#FF9ECB);color:#fff;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(255,111,176,.34)">교환하기</button>`;
+  }
+  const stockBadge = sold
+    ? `<span style="font-size:11px;font-weight:700;color:#B0A0A8">재고 없음</span>`
+    : `<span style="font-size:11px;font-weight:700;color:#7BA86B">재고 ${stock}개</span>`;
+  return `<div style="background:#fff;border:1.5px solid #FBE0EC;border-radius:18px;padding:15px;margin-bottom:11px;box-shadow:0 2px 10px rgba(196,16,85,.05)">
+    <div style="display:flex;gap:13px;align-items:flex-start">
+      <div style="flex-shrink:0;width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#FFF0F6,#FFE3EF);display:flex;align-items:center;justify-content:center;font-size:26px">${emoji}</div>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:14.5px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif;line-height:1.3">${escapeHtml(it.title)}</div>
+        ${it.description ? `<div style="font-size:12px;color:#8D7B80;margin-top:3px;line-height:1.45">${escapeHtml(it.description)}</div>` : ""}
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px">
+          <span style="font-size:15px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">🪙 ${cost.toLocaleString()}P</span>
+          ${stockBadge}
+        </div>
+      </div>
+    </div>
+    ${btn}
+  </div>`;
+}
+async function loadMyCoupons(){
+  const body = document.getElementById("rsBody");
+  if(!window.sb || !authUser){ body.innerHTML = ""; return; }
+  try{
+    const { data, error } = await window.sb
+      .from("reward_coupons")
+      .select("coupon_code,exchanged_at,item_id,reward_items(title,brand_name)")
+      .not("user_id","is",null)
+      .order("exchanged_at",{ ascending:false });
+    if(error) throw error;
+    const rows = data || [];
+    if(_rsTab !== "coupons") return;
+    if(!rows.length){
+      body.innerHTML = `<div style="text-align:center;padding:48px 0;color:#C4A8B0;font-size:13px">아직 교환한 쿠폰이 없어요 🎫<br><span style="font-size:12px;color:#C4A8B0">리워드 교환 탭에서 혜택을 받아보세요!</span></div>`;
+      return;
+    }
+    body.innerHTML = rows.map(_couponRow).join("");
+  }catch(err){
+    if(_rsTab === "coupons")
+      body.innerHTML = `<div style="text-align:center;padding:40px 0;color:#8D7B80;font-size:13px">쿠폰함을 불러오지 못했어요 😢</div>`;
+  }
+}
+function _couponRow(c){
+  const item  = c.reward_items || {};
+  const title = item.title || "리워드 쿠폰";
+  const emoji = _rewardEmoji(item.brand_name, title);
+  const code  = c.coupon_code || "";
+  return `<div style="background:#fff;border:1.5px solid #FBE0EC;border-radius:18px;padding:14px 15px;margin-bottom:11px;box-shadow:0 2px 10px rgba(196,16,85,.05)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:22px;flex-shrink:0">${emoji}</span>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(title)}</div>
+        <div style="font-size:11px;color:#A99CA0;margin-top:2px">${c.exchanged_at ? _phFmtDate(c.exchanged_at)+" 교환" : "교환 완료"}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding:10px 12px;background:#FFF6FB;border:1px dashed #FFB8D6;border-radius:12px">
+      <code style="flex:1;min-width:0;font-size:13.5px;font-weight:800;color:#C41055;letter-spacing:.5px;font-family:'Courier New',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(code)}</code>
+      <button onclick="_copy('${_rsJsStr(code)}','쿠폰 코드가 복사되었어요 🎫')" style="flex-shrink:0;padding:7px 14px;border:none;border-radius:100px;background:#FFE0EE;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:12px;cursor:pointer">복사</button>
+    </div>
+  </div>`;
+}
+async function requestExchangeReward(itemId, pointsCost, itemTitle){
+  if(!authUser){ showToast("로그인이 필요해요"); return; }
+  if(_rsBusy) return;
+  if(!confirm(`'${itemTitle}'\n${Number(pointsCost).toLocaleString()}P를 사용하여 교환할까요?`)) return;
+  _rsBusy = true;
+  try{
+    const { data, error } = await window.sb.rpc("exchange_reward", { p_item_id: itemId });
+    if(error) throw error;
+    if(data && data.ok){
+      // 서버가 돌려준 잔액으로 전역 포인트 동기화 + UI 갱신
+      if(typeof data.balance === "number"){ _serverPoints = data.balance; renderPoints(); }
+      _rsRenderFooter();
+      _floatPoints("−" + Number(pointsCost).toLocaleString() + "P");
+      // 교환된 쿠폰번호 즉시 노출(클립보드 복사 안내 포함)
+      _copy(data.coupon_code, `🎉 교환 완료!\n\n[${data.title || itemTitle}]\n쿠폰 코드가 복사되었어요. '내 쿠폰함'에서 다시 볼 수 있어요.`);
+      // 현재 탭 새로고침(재고 -1 반영)
+      await switchRewardTab(_rsTab);
+    } else {
+      showToast("교환에 실패했어요");
+    }
+  }catch(err){
+    const msg = (err && (err.message || err.hint)) || "";
+    showToast(msg || "교환에 실패했어요 😢");
+  }finally{
+    _rsBusy = false;
   }
 }
 
