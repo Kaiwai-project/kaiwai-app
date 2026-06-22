@@ -2777,6 +2777,7 @@ async function submitBoard(e){
       p_address:      _boardAddr(),
       p_payer:        document.getElementById("bPayer").value.trim(),
       p_memo:         document.getElementById("boardMemo").value.trim() || null,
+      p_product_url:  document.getElementById("boardUrl").value.trim(),
     });
     if(error) throw error;
   }catch(err){
