@@ -955,6 +955,27 @@
   </div>
 </div>
 
+<!-- ══ 매너 평가 모달 (상호 평점, Step 8) ══ -->
+<div id="reviewOverlay" onclick="closeReview()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:63;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeReview()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:20px 22px 28px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">⭐ 매너 평가</h2>
+      <p id="reviewWho" style="font-size:12.5px;color:#8D7B80;margin:0 0 16px;line-height:1.5">평가는 익명으로 집계되며, 누가 평가했는지는 상대방에게 공개되지 않아요.</p>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif">별점 *</label>
+      <div id="reviewStars" style="display:flex;gap:6px;margin-bottom:6px"></div>
+      <p id="reviewRatingLabel" style="font-size:12px;color:#C77800;font-weight:800;margin:0 0 18px;height:16px"></p>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:8px;font-family:'M PLUS Rounded 1c',sans-serif">이런 점은 어땠나요? <span style="color:#8D7B80;font-weight:600">(선택, 여러 개 가능)</span></label>
+      <div id="reviewBadges" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px"></div>
+
+      <button id="reviewSubmitBtn" onclick="submitReview()" class="w-full rounded-xl py-3.5" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.6)">평가 등록하기</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══ 수정 요청 승인 모달 (총대 전용) ══ -->
 <div id="modReqOverlay" onclick="closeModRequests()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:61;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
@@ -1798,6 +1819,49 @@ async function _attachTrustScores(){
   }catch(_){ /* 신뢰점수 조회 실패는 치명적이지 않음 — Mock tier 폴백 */ }
 }
 
+/* ── 매너 프로필(상호 평점, Step 8) — review_badges SWR + get_manner_profiles 배치 ── */
+let _reviewBadgeList = [];        // [{code,label,emoji,target_role,polarity}]
+let _reviewBadgeByCode = {};      // code → 배지
+let _mannerByUser = {};           // user_id → {avg_rating,review_count,top_badges,is_warned}
+let _myReviewedSet = new Set();   // 현재 방에서 내가 이미 평가한 reviewee_id
+
+function _setReviewBadges(list){
+  _reviewBadgeList = list || [];
+  _reviewBadgeByCode = {};
+  _reviewBadgeList.forEach(b=>{ _reviewBadgeByCode[b.code] = b; });
+}
+async function loadReviewBadges(){
+  try{ const c = JSON.parse(localStorage.getItem("kaiwai_review_badges")||"null"); if(Array.isArray(c)&&c.length) _setReviewBadges(c); }catch(_){}
+  if(!window.sb) return;
+  try{
+    const { data } = await window.sb.from("review_badges").select("*").eq("is_active", true).order("sort_order");
+    if(Array.isArray(data) && data.length){ _setReviewBadges(data); try{ localStorage.setItem("kaiwai_review_badges", JSON.stringify(data)); }catch(_){} }
+  }catch(_){}
+}
+async function _attachMannerProfiles(){
+  if(!window.sb || !BUSES.length) return;
+  const ids = new Set();
+  BUSES.forEach(b=>{ if(b.ownerId) ids.add(b.ownerId); (b.riders||[]).forEach(r=>{ if(r.user_id) ids.add(r.user_id); }); });
+  const arr = Array.from(ids);
+  if(!arr.length) return;
+  try{
+    const { data } = await window.sb.rpc("get_manner_profiles", { p_user_ids: arr });
+    const map = {}; (data||[]).forEach(d=>{ map[d.user_id] = d; });
+    _mannerByUser = map;
+  }catch(_){ /* 집계 실패는 치명적 아님 */ }
+}
+// 닉 옆 매너 배지: ⭐평균(개수) + 상위 긍정 배지 이모지 + ⚠️(부정 누적 3회+ 경고)
+function _mannerHtml(uid){
+  const m = uid && _mannerByUser[uid];
+  if(!m || !m.review_count) return "";
+  const star = `<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 7px;border-radius:100px;background:#FFF6E0;color:#C77800;border:1px solid #F2D27A">⭐ ${Number(m.avg_rating).toFixed(1)}<b style="opacity:.55;margin-left:3px;font-weight:800">${m.review_count}</b></span>`;
+  const tb = Array.isArray(m.top_badges) ? m.top_badges : [];
+  let badge = "";
+  if(tb.length){ const bd = _reviewBadgeByCode[tb[0].code]; if(bd) badge = `<span title="${escapeHtml(bd.label)}" style="font-size:12px;margin-left:3px">${bd.emoji||"🏅"}</span>`; }
+  const warn = m.is_warned ? `<span title="부정 피드백 누적 주의" style="font-size:12px;margin-left:3px">⚠️</span>` : "";
+  return star + badge + warn;
+}
+
 function drawBus() {
   const el = document.getElementById("busList");
   if(!el) return;
@@ -1822,9 +1886,10 @@ function drawBus() {
     <div onclick="enterBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer">
       <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${b.title}</h3>
 
-      <div class="flex items-center gap-1.5 mt-2.5">
+      <div class="flex items-center gap-1.5 mt-2.5" style="flex-wrap:wrap">
         <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
         ${_trustBadgeHtml(b)}
+        ${_mannerHtml(b.ownerId)}
         <span style="margin-left:auto;font-size:11px;color:#C4A8B0">👥 ${riders}명 탑승</span>
       </div>
 
@@ -1916,6 +1981,7 @@ function _mapBus(row, localId, riders){
     ownerId: row.owner_id,
     notice: row.notice || "",
     ordered: row.ordered,
+    finalized: !!row.finalized,   // 배송 완료 → 상호 평가 활성화
     hostAccount: null,   // bus_host_accounts 에서 별도 부착(RLS: 방장/탑승자만 열람)
     riders: riders || [],
   };
@@ -1955,6 +2021,8 @@ async function loadBuses(){
     });
     await _attachTrustScores();   // 총대 신뢰점수(서버 RPC) 부착
     await _attachHostAccounts();  // 계좌 스냅샷 부착(RLS: 방장/탑승자만)
+    await loadReviewBadges();     // 매너 배지 마스터(SWR)
+    await _attachMannerProfiles();// 매너 프로필(상호 평점) 부착
     drawBus();
   }catch(err){
     if(el) el.innerHTML = _busErrCard("공구 목록을 불러오지 못했어요");
@@ -2923,11 +2991,13 @@ async function openBusRoom(id){
     return;
   }
   _roomBusId = id;
+  _myReviewedSet = new Set();         // 새 방 진입 시 내 평가 상태 초기화
   document.getElementById("busRoomOverlay").style.display = "block";
   document.getElementById("busRoomOverlay").scrollTop = 0;
   document.body.style.overflow = "hidden";
   renderBusRoom(b);                  // 캐시로 즉시 렌더
   b = await reloadBusRoom(id);       // DB 에서 최신 상태(방장이면 PII)로 갱신
+  if(b && b.finalized) await _loadMyReviews(b.dbId);   // 완료된 방이면 내가 평가한 대상 표시
   if(_roomBusId === id) renderBusRoom(b);
   _subscribeBusRoom(b.dbId, id);     // 실시간: 다른 탑승자 변경을 구독해 전원 즉시 반영
 }
@@ -3042,8 +3112,8 @@ function renderBusRoom(b){
   const riderLines = riders.length ? riders.map((r,i)=>`
     <div class="rounded-xl p-3" style="${rowStyle(r.me, r.issue)}">
       <div class="flex items-center justify-between">
-        <span style="font-size:13px;font-weight:800;color:#3A2B30">${r.trackingNumber?"🚚 ":""}${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
-        <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${r.amount.toLocaleString()}원</span>
+        <span style="font-size:13px;font-weight:800;color:#3A2B30;display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0">${r.trackingNumber?"🚚 ":""}${r.nick}${r.me?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}${_mannerHtml(r.user_id)}</span>
+        <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;flex-shrink:0">${r.amount.toLocaleString()}원</span>
       </div>
       <p style="font-size:11px;color:#8D7B80;margin-top:3px">${riderProduct(r)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
       <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">${statusTag(r)}${payTag(r.paid)}${addrTag(r.hasAddr)}${ r.modRequest ? `<span style="font-size:10px;font-weight:800;color:#fff;background:#C77800;border:1px solid #A66400;padding:3px 8px;border-radius:100px">⏳ 수정 승인 대기중</span>` : "" }${ (owner && riderNeedsCheck(r)) ? `<span style="font-size:10px;font-weight:800;color:#fff;background:#E5484D;border:1px solid #C73B3F;padding:3px 8px;border-radius:100px">⚠️ 정보 확인 필요</span>` : "" }</div>
@@ -3053,6 +3123,13 @@ function renderBusRoom(b){
              <button onclick="editMyInfo(${b.id},${i})" style="border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 정보 수정</button>
              <button onclick="cancelMyRide(${b.id},${i})" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">🚪 탑승 취소</button>
            </div>`) : "" }
+      ${ b.finalized ? (
+          owner
+            ? `<button ${_myReviewedSet.has(r.user_id)?"disabled":`onclick="openReview(${b.id},'${r.user_id}','rider','${_rsJsStr(r.nick)}')"`} style="margin-top:8px;border:1.5px solid #F2D27A;background:${_myReviewedSet.has(r.user_id)?'#F3EDE0':'#FFF6E0'};color:#C77800;cursor:${_myReviewedSet.has(r.user_id)?'default':'pointer'};font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">${_myReviewedSet.has(r.user_id)?'✅ 평가 완료':'⭐ 이 탑승자 평가하기'}</button>`
+            : (r.me
+                ? `<button ${_myReviewedSet.has(b.ownerId)?"disabled":`onclick="openReview(${b.id},'${b.ownerId}','host','${_rsJsStr(b.captain)}')"`} style="margin-top:8px;border:1.5px solid #F2D27A;background:${_myReviewedSet.has(b.ownerId)?'#F3EDE0':'#FFF6E0'};color:#C77800;cursor:${_myReviewedSet.has(b.ownerId)?'default':'pointer'};font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">${_myReviewedSet.has(b.ownerId)?'✅ 총대 평가 완료':'⭐ 총대(방장) 평가하기'}</button>`
+                : "")
+        ) : "" }
       ${ r.me ? (r.trackingNumber
         ? `<div class="mt-2 rounded-xl p-3" style="background:linear-gradient(120deg,#EAF4FF,#FFF0F6);border:1.5px solid #BBD6F5">
              <div style="display:flex;align-items:center;gap:9px">
@@ -3144,7 +3221,10 @@ function renderBusRoom(b){
       <div style="margin-top:12px">
         ${ b.ordered
           ? `<div class="w-full rounded-xl py-3" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#7BE8A8;background:#22351F;border:1px solid #2F5A2C">✅ 주문 진행 중 · 파티원 정보 잠금됨</div>
-             <button onclick="openOrderSheet(${b.id})" class="w-full rounded-xl py-3 mt-2.5" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF9EC7,#C41055 70%,#A21048);box-shadow:0 8px 20px -8px rgba(196,16,85,.65)">📋 자동 발주서 보기</button>`
+             <button onclick="openOrderSheet(${b.id})" class="w-full rounded-xl py-3 mt-2.5" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF9EC7,#C41055 70%,#A21048);box-shadow:0 8px 20px -8px rgba(196,16,85,.65)">📋 자동 발주서 보기</button>
+             ${ b.finalized
+                ? `<div class="w-full rounded-xl py-3 mt-2.5" style="text-align:center;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#C77800;background:#FFF6E0;border:1px solid #F2D27A">🎉 배송 완료 · 상호 평가가 활성화됐어요</div>`
+                : `<button onclick="finalizeCoop(${b.id})" class="w-full rounded-xl py-3 mt-2.5" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#3A1D1D;background:linear-gradient(120deg,#FFE08A,#FFC94D);box-shadow:0 8px 20px -8px rgba(200,120,0,.5)">✅ 배송 완료 처리 (상호 평가 열기)</button>` }`
           : `<button onclick="openOrderProcess(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
              <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>` }
       </div>
@@ -3163,6 +3243,7 @@ function renderBusRoom(b){
       <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">
         <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
         ${_trustBadgeHtml(b)}
+        ${_mannerHtml(b.ownerId)}
         ${ b.ordered ? `<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:#1E3A5F;color:#fff">🔒 주문 진행 중 (수정 불가)</span>` : "" }
       </div>
       <div class="mt-3">
@@ -4120,6 +4201,113 @@ function sendMoney(provider, bank, account, amount){
     navigator.clipboard.writeText(acct).then(done, ()=>alert("계좌번호: " + acct + "\n\n모바일 기기로 접속하시면 카카오/토스 원클릭 송금이 가능합니다."));
   } else {
     done();
+  }
+}
+
+/* ═══════════════════════════════════
+   상호 평점 / 매너 평가 (Step 8) — coop_reviews
+   · 평가 시점: 배송 완료(b.finalized) 이후
+   · 익명 집계(get_manner_profiles), 알림 없음(조용히 기록)
+═══════════════════════════════════ */
+let _reviewCtx = null;        // {busId, busDbId, revieweeId, targetRole}
+let _reviewRating = 0;
+let _reviewSel = new Set();   // 선택 배지 code
+const _RATING_LABEL = {1:"별로예요 😢",2:"아쉬워요",3:"보통이에요",4:"좋아요 😊",5:"최고예요! 💖"};
+
+// 배송 완료 처리(방장) → 상호 평가 활성화
+async function finalizeCoop(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || !window.sb) return;
+  if(!confirm("배송이 모두 완료되었나요?\n\n배송 완료로 처리하면 총대↔탑승자 상호 평가가 열립니다. (되돌릴 수 없어요)")) return;
+  try{
+    const { error } = await window.sb.rpc("finalize_coop", { p_bus_id: b.dbId });
+    if(error) throw error;
+    showToast("배송 완료 처리됐어요 🎉 이제 서로 평가할 수 있어요");
+    await reloadBusRoom(busId);
+    await _loadMyReviews(b.dbId);
+    const nb = BUSES.find(x=>x.id===busId);
+    if(nb) renderBusRoom(nb);
+  }catch(err){ showToast(_busDbError(err, "배송 완료 처리에 실패했어요.")); }
+}
+
+// 내가 이미 평가한 대상(reviewee) 로드 — RLS 로 작성자 본인 행만 옴
+async function _loadMyReviews(busDbId){
+  _myReviewedSet = new Set();
+  if(!window.sb || !_busUid()) return;
+  try{
+    const { data } = await window.sb.from("coop_reviews")
+      .select("reviewee_id").eq("bus_id", busDbId).eq("reviewer_id", _busUid());
+    (data||[]).forEach(r=>_myReviewedSet.add(r.reviewee_id));
+  }catch(_){}
+}
+
+function openReview(busId, revieweeId, targetRole, name){
+  if(!authUser){ showToast("로그인이 필요해요"); return; }
+  if(_myReviewedSet.has(revieweeId)){ showToast("이미 평가했어요 🙆‍♀️"); return; }
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b) return;
+  _reviewCtx = { busId, busDbId: b.dbId, revieweeId, targetRole };
+  _reviewRating = 0; _reviewSel = new Set();
+  document.getElementById("reviewWho").innerHTML =
+    `<b style="color:#3A2B30">${escapeHtml(name||"")}</b> 님을 평가해요. <span style="color:#A99CA0">익명 집계 · 상대에겐 비공개</span>`;
+  document.getElementById("reviewRatingLabel").textContent = "";
+  const sbtn = document.getElementById("reviewSubmitBtn"); if(sbtn) sbtn.disabled = false;
+  _renderReviewStars();
+  _renderReviewBadges(targetRole);
+  document.getElementById("reviewOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeReview(){
+  document.getElementById("reviewOverlay").style.display = "none";
+  const room = document.getElementById("busRoomOverlay");
+  document.body.style.overflow = (room && room.style.display !== "none") ? "hidden" : "";
+}
+function _renderReviewStars(){
+  document.getElementById("reviewStars").innerHTML = [1,2,3,4,5].map(n=>
+    `<span onclick="setReviewRating(${n})" class="active:scale-90 transition-transform" style="cursor:pointer;font-size:30px;line-height:1;user-select:none;filter:${n<=_reviewRating?"none":"grayscale(1)"};opacity:${n<=_reviewRating?"1":".35"}">⭐</span>`
+  ).join("");
+}
+function setReviewRating(n){
+  _reviewRating = n; _renderReviewStars();
+  document.getElementById("reviewRatingLabel").textContent = _RATING_LABEL[n] || "";
+}
+function _renderReviewBadges(targetRole){
+  const el = document.getElementById("reviewBadges");
+  const list = (_reviewBadgeList||[]).filter(x=>x.target_role===targetRole);
+  if(!list.length){ el.innerHTML = `<span style="font-size:12px;color:#C4A8B0">배지를 불러오는 중…</span>`; return; }
+  el.innerHTML = list.map(bd=>{
+    const on = _reviewSel.has(bd.code), pos = bd.polarity==="positive";
+    const bg = on ? (pos?"#FFE0EE":"#ECE2E7") : "#fff";
+    const fg = on ? (pos?"#C41055":"#6B5B60") : "#8D7B80";
+    const bdc = on ? (pos?"#FF9EC7":"#C9BCC2") : "#E8D8DC";
+    return `<button type="button" onclick="toggleReviewBadge('${bd.code}')" class="active:scale-95 transition-transform" style="border:1.5px solid ${bdc};background:${bg};color:${fg};cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:12px;font-weight:800;padding:8px 12px;border-radius:100px">${bd.emoji||""} ${escapeHtml(bd.label)}</button>`;
+  }).join("");
+}
+function toggleReviewBadge(code){
+  if(_reviewSel.has(code)) _reviewSel.delete(code); else _reviewSel.add(code);
+  if(_reviewCtx) _renderReviewBadges(_reviewCtx.targetRole);
+}
+async function submitReview(){
+  if(!_reviewCtx) return;
+  if(_reviewRating < 1 || _reviewRating > 5){ showToast("별점을 선택해 주세요 ⭐"); return; }
+  const btn = document.getElementById("reviewSubmitBtn"); if(btn) btn.disabled = true;
+  try{
+    const { error } = await window.sb.rpc("submit_coop_review", {
+      p_bus_id: _reviewCtx.busDbId, p_reviewee_id: _reviewCtx.revieweeId,
+      p_rating: _reviewRating, p_badges: Array.from(_reviewSel),
+    });
+    if(error) throw error;
+    _myReviewedSet.add(_reviewCtx.revieweeId);
+    const localId = _reviewCtx.busId;
+    closeReview();
+    showToast("소중한 평가 감사해요 ⭐");
+    await _attachMannerProfiles();              // 대상 평균 갱신
+    const nb = BUSES.find(x=>x.id===localId);
+    if(nb) renderBusRoom(nb);
+  }catch(err){
+    const dup = err && (err.code==="23505" || /이미|duplicate key/i.test(err.message||""));
+    showToast(dup ? "이미 평가했어요 🙆‍♀️" : _busDbError(err, "평가 등록에 실패했어요."));
+    if(btn) btn.disabled = false;
   }
 }
 

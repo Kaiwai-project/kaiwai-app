@@ -18,6 +18,7 @@ const uRest=async(jwt,method,path,body,prefer)=>{const h={apikey:ANON,Authorizat
 const invokeVH=async(jwt,body)=>{const r=await fetch(`${URL}/functions/v1/verify-host`,{method:'POST',headers:{apikey:ANON,Authorization:`Bearer ${jwt}`,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();};
 const srvGet=async(path)=>{const r=await fetch(`${URL}/rest/v1/${path}`,{headers:{apikey:SRV,Authorization:`Bearer ${SRV}`}});return r.json();};
 const srvDel=p=>fetch(`${URL}/rest/v1/${p}`,{method:'DELETE',headers:{apikey:SRV,Authorization:`Bearer ${SRV}`}});
+const srvPost=async(path,body,prefer)=>{const h={apikey:SRV,Authorization:`Bearer ${SRV}`,'Content-Type':'application/json'};if(prefer)h.Prefer=prefer;const r=await fetch(`${URL}/rest/v1/${path}`,{method:'POST',headers:h,body:JSON.stringify(body)});const t=await r.text();let j;try{j=JSON.parse(t);}catch{j=t;}return{ok:r.ok,status:r.status,data:j};};
 const aDel=id=>fetch(`${URL}/auth/v1/admin/users/${id}`,{method:'DELETE',headers:{apikey:SRV,Authorization:`Bearer ${SRV}`}});
 const ordered=async id=>(await srvGet(`buses?id=eq.${id}&select=ordered`))[0]?.ordered;
 // 프론트와 동일한 current 공식: 총대 물품가 * host_qty + Σ(라이더 yen×qty)
@@ -96,6 +97,54 @@ try{
   const gUp=await uRest(J.H,'PATCH',`buses?id=eq.${bF}`,{notice:'수정시도'},'return=representation');
   log(!gUp.ok && String(gUp.data.message||'').includes('마감된 공구는 수정'),
       `G 마감 공구 정보수정 차단 → "${(gUp.data.message||'').slice(0,40)}"`);
+
+  console.log('[페르소나 R] 상호 평점 / 매너 프로필 (Step 8)');
+  // 이전 페르소나에서 A·C 보증금 차감됨 → 지갑 보충
+  for(const k of ['A','C']) await srvPost('user_wallets?on_conflict=user_id',{user_id:ids[k],balance:3000},'resolution=merge-duplicates');
+
+  // 완료 공구: host product 5000 + rider(A) 6000 = 11000 (>=무배1만+최소1만) → 출발/완료 가능
+  const bR = await mkBus(J.H, ids.H, 5000, 30000, 10000);
+  await uRpc(J.A,'join_coop_bus', jb(bR, 6000));
+  await uRest(J.H,'PATCH',`buses?id=eq.${bR}`,{ordered:true},'return=representation');   // 주문(마감)
+  const fin = await uRpc(J.H,'finalize_coop',{p_bus_id:bR});                                // 배송 완료
+  log(fin.ok && fin.data===true, `R0 배송 완료 처리(finalize) → ${JSON.stringify(fin.data)}`);
+
+  const rv1 = await uRpc(J.A,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.H,p_rating:5,p_badges:['host_kind','host_fast_reply']});
+  log(rv1.ok, `R1 탑승자→총대 평가 성공`);
+  const rvDup = await uRpc(J.A,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.H,p_rating:3,p_badges:[]});
+  log(!rvDup.ok && (rvDup.status===409 || String(rvDup.data.code||'')==='23505'), `R2 중복 평가 거부 (${rvDup.status}/${rvDup.data.code||''})`);
+  const rvSelf = await uRpc(J.A,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.A,p_rating:5,p_badges:[]});
+  log(!rvSelf.ok && /본인/.test(rvSelf.data.message||''), `R3 셀프 평가 거부`);
+  const rvOut = await uRpc(J.B1,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.H,p_rating:5,p_badges:[]});
+  log(!rvOut.ok && /참여자/.test(rvOut.data.message||''), `R4 비참여자 평가 거부`);
+  const rvBad = await uRpc(J.H,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.A,p_rating:4,p_badges:['host_kind']});
+  log(!rvBad.ok && /배지/.test(rvBad.data.message||''), `R5 역할 불일치 배지 거부`);
+  const rvHR = await uRpc(J.H,'submit_coop_review',{p_bus_id:bR,p_reviewee_id:ids.A,p_rating:4,p_badges:['rider_fast_pay']});
+  log(rvHR.ok, `R6 총대→탑승자 평가 성공`);
+
+  // 미완료(finalize 전) 공구는 평가 거부
+  const bR2 = await mkBus(J.H, ids.H, 5000, 30000, 10000);
+  await uRpc(J.C,'join_coop_bus', jb(bR2, 6000));
+  await uRest(J.H,'PATCH',`buses?id=eq.${bR2}`,{ordered:true},'return=representation');   // 주문만, finalize 안 함
+  const rvEarly = await uRpc(J.C,'submit_coop_review',{p_bus_id:bR2,p_reviewee_id:ids.H,p_rating:5,p_badges:[]});
+  log(!rvEarly.ok && /배송 완료/.test(rvEarly.data.message||''), `R7 미완료 공구 평가 거부`);
+
+  // is_warned: A 에게 부정 배지 리뷰 3건 직접 적재(service_role) → 누적 3회 경고
+  for(const k of ['B1','B2a','B2b'])
+    await srvPost('coop_reviews', {bus_id:bR, reviewer_id:ids[k], reviewee_id:ids.A, direction:'host_to_rider', rating:2, badges:['rider_ghost']});
+  const mp = await uRpc(J.H,'get_manner_profiles',{p_user_ids:[ids.A, ids.H]});
+  const pa = (mp.data||[]).find(x=>x.user_id===ids.A) || {};
+  const ph = (mp.data||[]).find(x=>x.user_id===ids.H) || {};
+  log(mp.ok && pa.review_count===4 && pa.is_warned===true, `R8 매너집계 A: count ${pa.review_count}, is_warned ${pa.is_warned} (기대 4/true)`);
+  const codes = Array.isArray(pa.top_badges) ? pa.top_badges.map(t=>t.code) : [];
+  log(codes.includes('rider_fast_pay') && !codes.includes('rider_ghost'), `R9 top_badges 긍정만 노출 [${codes.join(',')}] (부정 rider_ghost 비노출)`);
+  log(Number(ph.avg_rating)===5 && ph.review_count===1, `R10 매너집계 H: ⭐${ph.avg_rating} (${ph.review_count})`);
+
+  // RLS: 비작성자는 타인 리뷰 원본 0행 / 작성자 본인은 조회 가능
+  const seeOut = await uRest(J.C,'GET',`coop_reviews?reviewee_id=eq.${ids.A}&select=id`);
+  log(Array.isArray(seeOut.data) && seeOut.data.length===0, `R11 비작성자 리뷰 원본 비공개 (${Array.isArray(seeOut.data)?seeOut.data.length:'?'}행)`);
+  const seeOwn = await uRest(J.A,'GET',`coop_reviews?select=id`);
+  log(Array.isArray(seeOwn.data) && seeOwn.data.length>=1, `R12 작성자 본인 리뷰 조회 가능 (${Array.isArray(seeOwn.data)?seeOwn.data.length:'?'}행)`);
 }catch(e){console.error('THREW:',e.message);fail++;}
 finally{
   for(const id of busIds){ await srvDel(`buses?id=eq.${id}`); }
