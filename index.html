@@ -2818,10 +2818,32 @@ async function openBusRoom(id){
   renderBusRoom(b);                  // 캐시로 즉시 렌더
   b = await reloadBusRoom(id);       // DB 에서 최신 상태(방장이면 PII)로 갱신
   if(_roomBusId === id) renderBusRoom(b);
+  _subscribeBusRoom(b.dbId, id);     // 실시간: 다른 탑승자 변경을 구독해 전원 즉시 반영
 }
 function closeBusRoom(){
+  _unsubscribeBusRoom();
+  _roomBusId = null;
   document.getElementById("busRoomOverlay").style.display = "none";
   document.body.style.overflow = "";
+}
+
+/* 실시간 투명 장부 — 열린 공구방의 bus_riders/buses 변경을 구독해 전원 즉시 재렌더 */
+let _busRoomChannel = null;
+function _subscribeBusRoom(dbId, localId){
+  _unsubscribeBusRoom();
+  if(!window.sb || !dbId) return;
+  const onChange = async ()=>{
+    if(_roomBusId !== localId) return;
+    const nb = await reloadBusRoom(localId);
+    if(_roomBusId === localId) renderBusRoom(nb);
+  };
+  _busRoomChannel = window.sb.channel("busroom:" + dbId)
+    .on("postgres_changes", { event:"*", schema:"public", table:"bus_riders", filter:"bus_id=eq." + dbId }, onChange)
+    .on("postgres_changes", { event:"*", schema:"public", table:"buses",      filter:"id=eq." + dbId },     onChange)
+    .subscribe();
+}
+function _unsubscribeBusRoom(){
+  if(_busRoomChannel){ try{ window.sb.removeChannel(_busRoomChannel); }catch(_){} _busRoomChannel = null; }
 }
 
 function renderBusRoom(b){
