@@ -3148,7 +3148,7 @@ let _notifChannel = null;
 // 기존 호출부 호환: 행위자에게 토스트만(알림함/뱃지는 DB 가 소스)
 function sendNotification(_pid, title, _message){ if(title) showToast("🔔 " + title); }
 
-const _NOTIF_ICON = { bus_join:"🚌", mod_request:"🚨", mod_approved:"✅", mod_rejected:"↩️", bus_ordered:"🎉" };
+const _NOTIF_ICON = { bus_join:"🚌", mod_request:"🚨", mod_approved:"✅", mod_rejected:"↩️", bus_ordered:"🎉", paid:"💖", shipped:"📦", issue:"⚠️" };
 function _notifIcon(t){ return _NOTIF_ICON[t] || "🔔"; }
 function _notifTime(ts){ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; }
 function _isNotifOpen(){ const o=document.getElementById("notifOverlay"); return !!o && o.style.display==="flex"; }
