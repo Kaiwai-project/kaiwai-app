@@ -3147,14 +3147,30 @@ async function cancelBus(busId){
     alert("입금자가 발생하여 임의 취소가 불가능합니다. (사고 발생 시 고객센터 문의)");
     return;
   }
-  if(!confirm(riders.length ? "공구를 취소/삭제할까요?" : "공구방을 삭제할까요?")) return;
   if(!window.sb){ alert("연결 오류로 삭제하지 못했어요."); return; }
+
+  // 참여자(미입금 포함)가 1명이라도 있으면 직접 DELETE 는 DB RLS 가 차단(보증금 증발/패널티 우회 방지).
+  // → rpc_cancel_coop_by_host 를 거쳐 탑승자 보증금(300P) 자동 환불 + 방장 신뢰도 패널티(3진아웃) 적용.
+  if(riders.length){
+    if(!confirm("공구를 무산할까요?\n\n• 탑승자에게 보증금 300P가 전액 환불됩니다.\n• 총대 신뢰도 패널티(3진아웃)가 부과되며, 누적 시 개설이 제한될 수 있어요.")) return;
+    try{
+      const { data, error } = await window.sb.rpc("rpc_cancel_coop_by_host", { p_bus_id: b.dbId });
+      if(error) throw error;
+      const n = (data && data.refunded_riders) || 0;
+      alert("공구가 무산되었습니다.\n탑승자 " + n + "명에게 보증금 300P가 환불되었어요.");
+    }catch(err){ showToast(_busDbError(err, "공구 무산에 실패했어요.")); return; }
+    closeBusRoom();
+    await loadBuses();
+    return;
+  }
+
+  // 참여자 0명 = 빈 방 → 패널티 없이 직접 삭제 (RLS: owner + 미주문 + 참여자 0명).
+  if(!confirm("공구방을 삭제할까요?")) return;
   try{
-    // RLS: owner + ordered=false + 입금자 0명 일 때만 삭제됨(0행이면 차단). riders/private 는 cascade.
     const { data, error } = await window.sb.from("buses").delete().eq("id", b.dbId).select("id");
     if(error) throw error;
     if(!data || !data.length){
-      showToast("이미 입금한 파티원이 있거나 주문이 시작되어 삭제할 수 없습니다."); return;
+      showToast("탑승자가 있거나 주문이 시작되어 삭제할 수 없습니다."); return;
     }
   }catch(err){ showToast(_busDbError(err, "공구방 삭제에 실패했어요.")); return; }
   alert("방이 삭제되었습니다.");
