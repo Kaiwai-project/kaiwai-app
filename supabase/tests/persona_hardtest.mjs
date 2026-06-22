@@ -20,16 +20,16 @@ const srvGet=async(path)=>{const r=await fetch(`${URL}/rest/v1/${path}`,{headers
 const srvDel=p=>fetch(`${URL}/rest/v1/${p}`,{method:'DELETE',headers:{apikey:SRV,Authorization:`Bearer ${SRV}`}});
 const aDel=id=>fetch(`${URL}/auth/v1/admin/users/${id}`,{method:'DELETE',headers:{apikey:SRV,Authorization:`Bearer ${SRV}`}});
 const ordered=async id=>(await srvGet(`buses?id=eq.${id}&select=ordered`))[0]?.ordered;
-// 프론트와 동일한 current 공식: 총대 물품가 + Σ(라이더 yen×qty)
+// 프론트와 동일한 current 공식: 총대 물품가 * host_qty + Σ(라이더 yen×qty)
 async function currentOf(busId){
-  const b=(await srvGet(`buses?id=eq.${busId}&select=product_price`))[0];
+  const b=(await srvGet(`buses?id=eq.${busId}&select=product_price,host_qty`))[0];
   const rs=await srvGet(`bus_riders?bus_id=eq.${busId}&select=yen,qty`);
-  return (b.product_price||0)+rs.reduce((s,r)=>s+(r.yen||0)*(r.qty||1),0);
+  return (b.product_price||0)*(b.host_qty||1)+rs.reduce((s,r)=>s+(r.yen||0)*(r.qty||1),0);
 }
 const jb=(id,yen)=>({p_bus_id:id,p_nick:'R',p_product_name:'렌즈',p_qty:1,p_yen:yen,p_power:'좌 0.00 / 우 -1.00',p_method:'conv',p_amount:yen*9+1800,p_real_name:'홍길동',p_phone:'01012345678',p_address:'서울 1-2',p_payer:'홍길동',p_memo:null});
 const ts=Date.now(), E=t=>`hard_${t}_${ts}@kaiwai-test.dev`;
 let ids={}; const busIds=[];
-const mkBus=async(jwt,owner,price,goal)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'hard',goal,product_name:'렌즈',product_price:price},'return=representation');if(!b.ok)throw new Error('bus '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
+const mkBus=async(jwt,owner,price,goal,minGoal)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'hard',goal,minimum_goal:minGoal||goal,product_name:'렌즈',product_price:price},'return=representation');if(!b.ok)throw new Error('bus '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
 try{
   for(const k of ['H','A','B1','B2a','B2b','B2c','C']) ids[k]=await aC(E(k));
   const J={}; for(const k of Object.keys(ids)) J[k]=await li(E(k));
@@ -37,11 +37,11 @@ try{
   for(const k of ['A','B1','B2a','B2b','B2c','C']) await uRpc(J[k],'sync_local_points',{p_points:500});
   console.log('-- setup done --\n[페르소나 A] 목표 미달 출발 차단');
 
-  // A: goal 5000, host product 1000, rider 1000 → current 2000 < 5000 → 차단
-  const bA=await mkBus(J.H,ids.H,1000,5000); await uRpc(J.A,'join_coop_bus',jb(bA,1000));
+  // A: goal 30000, minGoal 20000, host product 11000 + rider 1000 → current 12000 (무배1만 통과, 최소2만 미달) → '최소' 차단
+  const bA=await mkBus(J.H,ids.H,11000,30000,20000); await uRpc(J.A,'join_coop_bus',jb(bA,1000));
   const upA=await uRest(J.H,'PATCH',`buses?id=eq.${bA}`,{ordered:true},'return=representation');
-  log(!upA.ok && String(upA.data.message||'').includes('목표') && (await ordered(bA))===false,
-      `A 목표미달(${await currentOf(bA)}/5000) 출발 차단 → "${(upA.data.message||'').slice(0,40)}"`);
+  log(!upA.ok && String(upA.data.message||'').includes('최소') && (await ordered(bA))===false,
+      `A 최소금액미달(${await currentOf(bA)}/20000) 출발 차단 → "${(upA.data.message||'').slice(0,40)}"`);
 
   console.log('[페르소나 B] 동시 초과 탑승 / 마감 방어');
   // B1: 같은 유저가 잔액 300 으로 동시 2회 탑승 → 정확히 1건만(원자성)
@@ -53,7 +53,7 @@ try{
   log(succB1===1 && rowsB1===1, `B1 동시 2회 탑승 → 성공 ${succB1}건(기대1), 장부 ${rowsB1}행(기대1)`);
 
   // B2: 마감(ordered=true) 공구에 신규 유저 3명 동시 탑승 → 전원 차단
-  const bF=await mkBus(J.H,ids.H,1000,1000);   // current=1000(product)>=1000 → 0명이어도 출발 가능
+  const bF=await mkBus(J.H,ids.H,10000,10000,10000);   // current=10000(product)>=무배1만+최소1만 → 0명이어도 출발 가능
   const upF=await uRest(J.H,'PATCH',`buses?id=eq.${bF}`,{ordered:true},'return=representation');
   const conc=await Promise.all(['B2a','B2b','B2c'].map(k=>uRpc(J[k],'join_coop_bus',jb(bF,1000))));
   const blocked=conc.filter(x=>!x.ok && String(x.data.message||'').includes('마감')).length;
@@ -70,6 +70,32 @@ try{
   const after=await currentOf(bC);
   log(before===2500 && delC.ok && delC.data.length===1 && after===1000,
       `C 취소 전 ${before} → 취소 후 ${after} (달성률 즉각 차감, 총대 물품 1000 잔존)`);
+
+  console.log('[페르소나 D] 서버 권한형 expired_at 강제 (클라 시계 위조 방어)');
+  // 클라가 과거(2020) expired_at 주입 → BEFORE INSERT 트리거가 now()+deadline_hours(12h) 로 덮어씀
+  const dRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'dl',goal:30000,minimum_goal:10000,product_name:'렌즈',product_price:11000,deadline_hours:12,expired_at:'2020-01-01T00:00:00Z'},'return=representation');
+  if(dRes.ok) busIds.push(dRes.data[0].id);
+  const dHrs=dRes.ok?(new Date(dRes.data[0].expired_at)-Date.now())/3600000:-999;
+  log(dRes.ok && dHrs>11 && dHrs<13, `D 위조 expired_at(2020) 무시 → 서버 강제 ${dHrs.toFixed(2)}h 후 (기대 ≈12h)`);
+
+  console.log('[페르소나 E] 무배 하한(10,000엔) 미만 조기 출발 차단');
+  // host product 5000 (current 5000 < 1만) → minGoal 1만이어도 무배 하한 가드가 먼저 차단
+  const bE=await mkBus(J.H,ids.H,5000,30000,10000);
+  const upE=await uRest(J.H,'PATCH',`buses?id=eq.${bE}`,{ordered:true},'return=representation');
+  log(!upE.ok && String(upE.data.message||'').includes('무료 배송') && (await ordered(bE))===false,
+      `E 무배미달(${await currentOf(bE)}/10000) 출발 차단 → "${(upE.data.message||'').slice(0,40)}"`);
+
+  console.log('[페르소나 F] minimum_goal 10,000엔 CHECK 제약 (개설 거부)');
+  const fRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'f',goal:30000,minimum_goal:5000,product_name:'렌즈',product_price:11000},'return=representation');
+  if(fRes.ok && Array.isArray(fRes.data)) busIds.push(fRes.data[0].id);   // 혹시 통과 시 정리용
+  log(!fRes.ok && (fRes.status===400 || String(fRes.data.code||'')==='23514'),
+      `F 최소금액 5000(<1만) 개설 거부 → status ${fRes.status} ${fRes.data.code||''}`);
+
+  console.log('[페르소나 G] 마감 공구 정보 수정 차단');
+  // bF 는 B2 에서 ordered=true → 방장(비관리자)이 notice 수정 시도 → guard_bus_update_after_ordered 차단
+  const gUp=await uRest(J.H,'PATCH',`buses?id=eq.${bF}`,{notice:'수정시도'},'return=representation');
+  log(!gUp.ok && String(gUp.data.message||'').includes('마감된 공구는 수정'),
+      `G 마감 공구 정보수정 차단 → "${(gUp.data.message||'').slice(0,40)}"`);
 }catch(e){console.error('THREW:',e.message);fail++;}
 finally{
   for(const id of busIds){ await srvDel(`buses?id=eq.${id}`); }

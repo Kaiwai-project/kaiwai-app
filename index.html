@@ -758,8 +758,16 @@
       <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">목표 금액 * <span style="background:#FFF3D6;color:#B8860B;font-size:11px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:4px">💴 엔(¥) 단위</span></label>
       <div style="position:relative;margin-bottom:16px">
         <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:800;color:#C41055;pointer-events:none">¥</span>
-        <input id="cbGoal" required type="number" min="1" inputmode="numeric" placeholder="예) 10000  (엔화 기준)"
-          style="width:100%;padding:13px 36px 13px 32px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box"/>
+        <input id="cbGoal" required type="number" min="1" inputmode="numeric" placeholder="예) 15000  (엔화 기준)"
+          style="width:100%;padding:13px 36px 13px 32px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"/>
+        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:#8D7B80;pointer-events:none">엔</span>
+      </div>
+
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">최소 출발 금액 * <span style="background:#FFF3D6;color:#B8860B;font-size:11px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:4px">💴 엔(¥) 단위</span></label>
+      <div style="position:relative;margin-bottom:16px">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:800;color:#C41055;pointer-events:none">¥</span>
+        <input id="cbMinGoal" required type="number" min="10000" value="10000" inputmode="numeric" placeholder="예) 10000 (최소 10,000엔 이상만 입력 가능)"
+          style="width:100%;padding:13px 36px 13px 32px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"/>
         <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:#8D7B80;pointer-events:none">엔</span>
       </div>
 
@@ -901,6 +909,25 @@
         </div>
       </div>
 
+      <!-- 🚨 공구 안전 정책 (신설 비즈니스 룰) -->
+      <div class="rounded-2xl p-4 mb-4" style="background:#FFF3D6;border:1.5px solid #F2D788">
+        <p style="font-size:15px;font-weight:800;color:#B8860B;font-family:'M PLUS Rounded 1c',sans-serif;margin:0 0 12px">🚨 공구 안전 정책 (꼭 확인!)</p>
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">🚨 최소 출발 하한선 (10,000엔 ¥)</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">추가 배송비 분쟁을 원천 차단하기 위해, 공구방 개설 시 최소 출발 금액은 <b style="color:#C41055">무료 배송 기준인 10,000엔 미만으로 설정할 수 없어요.</b> 조기 출발 역시 <b style="color:#C41055">누적 금액 10,000엔 이상</b>일 때만 가능합니다.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">⌛ 마감 시간 만료 시 자동 무산</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">설정한 마감 시간(<b>12 / 24 / 48시간</b>)이 지날 때까지 최소 출발 금액에 미달하면 공구방은 <b style="color:#C41055">자동으로 안전 무산</b>돼요. 이때 탑승자 수수료(300P)와 총대 보증금(300P)은 <b style="color:#1A9E5E">전액 자동 환불·반환</b>됩니다.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">✏️ 총대 본인 옵션 수정</p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">주문이 시작되기 전까지 총대님은 본인의 <b style="color:#7733BB">물품 수량·단가·도수 옵션</b>을 자유롭게 수정할 수 있어요. <span style="color:#9A8D93">(단, 면세 한도 범위 내로 제한)</span></p>
+          </div>
+        </div>
+      </div>
+
       <!-- 👑 총대 가이드 -->
       <div class="rounded-2xl p-4 mb-4" style="background:#F6F0FF;border:1.5px solid #E3D3F5">
         <p style="font-size:15px;font-weight:800;color:#7733BB;font-family:'M PLUS Rounded 1c',sans-serif;margin:0 0 12px">👑 총대(주최자) 전용 가이드</p>
@@ -1001,6 +1028,46 @@
       <div class="flex gap-2">
         <button onclick="closeEditMyInfo()" class="flex-1 rounded-xl py-3" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">취소</button>
         <button id="emSaveBtn" onclick="saveEditMyInfo()" class="flex-1 rounded-xl py-3" style="border:none;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">저장하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 총대 공구 옵션 수정 모달 ══ -->
+<div id="editHostOptionsOverlay" onclick="closeEditHostOptions()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
+  <div onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
+    <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
+    <button onclick="closeEditHostOptions()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <div style="padding:20px 22px 28px">
+      <h2 style="font-family:'M PLUS Rounded 1c',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 공구 옵션 수정</h2>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 상품 종류, 가격, 수량, 도수를 수정할 수 있어요.</p>
+
+      <!-- 상품명 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">상품명 *</label>
+      <input id="ehProdName" type="text" placeholder="상품명" style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:14px;background:#fff"/>
+
+      <!-- 단가 (엔) -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">단가 (엔) *</label>
+      <input id="ehProdPrice" type="number" min="0" placeholder="엔화 단가" style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;margin-bottom:14px;background:#fff"/>
+
+      <!-- 수량 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">수량 *</label>
+      <div class="flex items-center gap-3" style="margin-bottom:16px">
+        <button type="button" onclick="changeEhQty(-1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#C41055;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">−</button>
+        <input id="ehQty" type="number" min="1" value="1" inputmode="numeric" readonly style="flex:1;text-align:center;padding:11px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:16px;font-weight:800;color:#4A4A4A;outline:none;font-family:'M PLUS Rounded 1c',sans-serif;box-sizing:border-box;background:#fff"/>
+        <button type="button" onclick="changeEhQty(1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#C41055;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">+</button>
+      </div>
+
+      <!-- 도수 -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#C41055;margin-bottom:6px;font-family:'M PLUS Rounded 1c',sans-serif">도수 (좌 / 우) *</label>
+      <div class="flex gap-2" style="margin-bottom:20px">
+        <select id="ehPowerL" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+        <select id="ehPowerR" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Noto Sans KR',sans-serif;box-sizing:border-box;background:#fff"></select>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="closeEditHostOptions()" class="flex-1 rounded-xl py-3" style="border:1.5px solid #E2DCE0;background:#fff;color:#8D7B80;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">취소</button>
+        <button id="ehSaveBtn" onclick="saveEditHostOptions()" class="flex-1 rounded-xl py-3" style="border:none;background:linear-gradient(135deg,#FF6FA8,#C41055);color:#fff;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:13px;font-weight:800">저장하기</button>
       </div>
     </div>
   </div>
@@ -1743,10 +1810,13 @@ function drawBus() {
     const riders = b.riders ? b.riders.length : 0;
     const isMyRoom = isBusOwner(b);                     // 접속 유저가 이 방의 총대인가
     const amBoarded = (b.riders || []).some(r=>r.me);   // 내가 이미 탑승했는가 (중복 탑승 방지)
+    const isExpired = b.expiredAt && (new Date(b.expiredAt) < new Date());
     const cardBtn = isMyRoom
       ? `<button onclick="event.stopPropagation();openBusRoom(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#7E3AA8,#2B2330);box-shadow:0 8px 18px -8px rgba(43,35,48,.6)">👑 내 공구 관리하기</button>`
       : amBoarded
       ? `<button onclick="event.stopPropagation();openBusRoom(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#9AA0A6,#6B7280);box-shadow:0 8px 18px -8px rgba(107,114,128,.5)">🚌 내가 탑승한 버스 입장</button>`
+      : isExpired
+      ? `<button disabled class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:not-allowed;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#8D7B80;background:#E2DCE0;">⌛ 마감 대기 (가입 차단)</button>`
       : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>`;
     return `
     <div onclick="enterBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer">
@@ -1760,8 +1830,8 @@ function drawBus() {
 
       <div class="mt-3">
         <div class="flex items-end justify-between mb-1.5">
-          <span style="font-size:11px;font-weight:700;color:#C41055">달성률 ${pct}%</span>
-          <span style="font-size:11px;color:#8D7B80"><b style="color:#3A2B30">${b.current.toLocaleString()}</b> / ${b.goal.toLocaleString()}엔</span>
+          <span style="font-size:11px;font-weight:700;color:#C41055">달성률 ${pct}% ${isExpired ? '<b style="color:#8D7B80">(시간 만료)</b>' : ''}</span>
+          <span style="font-size:11px;color:#8D7B80"><b style="color:#3A2B30">${b.current.toLocaleString()}</b> / ${b.goal.toLocaleString()}엔${b.minimumGoal !== b.goal ? ` (최소 ${b.minimumGoal.toLocaleString()}엔)` : ''}</span>
         </div>
         <div class="w-full bg-gray-100 rounded-full overflow-hidden" style="height:10px">
           <div class="rounded-full" style="height:100%;width:${pct}%;background:linear-gradient(90deg,#FF9EC7,#FF6FA8 60%,#C41055);transition:width .6s var(--jelly)"></div>
@@ -1823,7 +1893,8 @@ function _mapRider(row, priv){
 // current = 총대 본인 물품가(product_price) + 모든 탑승자 장부 합산(yen×qty). (총대는 bus_riders 에 없으므로 별도 합산)
 function _mapBus(row, localId, riders){
   const ridersSum = (riders || []).reduce((s, r)=> s + (r.yen || 0) * (r.qty || 1), 0);
-  const cur = (row.product_price || 0) + ridersSum;
+  const hostQty = row.host_qty || 1;
+  const cur = (row.product_price || 0) * hostQty + ridersSum;
   return {
     id: localId,
     dbId: row.id,
@@ -1831,6 +1902,9 @@ function _mapBus(row, localId, riders){
     captain: row.captain,
     tier: row.tier || "beginner",
     goal: row.goal,
+    minimumGoal: row.minimum_goal || 10000,
+    expiredAt: row.expired_at || null,
+    hostQty: hostQty,
     current: cur,
     productName: row.product_name,
     productImg: row.product_img,
@@ -1855,6 +1929,9 @@ async function loadBuses(){
   const el = document.getElementById("busList");
   if(!window.sb){ if(el) el.innerHTML = _busErrCard("공구 목록을 불러올 수 없어요"); return; }
   try{
+    if (_busUid()) {
+      try { await window.sb.rpc("expire_overdue_buses"); } catch(_) {}
+    }
     const { data: buses, error } = await window.sb
       .from("buses").select("*").order("created_at", { ascending:false });
     if(error) throw error;
@@ -2322,6 +2399,9 @@ async function submitCreateBus(e){
   e.preventDefault();
   const title = document.getElementById("cbTitle").value.trim();
   const goal = parseInt(document.getElementById("cbGoal").value, 10);
+  const minGoal = parseInt(document.getElementById("cbMinGoal").value, 10) || 10000;
+  // 마감 시간은 정수(시간)만 전송 → 서버 트리거(set_bus_expired_at)가 now() 기준으로 expired_at 강제 산정(시계 위조 차단)
+  const dlVal = parseInt(document.querySelector('input[name="cbDeadline"]:checked').value, 10) || 12;
 
   // 물품 정보 (상품명/이미지/가격) — 자동 또는 수동
   const prodName  = (document.getElementById("cbProdName").value || "").trim();
@@ -2339,6 +2419,8 @@ async function submitCreateBus(e){
     return;
   }
   if(!title || !goal || goal < 1){ alert("버스 제목과 목표 금액을 확인해 주세요"); return; }
+  // 무배 기준 하한선 — 10,000엔 미만 최소 출발 금액은 추가 배송비 분쟁 위험 → 차단(서버 CHECK 와 정합)
+  if(minGoal < 10000){ alert("최소 출발 금액은 무료 배송 기준인 10,000엔 이상으로 설정해야 합니다."); return; }
   if(!window.sb || !_busUid()){ alert("로그인이 필요해요. 다시 로그인 후 시도해 주세요."); return; }
 
   const btn = e.target && e.target.querySelector('button[type="submit"]');
@@ -2352,6 +2434,9 @@ async function submitCreateBus(e){
       title: title,
       notice: document.getElementById("cbNotice").value.trim() || null,
       goal: goal,
+      minimum_goal: minGoal,
+      deadline_hours: dlVal,
+      host_qty: 1,
       product_name: prodName,
       product_img: prodImg || null,
       product_price: prodPrice,
@@ -2475,6 +2560,11 @@ function getShipFee(method){
 function boardBus(id){
   const b = BUSES.find(x=>x.id===id);
   if(!b) return;
+  const isExpired = b.expiredAt && (new Date(b.expiredAt) < new Date());
+  if(isExpired){
+    alert("마감 시간이 지난 공구방입니다. 탑승할 수 없습니다.");
+    return;
+  }
   // 로그인 가드 (소셜/이메일 공통 authUser 사용)
   if(typeof authUser !== "undefined" && !authUser){
     alert("탑승하려면 먼저 로그인해 주세요 🎀");
@@ -2927,13 +3017,20 @@ function renderBusRoom(b){
   const hostPower = (b.hostPowerL || b.hostPowerR)
     ? `좌 ${_esc(b.hostPowerL||"-")} / 우 ${_esc(b.hostPowerR||"-")}`
     : "도수 미입력";
+  const hostQty = b.hostQty || 1;
+  const hostTotalPrice = (b.productPrice || 0) * hostQty;
   const hostLine = `
     <div class="rounded-xl p-3" style="${rowStyle(meHost, false)}">
       <div class="flex items-center justify-between">
         <span style="font-size:13px;font-weight:800;color:#3A2B30">👑 ${_esc(b.captain||"총대")} <span style="font-size:10px;font-weight:800;color:#B8860B;background:#FFF3D6;border:1px solid #F2D788;padding:2px 7px;border-radius:100px">총대</span>${meHost?` <span style="font-size:10px;color:#C41055">(나)</span>`:""}</span>
-        <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${Math.round((b.productPrice||0)*YEN_TO_KRW).toLocaleString()}원</span>
+        <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${Math.round(hostTotalPrice*YEN_TO_KRW).toLocaleString()}원</span>
       </div>
-      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${_esc(b.productName||"상품 미입력")} · ${hostPower} · <b style="color:#6B5B60">총대 본인 물품</b></p>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${_esc(b.productName||"상품 미입력")} · ${hostPower} · <b style="color:#6B5B60">수량 ${hostQty}개</b> · <b style="color:#6B5B60">총대 본인 물품</b></p>
+      ${ meHost && !locked
+        ? `<div class="flex gap-1.5 mt-2">
+             <button onclick="editHostOptions(${b.id})" style="border:1.5px solid #FFD6E8;background:#fff;color:#C41055;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 공구 옵션 수정</button>
+           </div>`
+        : "" }
     </div>`;
 
   // A. 투명 장부 (개인정보 숨김, 닉네임/수령방법/금액/상태만) — 방장 + 전 탑승자
@@ -3622,6 +3719,98 @@ function _emAddr(){
   }
   return base;
 }
+
+let _editHostBusId = null;
+
+function changeEhQty(dir){
+  const el = document.getElementById("ehQty");
+  let v = parseInt(el.value, 10) || 1;
+  v += dir;
+  if(v < 1) v = 1;
+  if(v > 100) v = 100;
+  el.value = v;
+}
+
+function closeEditHostOptions(){
+  document.getElementById("editHostOptionsOverlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+function editHostOptions(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b) return;
+  if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다."); return; }
+  _editHostBusId = busId;
+
+  // 도수 옵션 채우기
+  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
+  document.getElementById("ehPowerL").innerHTML = opts;
+  document.getElementById("ehPowerR").innerHTML = opts;
+
+  // 값 설정
+  document.getElementById("ehProdName").value = b.productName || "";
+  document.getElementById("ehProdPrice").value = b.productPrice || 0;
+  document.getElementById("ehQty").value = b.hostQty || 1;
+  document.getElementById("ehPowerL").value = b.hostPowerL || "0.00";
+  document.getElementById("ehPowerR").value = b.hostPowerR || "0.00";
+
+  document.getElementById("editHostOptionsOverlay").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+
+async function saveEditHostOptions(){
+  if(!window.sb || !_editHostBusId) return;
+  const b = BUSES.find(x=>x.id===_editHostBusId);
+  if(!b) return;
+
+  const prodName = document.getElementById("ehProdName").value.trim();
+  const prodPrice = parseInt(document.getElementById("ehProdPrice").value, 10) || 0;
+  const qty = parseInt(document.getElementById("ehQty").value, 10) || 1;
+  const powerL = document.getElementById("ehPowerL").value;
+  const powerR = document.getElementById("ehPowerR").value;
+
+  if(!prodName || prodPrice < 0){
+    alert("상품명과 가격을 정확히 입력해주세요.");
+    return;
+  }
+
+  // 면세 한도 검사: (나의 새 총합) + (참여자들의 총합) > goal 이면 경고
+  const hostNewTotal = prodPrice * qty;
+  const ridersSum = (b.riders || []).reduce((s, r)=> s + (r.yen || 0) * (r.qty || 1), 0);
+  if(hostNewTotal + ridersSum > b.goal){
+    alert(`수정된 상품 금액 총합(${hostNewTotal + ridersSum}엔)이 목표 금액(${b.goal}엔)을 초과하여 저장할 수 없습니다.`);
+    return;
+  }
+
+  const btn = document.getElementById("ehSaveBtn");
+  btn.disabled = true;
+  try{
+    const { error } = await window.sb
+      .from("buses")
+      .update({
+        product_name: prodName,
+        product_price: prodPrice,
+        host_qty: qty,
+        host_power_l: powerL,
+        host_power_r: powerR
+      })
+      .eq("id", b.dbId);
+    
+    if(error) throw error;
+    
+    closeEditHostOptions();
+    showToast("공구 옵션이 성공적으로 수정되었습니다! ✨");
+    
+    await loadBuses();
+    const nb = BUSES.find(x=>x.id===_editHostBusId);
+    if(nb) renderBusRoom(nb);
+  }catch(err){
+    showToast(_busDbError(err, "공구 옵션 수정에 실패했습니다."));
+  }finally{
+    btn.disabled = false;
+  }
+}
+
 function closeEditMyInfo(){
   document.getElementById("editMyInfoOverlay").style.display = "none";
   document.body.style.overflow = "";
