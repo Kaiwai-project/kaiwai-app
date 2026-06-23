@@ -25,3 +25,7 @@ additional_redirect_urls = ["http://localhost:3000/auth/callback.html"]
 # verify-naver 는 로그인 "전"(pre-auth)에 호출되므로 JWT 검증 비활성화 필수.
 [functions.verify-naver]
 verify_jwt = false
+
+# send-external-notification 은 Database Webhook(JWT 없음)이 호출 → x-webhook-secret 으로 자체 인증.
+[functions.send-external-notification]
+verify_jwt = false

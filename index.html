@@ -1268,6 +1268,19 @@
         </button>
       </div>
 
+      <!-- 🔔 외부 알림 설정 (Step 10) -->
+      <div style="background:#FFF5F8;border-radius:16px;padding:10px 16px;margin-bottom:16px;border:1px solid #FFE8F0">
+        <p style="font-size:12px;color:#C4A8B0;margin:2px 0 4px;font-weight:700;letter-spacing:.5px">🔔 외부 알림 받기</p>
+        <label style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;cursor:pointer">
+          <span style="font-size:13px;color:#4A4A4A;font-family:'Noto Sans KR',sans-serif">📧 이메일 알림 <span style="font-size:11px;color:#A99CA0">(성사·배송 등)</span></span>
+          <input type="checkbox" id="notifyEmailToggle" onchange="saveNotifyPref('notify_email', this.checked)" style="width:18px;height:18px;accent-color:#C41055;cursor:pointer"/>
+        </label>
+        <label style="display:flex;align-items:center;justify-content:space-between;padding:9px 2px;cursor:pointer;border-top:1px solid #FFE8F0">
+          <span style="font-size:13px;color:#4A4A4A;font-family:'Noto Sans KR',sans-serif">💬 문자(SMS) 알림 <span style="font-size:11px;color:#A99CA0">(휴대폰 번호 필요)</span></span>
+          <input type="checkbox" id="notifySmsToggle" onchange="saveNotifyPref('notify_sms', this.checked)" style="width:18px;height:18px;accent-color:#C41055;cursor:pointer"/>
+        </label>
+      </div>
+
       <button onclick="doLogout()" style="width:100%;padding:14px;border-radius:14px;border:1.5px solid #FFD6E8;cursor:pointer;background:#fff;font-weight:700;font-size:14px;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;transition:background .15s" onmouseover="this.style.background='#FFF5F8'" onmouseout="this.style.background='#fff'">로그아웃</button>
 
       <!-- 회원탈퇴 (실수 방지: 작고 옅은 텍스트 버튼) -->
@@ -5791,6 +5804,31 @@ function switchAuth(v){
       `<span style="display:inline-block;background:${pv.bg};color:${pv.col};${pv.border?'border:'+pv.border+';':''}font-size:11px;font-weight:700;padding:3px 11px;border-radius:100px;font-family:'Noto Sans KR',sans-serif">${pv.label}</span>`
       + `<span style="display:block;margin-top:7px;font-size:12px;color:#8D7B80;word-break:break-all">${escapeHtml(displayEmail(authUser.email))}</span>`;
     document.getElementById("profFavCount").textContent = favs.length+"개 브랜드 저장 중";
+    loadNotifyPrefs();   // 외부 알림(이메일/SMS) 동의 토글 현재값 반영
+  }
+}
+
+/* ── 외부 알림 동의 설정 (Step 10) — profiles.notify_email/notify_sms ── */
+async function loadNotifyPrefs(){
+  if(!window.sb || !authUser) return;
+  try{
+    const { data } = await window.sb.from("profiles").select("notify_email,notify_sms").eq("id", authUser.id).maybeSingle();
+    const e = document.getElementById("notifyEmailToggle");
+    const s = document.getElementById("notifySmsToggle");
+    if(e) e.checked = data ? data.notify_email !== false : true;   // 기본 on
+    if(s) s.checked = !!(data && data.notify_sms);
+  }catch(_){}
+}
+async function saveNotifyPref(field, checked){
+  if(!window.sb || !authUser){ showToast("로그인이 필요해요"); return; }
+  try{
+    const { error } = await window.sb.from("profiles").update({ [field]: !!checked }).eq("id", authUser.id);
+    if(error) throw error;
+    showToast(checked ? "알림을 켰어요 🔔" : "알림을 껐어요");
+  }catch(err){
+    showToast("설정 저장에 실패했어요");
+    const el = document.getElementById(field==="notify_email" ? "notifyEmailToggle" : "notifySmsToggle");
+    if(el) el.checked = !checked;   // 실패 시 토글 원복
   }
 }
 

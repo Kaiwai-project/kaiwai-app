@@ -394,3 +394,145 @@ create trigger trg_enforce_affiliate_url
 - **persona_hardtest.mjs** — 페르소나 S0~S9, **전체 31/31 PASS**(주입·위조치환·비제휴무변환·로깅·click_type거부·관리자전용 SELECT·누구나 INSERT).
 
 > 후속(별도 단계): 공식 제휴 코드 발급 시 `affiliate_partners.param_value` UPDATE / 관리자 트래픽 대시보드(전환 리포팅).
+
+---
+---
+
+# [Step 10] 채널 밖 외부 실시간 알림 연동 — 설계 초안 (DRAFT)
+
+> 상태: **구현 완료** ✅ — mig48 db push + Edge Function `send-external-notification` 배포(DISPATCH_MODE=mock) + index.html 동의 토글. persona_hardtest 35/35 + Edge Mock 발송 7/7 PASS.
+> ⏳ 남은 단계(운영): Supabase **Database Webhook**(notifications INSERT → 함수, `x-webhook-secret` 헤더) 연결 + 실발송 키 발급 시 `DISPATCH_MODE=live`.
+> 목표: 사용자가 **브라우저를 닫고 있어도** 입금 요청·공구 성사 알림을 Email/SMS·알림톡으로 받아 **노쇼 0%** 통제.
+> 컨벤션: 기존 인앱 `notifications`(mig38)·`_notify` DEFINER 파이프라인 재사용 / PII(이메일·전화) 최소노출·service_role 전용 / Mock↔실발송 스위칭.
+
+## 1. 파이프라인 개요 (Database Webhook → Edge Function)
+```
+인앱 상태변화(입금요청/성사 등) → _notify(DEFINER) → notifications INSERT
+   → [Supabase Database Webhook] notifications AFTER INSERT 감지
+   → POST(비동기) → Edge Function send-external-notification
+       → (service_role) 수신인 연락처·채널 동의 조회(profiles + auth.users)
+       → Dispatcher: 채널별 메시지 빌드 → Mock(콘솔) | 실발송(Resend/Solapi)
+       → notification_deliveries 에 발송 결과 적재(상태/멱등)
+```
+> 용어: 기획서의 `bus_notifications` = 기존 **`notifications`** 테이블(mig38, user_id·title·body·type·link_id·is_read). 신규 테이블 없이 이 INSERT 를 외부발송 트리거 소스로 사용.
+
+## 2. 데이터 모델 (마이그레이션 `…_48_external_notify.sql`)
+
+### 2-1. 수신 연락처 & 채널 동의 (profiles 확장)
+```sql
+alter table public.profiles
+  add column if not exists phone        text,                    -- E.164 (예: +8210...) — 알림톡/SMS용
+  add column if not exists notify_email boolean not null default true,
+  add column if not exists notify_sms   boolean not null default false;  -- 기본 off(과금/동의)
+-- 이메일은 auth.users.email 사용(Edge Function 에서 service_role 로 조회), profiles 에 별도 캐시 불필요.
+```
+
+### 2-2. 외부 발송 로그(멱등·상태·재시도) — service_role 전용
+```sql
+create table public.notification_deliveries (
+  id              bigint generated always as identity primary key,
+  notification_id uuid not null references public.notifications(id) on delete cascade,
+  user_id         uuid not null,
+  channel         text not null check (channel in ('email','sms','alimtalk')),
+  status          text not null check (status in ('queued','sent','failed','skipped','mock')),
+  provider        text,                       -- 'resend' | 'solapi' | 'mock'
+  error           text,
+  created_at      timestamptz not null default now(),
+  constraint nd_once unique (notification_id, channel)   -- 웹훅 재시도 중복발송 차단(멱등)
+);
+alter table public.notification_deliveries enable row level security;
+-- SELECT 관리자만(운영 모니터링), 쓰기 정책 없음 = Edge Function(service_role)만 적재
+create policy "발송로그: 관리자만 조회" on public.notification_deliveries
+  for select to authenticated using (public.is_app_admin(auth.uid()));
+```
+
+## 3. Database Webhook 설정
+- **방법 A (권장, Supabase 관리형 Webhook)**: Dashboard → Database → Webhooks → `notifications` `INSERT` → HTTP POST `https://<ref>.functions.supabase.co/send-external-notification`, 헤더에 공유 시크릿(`x-webhook-secret`). 내부적으로 `supabase_functions.http_request` 트리거 생성.
+- **방법 B (코드로 고정, pg_net + 트리거)**: 마이그레이션에서 `pg_net.http_post` 를 호출하는 AFTER INSERT 트리거. 재현성↑(IaC), 단 pg_net 확장 필요.
+- 보안: Edge Function 이 `x-webhook-secret` 검증(시크릿 불일치 401). `verify_jwt = false`(웹훅은 JWT 없음) + 시크릿으로 인증.
+
+## 4. Edge Function `send-external-notification` 구조 (Deno)
+```ts
+// 1) 웹훅 시크릿 검증 → 2) payload.record(=notifications 행) 파싱
+// 3) 수신인 해석: service_role 로 profiles(phone, notify_*) + auth.admin.getUserById(email)
+// 4) 채널 결정: notify_email && email → email / notify_sms && phone → sms|alimtalk
+// 5) 메시지 빌드: record.type 별 템플릿(입금요청/성사/운송장 등) + title/body
+// 6) Dispatcher 발송 → 7) notification_deliveries upsert(멱등: nd_once)
+serve(async (req) => {
+  if (req.headers.get("x-webhook-secret") !== Deno.env.get("WEBHOOK_SECRET")) return new Response("unauthorized",{status:401});
+  const { record } = await req.json();                 // notifications 행
+  const sb = createClient(URL, SERVICE_ROLE);          // service_role(연락처 조회)
+  const prof = await sb.from("profiles").select("phone,notify_email,notify_sms").eq("id", record.user_id).single();
+  const { data:{ user } } = await sb.auth.admin.getUserById(record.user_id);  // email
+  const msg = buildMessage(record);                    // {subject, text}
+  const results = [];
+  if (prof.notify_email && user?.email) results.push(await dispatch("email", user.email, msg, record));
+  if (prof.notify_sms && prof.phone)    results.push(await dispatch("sms",   prof.phone, msg, record));
+  return Response.json({ ok:true, results });
+});
+```
+
+## 5. Mock ↔ 실발송 Dispatcher (스위칭 뼈대) — 핵심 요구
+```ts
+const MODE = Deno.env.get("DISPATCH_MODE") ?? "mock";   // 'mock' | 'live'
+
+const ADAPTERS = {
+  email: { live: sendResend,  mock: mockLog("email") },   // Resend API
+  sms:   { live: sendSolapi,  mock: mockLog("sms")   },   // Solapi(SMS/알림톡)
+};
+async function dispatch(channel, to, msg, record){
+  const adapter = ADAPTERS[channel][MODE] ?? ADAPTERS[channel].mock;
+  let status="sent", provider=(MODE==="live"?(channel==="email"?"resend":"solapi"):"mock"), error=null;
+  try { await adapter(to, msg); if(MODE!=="live") status="mock"; }
+  catch(e){ status="failed"; error=String(e); }
+  await logDelivery(record.id, record.user_id, channel, status, provider, error);   // service_role, 멱등 upsert
+  return { channel, status };
+}
+function mockLog(ch){ return async (to,msg)=>{ console.log(`[MOCK ${ch}] → ${to}\n${msg.subject}\n${msg.text}`); }; }  // 개발: 콘솔
+async function sendResend(to,msg){ /* POST https://api.resend.com/emails (RESEND_API_KEY) */ }
+async function sendSolapi(to,msg){ /* POST Solapi SMS/알림톡 (SOLAPI_KEY/SECRET, 템플릿ID) */ }
+```
+- **개발/크레딧 전**: `DISPATCH_MODE=mock` → 메일/문자 내용 콘솔 출력(+`status='mock'` 로그). **상용**: `DISPATCH_MODE=live` + API 키 시크릿 주입 시 어댑터만 바뀜(호출부 무변경).
+
+## 6. 발송 솔루션 매핑(초안)
+| 채널 | 솔루션 | 키/시크릿 | 비고 |
+|------|--------|-----------|------|
+| Email | **Resend** | `RESEND_API_KEY` | 무료 티어, 도메인 인증(SPF/DKIM) 필요 |
+| SMS / 알림톡 | **Solapi** | `SOLAPI_API_KEY`/`SOLAPI_API_SECRET`, 알림톡 `templateId`/발신프로필 | 알림톡=사전 템플릿 심사, 실패 시 SMS 대체발송 |
+
+## 7. 보안 / 정합성
+- 웹훅 시크릿 검증(401), Edge Function `verify_jwt=false`.
+- 연락처 조회는 **service_role 전용**(이메일=auth.users, 전화=profiles.phone). 클라엔 절대 노출 안 함.
+- **멱등**: `notification_deliveries` UNIQUE(notification_id, channel) → 웹훅 재시도/중복 INSERT 시 중복 발송 차단.
+- **동의(opt-in)**: `notify_email`/`notify_sms` true + 연락처 존재 시에만 발송(미동의=skipped).
+- 발송 로그 SELECT 관리자만(연락처/내용 유출 차단).
+- 인앱 알림(notifications)은 그대로 — 외부 발송은 **부가 채널**(실패해도 인앱은 정상).
+
+## 8. 검증 계획
+- Edge Function 로컬(`supabase functions serve`) + Mock: notifications 행 페이로드 모킹 → 콘솔에 email/sms 출력, `notification_deliveries` status='mock' 적재, 멱등(같은 notification_id 재호출 시 중복 0).
+- 동의 off/연락처 없음 → skipped. 웹훅 시크릿 불일치 → 401.
+- (실발송은 키 발급 후) Resend/Solapi 샌드박스 1건.
+
+## 9. 구현 순서
+1. mig48 (profiles 연락처/동의 + notification_deliveries)
+2. Edge Function `send-external-notification`(Dispatcher Mock 모드) + 시크릿(WEBHOOK_SECRET) 설정
+3. Database Webhook(notifications INSERT) 연결
+4. (선택) profiles 연락처/알림 설정 UI(마이페이지 토글)
+5. Mock E2E → 키 발급 후 live 스위치
+
+## ✅ 확정 5대 스펙 (반영 완료)
+1. **profiles 연락처/동의**: `phone` + `notify_email`(기본 true) + `notify_sms`(기본 false).
+2. **phone 자동 동기화**: `sync_profile_phone()`(DEFINER) 트리거 — `host_verifications`(총대 인증) / `bus_rider_private`(탑승 결제) 의 phone 을 `profiles.phone` 으로 최신 동기화.
+3. **멱등 발송로그**: `notification_deliveries`(UNIQUE(notification_id,channel)) — 웹훅 재시도 중복발송 차단. SELECT 관리자만.
+4. **Mock/Live Dispatcher**: `DISPATCH_MODE` env. mock=콘솔 출력+status='mock' / live=Resend(email)·Solapi(sms) 어댑터. 호출부 무변경 스위칭.
+5. **핵심 타입 필터**: `EXTERNAL_TYPES`(bus_ordered·bus_finalized·tracking_registered·shipped·join_limit_warning·paid·issue) 만 외부 발송.
+
+## 📦 구현 산출물 (완료)
+- **mig48** `…0024_48_external_notify.sql` — profiles phone/notify_* + sync_profile_phone 트리거(host_verifications·bus_rider_private) + notification_deliveries(멱등·RLS 관리자만).
+- **Edge Function** `supabase/functions/send-external-notification/index.ts` — 시크릿 검증 → 타입 필터 → service_role 연락처/동의 조회 → Dispatcher(Mock/Live, Resend·Solapi 어댑터) → 멱등 발송로그. `config.toml` verify_jwt=false. **배포 완료**(DISPATCH_MODE=mock, WEBHOOK_SECRET 설정).
+- **index.html** — 내 계정 모달에 📧 이메일/💬 SMS 동의 토글 + `loadNotifyPrefs`/`saveNotifyPref`(profiles update).
+- **검증** — persona_hardtest T0~T3(profiles 기본값·phone 동기화·발송로그 멱등·RLS) **전체 35/35** + Edge Function Mock 발송 7/7(401 차단·mock 발송·미동의 skip·로그 적재·멱등·타입필터).
+
+## ⏳ 운영 잔여(별도)
+- **Database Webhook 연결**: Dashboard → Database → Webhooks → `notifications` INSERT → `https://<ref>.functions.supabase.co/send-external-notification`, 헤더 `x-webhook-secret: <WEBHOOK_SECRET>`. (또는 pg_net 트리거+Vault 로 IaC 화 가능 — 시크릿 커밋 방지 위해 Vault 권장.)
+- **실발송 전환**: Resend/Solapi 키 발급 → 시크릿 등록 → `DISPATCH_MODE=live`.

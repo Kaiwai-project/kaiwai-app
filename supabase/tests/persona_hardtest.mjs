@@ -178,6 +178,20 @@ try{
 
   const ins = await uRest(J.A,'POST',`affiliate_traffic_logs`,{bus_id:bAff1,click_type:'product_view'},'return=minimal');
   log(ins.ok || ins.status===201, `S9 authenticated 직접 적재 허용 (${ins.status}${ins.ok?'':' '+JSON.stringify(ins.data).slice(0,70)})`);
+
+  console.log('[페르소나 T] 외부 알림 토대 (Step 10)');
+  const profA = (await srvGet(`profiles?id=eq.${ids.A}&select=phone,notify_email,notify_sms`))[0]||{};
+  log(profA.notify_email===true && profA.notify_sms===false, `T0 profiles 알림 기본값(email true/sms false): ${profA.notify_email}/${profA.notify_sms}`);
+  log(profA.phone==='01012345678', `T1 탑승 시 phone → profiles 자동 동기화: ${profA.phone}`);
+
+  const nt = await srvPost('notifications', {user_id:ids.A, title:'성사', body:'공구가 성사됐어요', type:'bus_ordered'}, 'return=representation');
+  const nid = Array.isArray(nt.data) ? nt.data[0].id : (nt.data && nt.data.id);
+  const d1 = await srvPost('notification_deliveries', {notification_id:nid, user_id:ids.A, channel:'email', status:'mock'}, 'return=minimal');
+  const d2 = await srvPost('notification_deliveries', {notification_id:nid, user_id:ids.A, channel:'email', status:'mock'}, 'return=minimal');
+  log(d1.ok && !d2.ok && (d2.status===409 || String(d2.data.code||'')==='23505'), `T2 발송로그 멱등 UNIQUE(notification_id,channel) 차단 (${d2.status})`);
+
+  const seeD = await uRest(J.A,'GET',`notification_deliveries?select=id`);
+  log(Array.isArray(seeD.data) && seeD.data.length===0, `T3 발송로그 비관리자 0행(RLS, 관리자만) (${Array.isArray(seeD.data)?seeD.data.length:'?'})`);
 }catch(e){console.error('THREW:',e.message);fail++;}
 finally{
   for(const id of busIds){ await srvDel(`buses?id=eq.${id}`); }
