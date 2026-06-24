@@ -4211,58 +4211,68 @@ let _orderSheetBusId = null;
 // 도수 문자열 정규화(공백 차이로 그룹이 갈리지 않게)
 function _normPower(p){ return String(p||"도수 미입력").replace(/\s+/g," ").trim(); }
 // b → { rows:[{power,qty}], total } (수량 많은 순)
+// b → { rows:[{isHost, nick, product, qty, power}], totalQty, totalYen }
 function _buildOrderSheet(b){
-  const map = new Map();
-  const add = (power, qty)=>{ const k=_normPower(power); map.set(k, (map.get(k)||0) + (Number(qty)||1)); };
-  (b.riders||[]).forEach(r=> add(r.power, r.qty));                    // 1) 탑승자들
-  const hostPower = (b.hostPowerL || b.hostPowerR)                   // 2) 총대 본인 1세트 (렌즈라라면 도수 존재)
+  const hostPower = (b.hostPowerL || b.hostPowerR)
     ? `좌 ${b.hostPowerL||"-"} / 우 ${b.hostPowerR||"-"}` : "도수 미입력";
-  add(hostPower, 1);
-  const rows = [...map.entries()].map(([power,qty])=>({power,qty})).sort((a,b)=>b.qty-a.qty || a.power.localeCompare(b.power));
-  const total = rows.reduce((s,r)=>s+r.qty, 0);
-  return { rows, total };
+  
+  const rows = [];
+  rows.push({
+    isHost: true,
+    nick: b.captain || "총대",
+    product: b.productName || "상품 미입력",
+    qty: b.hostQty || 1,
+    power: hostPower
+  });
+
+  (b.riders||[]).forEach(r => {
+    rows.push({
+      isHost: false,
+      nick: r.nick,
+      product: riderProduct(r),
+      qty: r.qty || 1,
+      power: r.power || "도수 미입력"
+    });
+  });
+
+  const totalQty = rows.reduce((s, r) => s + r.qty, 0);
+  const totalYen = b.current || 0;
+  return { rows, totalQty, totalYen };
 }
 function _orderSheetText(b){
-  const { rows, total } = _buildOrderSheet(b);
-  const pName = b.productName || "상품명 미입력";
-  const pPrice = b.productPrice ? b.productPrice.toLocaleString() + "엔" : "가격 미상";
-  const pUrl = b.productUrl ? `\n상품 URL: ${b.productUrl}` : "";
-  const lines = rows.map(r=>`• ${r.power}  ··· ${r.qty}개`);
-  const totalPriceLine = b.productPrice ? `\n총 상품 금액: ${(b.productPrice * total).toLocaleString()}엔` : "";
-  return `📋 KAIWAI 전체 주문내역\n[${b.title||"공구"}]\n\n상품명: ${pName}\n단가: ${pPrice}${pUrl}\n\n${lines.join("\n")}\n\n합계: 총 ${total}개${totalPriceLine}`;
+  const { rows, totalQty, totalYen } = _buildOrderSheet(b);
+  const pUrl = b.productUrl ? `\n🔗 참고 상품 링크: ${b.productUrl}` : "";
+  const lines = rows.map(r => `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개 / ${r.power}`);
+  return `📋 KAIWAI 전체 주문내역\n[${b.title||"공구"}]${pUrl}\n\n${lines.join("\n")}\n\n합계: 총 ${totalQty}개\n총 상품 금액: ${totalYen.toLocaleString()}엔`;
 }
 function openOrderSheet(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b){ showToast("공구 정보를 찾을 수 없어요"); return; }
   _orderSheetBusId = busId;
-  const { rows, total } = _buildOrderSheet(b);
-  const pName = b.productName || "상품명 미입력";
-  const pPrice = b.productPrice ? b.productPrice.toLocaleString() + "엔" : "가격 미상";
-  const pUrlHtml = b.productUrl ? `<p style="font-size:12px;color:#6B5B60;margin:5px 0 0;word-break:break-all"><a href="${_esc(b.productUrl)}" target="_blank" style="color:#2D6FE0;text-decoration:underline">🔗 상품 링크 열기</a></p>` : "";
+  const { rows, totalQty, totalYen } = _buildOrderSheet(b);
+  const pUrlHtml = b.productUrl ? `<p style="font-size:12px;color:#6B5B60;margin:12px 0 0;background:#fff;padding:10px;border-radius:10px;border:1.5px solid #E2DCE0;word-break:break-all"><a href="${_esc(b.productUrl)}" target="_blank" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 참고 상품 링크 열기 ›</a></p>` : "";
   
   document.getElementById("orderSheetBody").innerHTML = rows.length ? `
-    <div style="margin-bottom:14px;padding:14px;background:#FFF5F8;border-radius:16px;border:1.5px solid #FFE8F0">
-      <p style="font-size:12px;color:#C4A8B0;font-weight:700;margin:0 0 6px">📦 주문 상품 정보</p>
-      <p style="font-size:13px;color:#3A2B30;font-weight:800;margin:0 0 4px;word-break:keep-all">${_esc(pName)}</p>
-      <p style="font-size:13px;color:#C41055;font-weight:800;font-family:'M PLUS Rounded 1c',sans-serif;margin:0">개당 단가: ${_esc(pPrice)}</p>
-      ${pUrlHtml}
-    </div>
-    <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;flex-direction:column;gap:10px">
       ${rows.map(r=>`
-        <div class="flex items-center justify-between" style="background:#fff;border:1.5px solid #FFE0EE;border-radius:14px;padding:13px 15px">
-          <span style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${_esc(r.power)}</span>
-          <span style="flex-shrink:0;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);padding:5px 12px;border-radius:100px;white-space:nowrap">총 ${r.qty}개</span>
+        <div style="background:#fff;border:1.5px solid #FFE0EE;border-radius:14px;padding:12px 14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:800;color:#3A2B30;background:#F9F9FB;padding:4px 8px;border-radius:6px">${r.isHost ? "👑 총대 " : "🙋 "}${_esc(r.nick)}</span>
+            <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;background:#FFF0F6;padding:4px 10px;border-radius:100px">수량 ${r.qty}개</span>
+          </div>
+          <p style="font-size:14px;font-weight:800;color:#3A2B30;margin:0 0 4px">${_esc(r.product)}</p>
+          <p style="font-size:12.5px;color:#8D7B80;margin:0;font-weight:700">도수: <span style="color:#6B5B60">${_esc(r.power)}</span></p>
         </div>`).join("")}
     </div>
-    <div style="margin-top:14px;padding-top:14px;border-top:2px dashed #FFD6E8;display:flex;justify-content:space-between;align-items:center">
+    ${pUrlHtml}
+    <div style="margin-top:16px;padding-top:14px;border-top:2px dashed #FFD6E8;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:800;color:#6B5B60">총 발주 수량</span>
-      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${total}개</span>
+      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${totalQty}개</span>
     </div>
-    ${ b.productPrice ? `
     <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:800;color:#6B5B60">총 상품 금액</span>
-      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${(b.productPrice * total).toLocaleString()}엔</span>
-    </div>` : "" }
+      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${totalYen.toLocaleString()}엔</span>
+    </div>
   ` : `<p style="text-align:center;color:#C4A8B0;font-size:13px;padding:20px 0">합산할 주문 내역이 없어요</p>`;
   
   document.getElementById("orderSheetOverlay").style.display = "flex";
