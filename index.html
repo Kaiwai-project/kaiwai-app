@@ -3493,8 +3493,50 @@ function _renderNotifList(){
         ${n.is_read?"":`<span style="flex-shrink:0;width:8px;height:8px;border-radius:50%;background:#E5484D"></span>`}
       </div>
       ${n.body?`<p style="font-size:12px;color:#6B5B60;line-height:1.55;margin:4px 0 0">${_esc(n.body)}</p>`:""}
-      <p style="font-size:10px;color:#C4A8B0;margin:6px 0 0">${_notifTime(n.created_at)}</p>
+<p style="font-size:10px;color:#C4A8B0;margin:6px 0 0">${_notifTime(n.created_at)}</p>
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:13px;padding:48px 0">아직 알림이 없어요 🔔</p>`;
+}
+
+function _orderSheetText(b){
+  const { rows, total } = _buildOrderSheet(b);
+  const pName = b.productName || "상품명 미입력";
+  const pPrice = b.productPrice ? b.productPrice.toLocaleString() + "엔" : "가격 미상";
+  const lines = rows.map(r=>`• ${r.power}  ··· ${r.qty}개`);
+  const totalPriceLine = b.productPrice ? `\n총 상품 금액: ${(b.productPrice * total).toLocaleString()}엔` : "";
+  return `📋 KAIWAI 자동 발주서\n[${b.title||"공구"}]\n\n상품명: ${pName}\n단가: ${pPrice}\n\n${lines.join("\n")}\n\n합계: 총 ${total}개${totalPriceLine}`;
+}
+function openOrderSheet(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b){ showToast("공구 정보를 찾을 수 없어요"); return; }
+  _orderSheetBusId = busId;
+  const { rows, total } = _buildOrderSheet(b);
+  const pName = b.productName || "상품명 미입력";
+  const pPrice = b.productPrice ? b.productPrice.toLocaleString() + "엔" : "가격 미상";
+  document.getElementById("orderSheetBody").innerHTML = rows.length ? `
+    <div style="margin-bottom:14px;padding:14px;background:#FFF5F8;border-radius:16px;border:1.5px solid #FFE8F0">
+      <p style="font-size:12px;color:#C4A8B0;font-weight:700;margin:0 0 6px">📦 주문 상품 정보</p>
+      <p style="font-size:13px;color:#3A2B30;font-weight:800;margin:0 0 4px;word-break:keep-all">${_esc(pName)}</p>
+      <p style="font-size:13px;color:#C41055;font-weight:800;font-family:'M PLUS Rounded 1c',sans-serif;margin:0">개당 단가: ${_esc(pPrice)}</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${rows.map(r=>`
+        <div class="flex items-center justify-between" style="background:#fff;border:1.5px solid #FFE0EE;border-radius:14px;padding:13px 15px">
+          <span style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">${_esc(r.power)}</span>
+          <span style="flex-shrink:0;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#FF6FA8,#C41055);padding:5px 12px;border-radius:100px;white-space:nowrap">총 ${r.qty}개</span>
+        </div>`).join("")}
+    </div>
+    <div style="margin-top:14px;padding-top:14px;border-top:2px dashed #FFD6E8;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:800;color:#6B5B60">총 발주 수량</span>
+      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${total}개</span>
+    </div>
+    ${ b.productPrice ? `
+    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:800;color:#6B5B60">총 상품 금액</span>
+      <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${(b.productPrice * total).toLocaleString()}엔</span>
+    </div>` : "" }
+  ` : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:20px 0">집계된 도수 정보가 없어요</p>`;
+  
+  document.getElementById("orderSheetOverlay").style.display = "flex";
 }
 
 function openNotifs(){
