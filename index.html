@@ -3349,7 +3349,7 @@ function renderBusRoom(b){
         </div>
       </div>` : "" }
 
-      ${ b.hostAccount ? `
+      ${ (b.hostAccount && !owner) ? `
       <div class="rounded-xl p-4 mb-4" style="background:#EFF6FF;border:1px solid #DBEAFE">
         <p style="font-size:12px;font-weight:800;color:#1E40AF;margin:0 0 9px;font-family:'M PLUS Rounded 1c',sans-serif">💸 방장 입금 계좌</p>
         <div class="flex items-center justify-between" style="gap:10px">
@@ -3369,7 +3369,7 @@ function renderBusRoom(b){
         </div>` : "" }
       </div>` : "" }
 
-      <div class="flex items-center gap-2 ${ b.hostAccount ? "" : "mt-6" } mb-2.5">
+      <div class="flex items-center gap-2 ${ (b.hostAccount && !owner) ? "" : "mt-6" } mb-2.5">
         <span style="font-size:14px;font-weight:800;color:#3A2B30;font-family:'M PLUS Rounded 1c',sans-serif">📒 실시간 투명 장부</span>
         <span style="font-size:11px;color:#8D7B80">탑승객 ${riders.length}명 (개인정보 비공개)</span>
       </div>
