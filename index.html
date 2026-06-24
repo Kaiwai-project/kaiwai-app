@@ -1997,6 +1997,7 @@ function _mapRider(row, priv){
     user_id: row.user_id,
     nick: row.nick,
     productName: row.product_name,
+    productUrl: row.product_url || null,
     yen: row.yen,
     qty: row.qty,
     power: row.power,
@@ -3500,7 +3501,46 @@ function _renderNotifList(){
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:13px;padding:48px 0">아직 알림이 없어요 🔔</p>`;
 }
 
+// 도수 문자열 정규화(공백 차이로 그룹이 갈리지 않게)
+function _normPower(p){ return String(p||"도수 미입력").replace(/\s+/g," ").trim(); }
 
+// 제휴 트래킹 파라미터 자동 부착 함수
+function _trackUrl(url) {
+  if(!url) return "";
+  try {
+    const u = new URL(url);
+    u.searchParams.set("utm_source", "kaiwai_coop");
+    return u.toString();
+  } catch(e) {
+    return url + (url.includes("?") ? "&" : "?") + "utm_source=kaiwai_coop";
+  }
+}
+
+// b → { rows:[{isHost, nick, product, qty, power, productUrl}], totalQty, totalYen }
+function _buildOrderSheet(b){
+  const hostPower = (b.hostPowerL || b.hostPowerR)
+    ? `좌 ${b.hostPowerL||"-"} / 우 ${b.hostPowerR||"-"}` : "도수 미입력";
+  
+  const rows = [];
+  rows.push({
+    isHost: true,
+    nick: b.captain || "총대",
+    product: b.productName || "상품 미입력",
+    qty: b.hostQty || 1,
+    power: hostPower,
+    productUrl: b.productUrl || ""
+  });
+
+  (b.riders||[]).forEach(r => {
+    rows.push({
+      isHost: false,
+      nick: r.nick,
+      product: riderProduct(r),
+      qty: r.qty || 1,
+      power: r.power || "도수 미입력",
+      productUrl: r.productUrl || b.productUrl || ""
+    });
+  });
 
 function openNotifs(){
   if(!_busUid()){ showToast("로그인이 필요해요 🎀"); if(typeof openAuth==="function") openAuth("login"); return; }
@@ -4264,16 +4304,18 @@ function _buildOrderSheet(b){
 }
 function _orderSheetText(b){
   const { rows, totalQty, totalYen } = _buildOrderSheet(b);
-  const pUrl = b.productUrl ? `\n🔗 참고 상품 링크: ${b.productUrl}` : "";
-  const lines = rows.map(r => `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개 / ${r.power}`);
-  return `📋 KAIWAI 전체 주문내역\n[${b.title||"공구"}]${pUrl}\n\n${lines.join("\n")}\n\n합계: 총 ${totalQty}개\n총 상품 금액: ${totalYen.toLocaleString()}엔`;
+  const lines = rows.map(r => {
+    let text = `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개 / ${r.power}`;
+    if(r.productUrl) text += `\n  🔗 ${_trackUrl(r.productUrl)}`;
+    return text;
+  });
+  return `📋 KAIWAI 전체 주문내역\n[${b.title||"공구"}]\n\n${lines.join("\n\n")}\n\n합계: 총 ${totalQty}개\n총 상품 금액: ${totalYen.toLocaleString()}엔`;
 }
 function openOrderSheet(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b){ showToast("공구 정보를 찾을 수 없어요"); return; }
   _orderSheetBusId = busId;
   const { rows, totalQty, totalYen } = _buildOrderSheet(b);
-  const pUrlHtml = b.productUrl ? `<p style="font-size:12px;color:#6B5B60;margin:12px 0 0;background:#fff;padding:10px;border-radius:10px;border:1.5px solid #E2DCE0;word-break:break-all"><a href="${_esc(b.productUrl)}" target="_blank" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 참고 상품 링크 열기 ›</a></p>` : "";
   
   document.getElementById("orderSheetBody").innerHTML = rows.length ? `
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -4284,10 +4326,10 @@ function openOrderSheet(busId){
             <span style="font-size:13px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif;background:#FFF0F6;padding:4px 10px;border-radius:100px">수량 ${r.qty}개</span>
           </div>
           <p style="font-size:14px;font-weight:800;color:#3A2B30;margin:0 0 4px">${_esc(r.product)}</p>
-          <p style="font-size:12.5px;color:#8D7B80;margin:0;font-weight:700">도수: <span style="color:#6B5B60">${_esc(r.power)}</span></p>
+          <p style="font-size:12.5px;color:#8D7B80;margin:0 ${r.productUrl ? "0 6px" : "0"};font-weight:700">도수: <span style="color:#6B5B60">${_esc(r.power)}</span></p>
+          ${ r.productUrl ? `<p style="font-size:11px;margin:0;word-break:break-all"><a href="${_esc(_trackUrl(r.productUrl))}" target="_blank" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 상품 확인하기 ›</a></p>` : "" }
         </div>`).join("")}
     </div>
-    ${pUrlHtml}
     <div style="margin-top:16px;padding-top:14px;border-top:2px dashed #FFD6E8;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:800;color:#6B5B60">총 발주 수량</span>
       <span style="font-size:16px;font-weight:800;color:#C41055;font-family:'M PLUS Rounded 1c',sans-serif">${totalQty}개</span>
