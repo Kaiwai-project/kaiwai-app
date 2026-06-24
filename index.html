@@ -3880,14 +3880,33 @@ function noshowWarn(busId, idx){
 async function updateNotice(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
-  const v = prompt("파티원에게 보여줄 공지를 입력하세요:", b.notice || "");
+
+  const cdKey = `notice_cd_${b.id}`;
+  const lastUpdated = localStorage.getItem(cdKey);
+  if (lastUpdated) {
+    const elapsed = Date.now() - parseInt(lastUpdated, 10);
+    const cooldownMs = 10 * 60 * 1000;
+    if (elapsed < cooldownMs) {
+      const remain = Math.ceil((cooldownMs - elapsed) / 60000);
+      alert(`🚨 공지 업데이트는 무분별한 알림 방지를 위해 10분에 한 번만 가능합니다.\n약 ${remain}분 후에 다시 시도해 주세요.`);
+      return;
+    }
+  }
+
+  const v = prompt("파티원에게 보여줄 공지를 입력하세요:\n(주의: 공지를 등록하면 10분 동안 수정할 수 없습니다)", b.notice || "");
   if(v === null) return;
+  const newNotice = v.trim();
+  if(newNotice === (b.notice || "")) return;
+
   if(!window.sb){ alert("연결 오류로 공지를 저장하지 못했어요."); return; }
   try{
-    const { error } = await window.sb.from("buses").update({ notice: v.trim() || null }).eq("id", b.dbId);
+    const { error } = await window.sb.from("buses").update({ notice: newNotice || null }).eq("id", b.dbId);
     if(error) throw error;
+    localStorage.setItem(cdKey, Date.now());
+    showToast("공지가 업데이트되었습니다! 📢");
   }catch(err){ alert(_busDbError(err, "공지 저장에 실패했어요.")); return; }
-  b.notice = v.trim();
+  
+  b.notice = newNotice;
   renderBusRoom(b);
 }
 
