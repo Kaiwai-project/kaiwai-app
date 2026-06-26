@@ -42,7 +42,10 @@
      확대/깨짐 버그가 있어, position:fixed 레이어로 깔아 모든 탭·스크롤에서 자연스럽게 고정되게 함. */
   body::before{
     content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
-    background:url('wallpaper.jpg') center center / cover no-repeat;
+    /* 월페이퍼를 흰-핑크 베일로 합성해 '딱 중간' 농도로 — 전 탭에 동일하게 비침 */
+    background:
+      linear-gradient(180deg, rgba(255,242,247,.52), rgba(255,243,249,.64)),
+      url('wallpaper.jpg') center center / cover no-repeat;
   }
   #app { background:transparent !important; }
   /* 몽글몽글 카드: 둥근 모서리 + 연핑크 점선 + 소프트 섀도우 + 통통 hover */
@@ -239,7 +242,7 @@
 
 <!-- ══ 홈 탭 ══ -->
 <div id="tHome" class="flex flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:transparent">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.5),rgba(255,240,245,0))">
     <div class="flex items-center justify-between mb-3">
       <img onclick="goHome()" src="kaiwai-logo-trim_resize.png" alt="KAIWAI" title="홈으로" role="button" loading="lazy" decoding="async" width="101" height="46" style="cursor:pointer;height:46px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 2px 4px rgba(214,67,122,.22))"/>
       <div style="display:flex;align-items:center;gap:8px">
@@ -310,7 +313,7 @@
 
 <!-- ══ 쇼핑맵 탭 ══ -->
 <div id="tMap" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
     <div class="flex items-center justify-between mb-4">
       <div><h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🗺️ 쇼핑 맵</h1><p style="color:#8D7B80;font-size:10px">현지 오프라인 매장 가이드</p></div>
       <span style="background:#FFE8F0;color:#8D7B80;font-size:10px;padding:4px 10px;border-radius:10px">면세 ✓ 표시 있음</span>
@@ -324,7 +327,7 @@
 
 <!-- ══ 피드 탭 ══ -->
 <div id="tFeed" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0))">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0))">
     <div class="flex items-center justify-between">
       <div><h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">📸 스타일 피드</h1><p style="color:#8D7B80;font-size:10px">서브컬쳐 OOTD 모음</p></div>
       <button onclick="openUpload()" style="background:#FFE0EE;color:#D6437A;border:1.5px solid #FFB3CC;font-size:11px;font-weight:700;padding:6px 14px;border-radius:100px;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif">+ 업로드</button>
@@ -335,7 +338,7 @@
 
 <!-- ══ 즐겨찾기 탭 ══ -->
 <div id="tFav" style="display:none" class="flex-col flex-1">
-  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,#FFF0F5 60%,transparent)">
+  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,rgba(255,240,245,.58) 60%,transparent)">
     <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">❤️ 즐겨찾기</h1>
     <p style="color:#8D7B80;font-size:10px;margin-top:2px">하트를 누른 브랜드 모음</p>
   </div>
@@ -344,7 +347,7 @@
 
 <!-- ══ 캘린더 탭 ══ -->
 <div id="tCal" style="display:none" class="flex-col flex-1">
-  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,#FFF0F5 60%,transparent)">
+  <div class="px-4 pt-7 pb-5" style="background:linear-gradient(to bottom,rgba(255,240,245,.58) 60%,transparent)">
     <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🗓️ 신상 캘린더</h1>
     <p style="color:#8D7B80;font-size:10px;margin-top:2px">온라인 발매 · 예약 일정 (오프라인 제외)</p>
   </div>
@@ -353,7 +356,7 @@
 
 <!-- ══ 공구(버스) 탭 ══ -->
 <div id="tBus" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,#FFF0F5 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🚌 안심 렌즈 공구</h1>
