@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat KAIWAI_AGENTS.md 2>/dev/null"
+          }
+        ]
+      }
+    ]
+  }
+}
