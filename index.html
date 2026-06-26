@@ -421,7 +421,21 @@
       <button onclick="location.reload()" style="border:1px solid #3A3458;cursor:pointer;border-radius:12px;padding:11px;font-size:12px;font-weight:800;color:#B6AAD0;background:transparent;font-family:'Jua','Gowun Dodum',sans-serif">♻️ 새로고침</button>
     </div>
     <button id="godOverrideBtn" onclick="godToggleOverride()" style="width:100%;margin-top:8px;border:1.5px solid #E5484D;cursor:pointer;border-radius:12px;padding:12px;font-size:12px;font-weight:800;color:#fff;background:#3A1A22;font-family:'Jua','Gowun Dodum',sans-serif">🔓 모든 제약 우회 (OFF)</button>
-    <p style="font-size:10px;color:#6B6486;margin-top:10px;line-height:1.5">관리자(God Mode) 계정에만 노출되는 디버깅 패널입니다. <b style="color:#FF8A8A">모든 제약 우회</b>가 ON 이면 주문/입금 여부와 무관하게 공구 강제 삭제(탑승자 보증금 자동 환불)가 가능합니다.</p>
+    <p style="font-size:10px;color:#6B6486;margin-top:10px;line-height:1.5">관리자(God Mode) 계정에만 노출되는 디버깅 패널입니다. <b style="color:#FF8A8A">모든 제약 우회</b>가 ON 이면 주문/입금 여부와 무관하게 공구·피드 강제 삭제(탑승자 보증금 자동 환불)가 가능합니다.</p>
+
+    <!-- 🎁 유저 포인트 관리 (특정 유저에게 ±지급) -->
+    <div style="margin-top:14px;border-top:1px solid #241C38;padding-top:12px">
+      <div style="font-size:12px;font-weight:800;color:#FFD166;margin-bottom:8px;font-family:'Jua','Gowun Dodum',sans-serif">🎁 유저 포인트 관리</div>
+      <input id="godUserQuery" placeholder="닉네임/아이디 검색" oninput="godSearchUsers(this.value)" style="width:100%;box-sizing:border-box;background:#0C0916;border:1px solid #241C38;border-radius:10px;padding:9px;color:#E8DFF5;font-size:12px;margin-bottom:8px"/>
+      <div id="godUserResults" style="max-height:130px;overflow:auto;margin-bottom:8px"></div>
+      <div id="godGrantBox" style="display:none">
+        <div id="godGrantTarget" style="font-size:11px;color:#B6E6CA;margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px">
+          <input id="godGrantAmount" type="number" placeholder="±포인트 (예: 500 / -300)" style="flex:1;min-width:0;background:#0C0916;border:1px solid #241C38;border-radius:10px;padding:9px;color:#E8DFF5;font-size:12px"/>
+          <button onclick="godGrantToSelected()" style="border:none;cursor:pointer;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;color:#1B1430;background:#FFD166;font-family:'Jua','Gowun Dodum',sans-serif">지급</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
@@ -2396,6 +2410,64 @@ async function godAddPoints(){
     showToast((typeof _busDbError==="function") ? _busDbError(err, "포인트 지급에 실패했어요.") : "포인트 지급에 실패했어요.");
   }
 }
+
+/* ── God Mode: 특정 유저 포인트 ±지급 ──
+   검색 결과를 _godSearchResults 에 보관하고 인덱스로만 참조해 onclick 따옴표 이스케이프 회피. */
+let _godGrantTargetId = null;
+let _godSearchResults = [];
+let _godSearchTimer = null;
+
+function godSearchUsers(q){
+  clearTimeout(_godSearchTimer);
+  _godSearchTimer = setTimeout(async () => {
+    const box = document.getElementById("godUserResults");
+    if(!box) return;
+    if(!q || !q.trim()){ box.innerHTML = ""; _godSearchResults = []; return; }
+    try{
+      const { data, error } = await window.sb.rpc("admin_search_users", { p_query: q.trim() });
+      if(error) throw error;
+      _godSearchResults = data || [];
+      if(!_godSearchResults.length){ box.innerHTML = '<div style="font-size:11px;color:#6B6486;padding:6px">결과 없음</div>'; return; }
+      box.innerHTML = _godSearchResults.map((u,idx) => {
+        const safe = escapeHtml(u.display_name || u.username || "(이름없음)");
+        return `<button onclick="godPickUserByIdx(${idx})" style="display:flex;justify-content:space-between;width:100%;gap:8px;text-align:left;cursor:pointer;background:#0C0916;border:1px solid #241C38;border-radius:8px;padding:8px;margin-bottom:5px;color:#E8DFF5;font-size:12px"><span>${safe}</span><span style="color:#FFD166">${Number(u.balance||0).toLocaleString()}P</span></button>`;
+      }).join("");
+    }catch(e){
+      box.innerHTML = '<div style="font-size:11px;color:#FF8A8A;padding:6px">검색 실패: '+escapeHtml(String(e.message||e))+'</div>';
+    }
+  }, 250);
+}
+
+function godPickUserByIdx(idx){
+  const u = _godSearchResults[idx]; if(!u) return;
+  _godSetGrantTarget(u.id, u.display_name || u.username || "(이름없음)", u.balance);
+}
+
+function _godSetGrantTarget(id, name, balance){
+  _godGrantTargetId = id;
+  const box = document.getElementById("godGrantBox");
+  const tgt = document.getElementById("godGrantTarget");
+  if(box) box.style.display = "block";
+  if(tgt) tgt.textContent = "대상: " + name + (balance == null ? "" : " (현재 " + Number(balance).toLocaleString() + "P)");
+  const amt = document.getElementById("godGrantAmount");
+  if(amt){ amt.value = ""; amt.focus(); }
+}
+
+async function godGrantToSelected(){
+  if(!_godGrantTargetId){ showToast("대상 유저를 먼저 선택하세요"); return; }
+  const amt = parseInt(document.getElementById("godGrantAmount").value, 10);
+  if(!Number.isInteger(amt) || amt === 0){ showToast("±포인트를 올바르게 입력하세요"); return; }
+  try{
+    const { data, error } = await window.sb.rpc("admin_grant_points_to", { p_target: _godGrantTargetId, p_amount: amt });
+    if(error) throw error;
+    showToast((amt > 0 ? "지급" : "차감") + " 완료 — 새 잔액 " + Number(data).toLocaleString() + "P 🪙");
+    const q = document.getElementById("godUserQuery");
+    if(q && q.value) godSearchUsers(q.value);
+  }catch(e){
+    showToast("실패: " + ((typeof _busDbError==="function") ? _busDbError(e, "포인트 처리 실패") : (e.message || e)));
+  }
+}
+
 function godRunTest(){
   if(typeof runCoopAutoTest!=="function"){ showToast("테스트 모듈 미로드"); return; }
   const r = runCoopAutoTest();   // 콘솔에 상세 출력
