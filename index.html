@@ -820,14 +820,6 @@
         <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:#8D7B80;pointer-events:none">엔</span>
       </div>
 
-      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">최소 출발 금액 * <span style="background:#FFF3D6;color:#B8860B;font-size:11px;font-weight:800;padding:2px 8px;border-radius:100px;margin-left:4px">💴 엔(¥) 단위</span></label>
-      <div style="position:relative;margin-bottom:16px">
-        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;font-weight:800;color:#D6437A;pointer-events:none">¥</span>
-        <input id="cbMinGoal" required type="number" min="10000" value="10000" inputmode="numeric" placeholder="예) 10000 (최소 10,000엔 이상만 입력 가능)"
-          style="width:100%;padding:13px 36px 13px 32px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"/>
-        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:800;color:#8D7B80;pointer-events:none">엔</span>
-      </div>
-
       <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:8px;font-family:'Jua','Gowun Dodum',sans-serif">마감 시간 *</label>
       <div class="flex gap-2 mb-4">
         <label class="flex-1" style="cursor:pointer">
@@ -2618,7 +2610,7 @@ async function submitCreateBus(e){
   e.preventDefault();
   const title = document.getElementById("cbTitle").value.trim();
   const goal = parseInt(document.getElementById("cbGoal").value, 10);
-  const minGoal = parseInt(document.getElementById("cbMinGoal").value, 10) || 10000;
+  const minGoal = 10000;  // 최소 출발 금액은 무배 기준 10,000엔 일괄 고정(입력란 제거됨)
   // 마감 시간은 정수(시간)만 전송 → 서버 트리거(set_bus_expired_at)가 now() 기준으로 expired_at 강제 산정(시계 위조 차단)
   const dlVal = parseInt(document.querySelector('input[name="cbDeadline"]:checked').value, 10) || 12;
 
@@ -2640,8 +2632,6 @@ async function submitCreateBus(e){
     return;
   }
   if(!title || !goal || goal < 1){ alert("버스 제목과 목표 금액을 확인해 주세요"); return; }
-  // 무배 기준 하한선 — 10,000엔 미만 최소 출발 금액은 추가 배송비 분쟁 위험 → 차단(서버 CHECK 와 정합)
-  if(minGoal < 10000){ alert("최소 출발 금액은 무료 배송 기준인 10,000엔 이상으로 설정해야 합니다."); return; }
   if(!window.sb || !_busUid()){ alert("로그인이 필요해요. 다시 로그인 후 시도해 주세요."); return; }
 
   const btn = e.target && e.target.querySelector('button[type="submit"]');
