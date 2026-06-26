@@ -3397,29 +3397,29 @@ function renderBusRoom(b){
     </div>`).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:18px 0">아직 다른 탑승객이 없어요</p>`;
   const ledger = hostLine + riderLines;
 
-  // B. 방장 전용 관리자 패널 (조건부) — 입금자명 + 입금 승인 액션
+  // B. 방장 전용 관리자 패널 (조건부) — 참여자 1명당 1카드(가로 스크롤 제거)
   const adminRows = riders.map((r,i)=>`
-    <tr style="border-bottom:1px solid #F0ECEE">
-      <td style="padding:8px 6px;font-weight:700;color:#3A2B30;white-space:nowrap">${r.nick}</td>
-      <td style="padding:8px 6px;font-weight:800;color:#D6437A;white-space:nowrap">${r.payer||"-"}</td>
-      <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.realName||"-"}</td>
-      <td style="padding:8px 6px;color:#4A4A4A;white-space:nowrap">${r.phone||"-"}</td>
-      <td style="padding:8px 6px;color:#4A4A4A;min-width:140px">${r.store||'<span style="color:#C77800">미입력</span>'}</td>
-      <td style="padding:8px 6px;font-weight:800;color:#3A2B30;white-space:nowrap">${r.amount.toLocaleString()}원</td>
-      <td style="padding:8px 6px;white-space:nowrap">
-        <div style="display:flex;gap:6px;align-items:center">
-          ${ r.paid
-            ? `<span style="display:inline-block;font-size:11px;font-weight:800;color:#1A9E5E;background:#E3F6EC;border:1px solid #B6E6CA;padding:6px 10px;border-radius:100px">✅ 입금완료</span>`
-            : `<button onclick="approvePay(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#1A9E5E;padding:7px 11px;border-radius:100px;font-family:'Jua','Gowun Dodum',sans-serif">✅ 입금 승인</button>
-               ${noshowBtn(r,i)}` }
-          ${problemBtn(r,i)}
-        </div>
-        ${ r.issue ? `<div style="font-size:10px;font-weight:800;color:#E5484D;margin-top:5px">${_esc(issueText(r))}</div>` : "" }
-      </td>
-    </tr>
-    ${ b.ordered ? `
-    <tr style="border-bottom:1px solid #F0ECEE;background:#F7FAFF">
-      <td colspan="7" style="padding:2px 6px 12px">
+    <div class="rounded-xl" style="background:#fff;border:1px solid #F3D9E4;padding:12px;margin-bottom:10px">
+      <div class="flex items-center justify-between" style="gap:8px;margin-bottom:9px">
+        <span style="font-size:13px;font-weight:800;color:#3A2B30;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nick}</span>
+        <span style="font-size:14px;font-weight:800;color:#D6437A;flex-shrink:0;font-family:'Jua','Gowun Dodum',sans-serif">${r.amount.toLocaleString()}원</span>
+      </div>
+      <div style="display:grid;grid-template-columns:62px 1fr;gap:6px 10px;font-size:11.5px;margin-bottom:11px;align-items:start">
+        <span style="color:#9A8D93;font-weight:700">입금자명</span><b style="color:#D6437A;word-break:break-all">${r.payer||"-"}</b>
+        <span style="color:#9A8D93;font-weight:700">실명</span><span style="color:#4A4A4A;word-break:break-all">${r.realName||"-"}</span>
+        <span style="color:#9A8D93;font-weight:700">전화번호</span><span style="color:#4A4A4A;word-break:break-all">${r.phone||"-"}</span>
+        <span style="color:#9A8D93;font-weight:700">주소</span><span style="color:#4A4A4A;word-break:break-all">${r.store||'<span style="color:#C77800">미입력</span>'}</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        ${ r.paid
+          ? `<span style="display:inline-block;font-size:11px;font-weight:800;color:#1A9E5E;background:#E3F6EC;border:1px solid #B6E6CA;padding:6px 12px;border-radius:100px">✅ 입금완료</span>`
+          : `<button onclick="approvePay(${b.id},${i})" style="border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#1A9E5E;padding:7px 13px;border-radius:100px;font-family:'Jua','Gowun Dodum',sans-serif">✅ 입금 승인</button>
+             ${noshowBtn(r,i)}` }
+        ${problemBtn(r,i)}
+      </div>
+      ${ r.issue ? `<div style="font-size:10px;font-weight:800;color:#E5484D;margin-top:8px">${_esc(issueText(r))}</div>` : "" }
+      ${ b.ordered ? `
+      <div style="margin-top:11px;padding-top:11px;border-top:1px dashed #F0D6E0">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           <span style="font-size:11px;font-weight:800;color:#2D6FE0;white-space:nowrap">🚚 운송장</span>
           <select id="trkSel-${r.id}" style="padding:8px 10px;border:1.5px solid #DBEAFE;border-radius:10px;font-size:12px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;background:#fff">${_courierOptions(r.courierName)}</select>
@@ -3428,8 +3428,8 @@ function renderBusRoom(b){
           <input id="trkScan-${r.id}" type="file" accept="image/*" capture="environment" style="display:none" onchange="scanTracking(event,'trkNum-${r.id}')"/>
           <button onclick="saveTracking(${b.id},'${r.id}')" style="flex-shrink:0;border:none;cursor:pointer;font-size:12px;font-weight:800;color:#fff;background:#2D6FE0;padding:8px 14px;border-radius:10px;font-family:'Jua','Gowun Dodum',sans-serif">${r.trackingNumber?"수정":"등록"}</button>
         </div>
-      </td>
-    </tr>` : "" }`).join("");
+      </div>` : "" }
+    </div>`).join("");
 
   // 정보 수정 요청(mod_request) 대기 건수 → 붉은 배너
   const modReqCount = riders.filter(r=>r.modRequest).length;
@@ -3440,6 +3440,14 @@ function renderBusRoom(b){
 
   const allTracked = riders.length === 0 || riders.every(r => r.trackingNumber && r.trackingNumber.trim() !== "");
 
+  // [개선1] 주문 버튼 라벨 — 플랫폼이 렌즈라라면 연동 문구, 그 외엔 일반 주문 문구
+  const orderBtnLabel = (b.platform || "렌즈라라") === "렌즈라라"
+    ? "🛒 렌즈라라 연동하여 주문 진행하기"
+    : "🛒 주문 진행하기";
+  // [개선2] 최소 출발 금액(10,000엔) 달성 시에만 주문 진행 버튼 활성화 (서버 guard 와 정합)
+  const ORDER_MIN_YEN = b.minimumGoal || 10000;
+  const orderReached = (b.current || 0) >= ORDER_MIN_YEN;
+
   const adminPanel = canMng ? `
     <div class="rounded-2xl p-4 mt-5" style="background:#2B2330;border:1.5px solid #3E3447">
       <div class="flex items-center gap-2 mb-1">
@@ -3448,20 +3456,9 @@ function renderBusRoom(b){
       </div>
       <p style="font-size:11px;color:#B6AAB0;margin-bottom:12px">은행 앱에서 <b style="color:#FFD166">입금자명</b>을 확인하고 <b style="color:#7BE8A8">[입금 승인]</b>을 눌러주세요. 정보 외부 유출 주의!</p>
       ${modReqBanner}
-      <div style="overflow-x:auto;border-radius:12px;background:#fff">
-        <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:680px">
-          <thead><tr style="background:#FBEFF4">
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">닉네임</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">입금자명</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">실명</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">전화번호</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">주소</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">금액</th>
-            <th style="padding:9px 6px;text-align:left;color:#D6437A;font-weight:800;white-space:nowrap">입금 승인</th>
-          </tr></thead>
-          <tbody>${adminRows}</tbody>
-        </table>
-      </div>
+      ${ riders.length
+        ? `<div>${adminRows}</div>`
+        : `<p style="text-align:center;color:#B6AAB0;font-size:12px;padding:18px 0">아직 입금 관리할 참여자가 없어요</p>` }
       <div class="flex gap-2 mt-3">
         <button onclick="copyAddressBook()" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#2D6FE0">📋 주소록 복사</button>
         <button onclick="openOrderSheet(${b.id})" class="flex-1 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">📋 주문서 보기</button>
@@ -3480,8 +3477,11 @@ function renderBusRoom(b){
                 : (allTracked
                     ? `<button onclick="finalizeCoop(${b.id})" class="w-full rounded-xl py-3 mt-2.5" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#3A1D1D;background:linear-gradient(120deg,#FFE08A,#FFC94D);box-shadow:0 8px 20px -8px rgba(200,120,0,.5)">✅ 배송 완료 처리 (상호 평가 열기)</button>`
                     : `<button disabled class="w-full rounded-xl py-3 mt-2.5" style="border:none;cursor:not-allowed;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#9A8D93;background:#E2DCE0">🚫 모든 참여자의 운송장을 입력해야 배송완료가 가능해요</button>`) }`
-          : `<button onclick="openOrderProcess(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 렌즈라라 연동하여 주문 진행하기</button>
-             <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>` }
+          : (orderReached
+              ? `<button onclick="openOrderProcess(${b.id})" class="w-full rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">${orderBtnLabel}</button>
+                 <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">주문 전 참여자 정보를 확인하세요. 이 버튼을 누르면 수정이 차단됩니다.</p>`
+              : `<button disabled class="w-full rounded-xl py-3" style="border:none;cursor:not-allowed;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#9A8D93;background:#E2DCE0">🚫 최소 10,000엔 달성 시 주문 가능</button>
+                 <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:7px;text-align:center">누적 금액이 무료배송 기준 10,000엔을 넘으면 주문을 시작할 수 있어요. (현재 ${(b.current||0).toLocaleString()}엔)</p>`) }
       </div>
       <p style="font-size:11px;color:#B6AAB0;margin-top:10px;line-height:1.5">🚚 마감 후 각 파티원 행 아래 <b style="color:#fff">운송장 입력칸</b>(택배사 선택 + 번호 + 등록)으로 개별 등록하세요. 등록 즉시 해당 파티원에게 📦 발송 알림이 갑니다.</p>
       <div style="margin-top:14px;border-top:1px solid #3E3447;padding-top:14px">
