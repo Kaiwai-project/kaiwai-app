@@ -6,11 +6,9 @@
 <title>KAIWAI 🎀 — 일본 서브컬쳐 패션 디렉토리</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600&family=Gowun+Dodum&family=Jua&family=Jacques+Francois&family=IM+Fell+Double+Pica+SC&family=Inter:wght@400;500;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Inter:wght@400;500;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet"/>
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script src="coop-core.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- 소셜 로그인 전부 Supabase Auth 로 통일 (카카오/구글/네이버 SDK 모두 제거) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -216,7 +214,6 @@
     --kw-blue-card:#E7F5FF; --kw-blue:#0B79D0; --kw-ok:#1F9D6B;
     --kw-brown:#8A5555; --kw-gray:#BFBFBF; --kw-line:#F6C9DA;
     --kw-ink:#3a2a2e; --kw-sub:#8a6f76; --kw-warn:#E0623C;
-    --kw-script:"IM Fell Double Pica SC","Jacques Francois",serif;
     --kw-cute:"Jua","Gowun Dodum",sans-serif;
     --kw-num:"Inter","Gowun Dodum",sans-serif;
   }
@@ -368,7 +365,7 @@
   <div class="px-4 pt-1 pb-3">
     <!-- 신뢰도 슬로건 배너 (? 클릭 → 안심 공구 3대 철칙 모달) -->
     <div class="rounded-xl p-4 mb-2" style="background:#EFF6FF;border:1.5px solid #DBEAFE">
-      <p style="font-size:14px;font-weight:800;color:#1E40AF;font-family:'Jua','Gowun Dodum',sans-serif;line-height:1.45">먹튀 0%, 잠수 0%. 스트레스 없는 KAIWAI 안심 버스 🚌 <i class="fa-solid fa-circle-question text-gray-400 cursor-pointer" onclick="openRuleModal()" role="button" title="안심 공구 3대 철칙 보기" style="font-size:15px;vertical-align:middle"></i></p>
+      <p style="font-size:14px;font-weight:800;color:#1E40AF;font-family:'Jua','Gowun Dodum',sans-serif;line-height:1.45">먹튀 0%, 잠수 0%. 스트레스 없는 KAIWAI 안심 버스 🚌 <span onclick="openRuleModal()" role="button" title="안심 공구 3대 철칙 보기" style="cursor:pointer;font-size:14px;vertical-align:middle;color:#94A3B8">❓</span></p>
     </div>
     <!-- 이용 가이드라인(설명서) 진입 버튼 (강조: 앰버 그라데이션 + 글로우 펄스) -->
     <style>@keyframes guidePulse{0%,100%{box-shadow:0 8px 20px -8px rgba(255,122,61,.55)}50%{box-shadow:0 12px 28px -6px rgba(255,122,61,.95)}}</style>
@@ -435,7 +432,7 @@
         <div id="godGrantTarget" style="font-size:11px;color:#B6E6CA;margin-bottom:6px"></div>
         <div style="display:flex;gap:6px">
           <input id="godGrantAmount" type="number" placeholder="±포인트 (예: 500 / -300)" style="flex:1;min-width:0;background:#0C0916;border:1px solid #241C38;border-radius:10px;padding:9px;color:#E8DFF5;font-size:12px"/>
-          <button onclick="godGrantToSelected()" style="border:none;cursor:pointer;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;color:#1B1430;background:#FFD166;font-family:'Jua','Gowun Dodum',sans-serif">지급</button>
+          <button id="godGrantBtn" onclick="godGrantToSelected()" style="border:none;cursor:pointer;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;color:#1B1430;background:#FFD166;font-family:'Jua','Gowun Dodum',sans-serif">지급</button>
         </div>
       </div>
     </div>
@@ -2453,6 +2450,9 @@ async function godGrantToSelected(){
   if(!_godGrantTargetId){ showToast("대상 유저를 먼저 선택하세요"); return; }
   const amt = parseInt(document.getElementById("godGrantAmount").value, 10);
   if(!Number.isInteger(amt) || amt === 0){ showToast("±포인트를 올바르게 입력하세요"); return; }
+  // ★[Q1] 연타/스크립트 중복발행 차단 — 응답 올 때까지 버튼 잠금
+  const btn = document.getElementById("godGrantBtn");
+  if(btn){ if(btn.disabled) return; btn.disabled = true; btn.style.opacity = ".5"; btn.style.cursor = "wait"; }
   try{
     const { data, error } = await window.sb.rpc("admin_grant_points_to", { p_target: _godGrantTargetId, p_amount: amt });
     if(error) throw error;
@@ -2461,6 +2461,8 @@ async function godGrantToSelected(){
     if(q && q.value) godSearchUsers(q.value);
   }catch(e){
     showToast("실패: " + ((typeof _busDbError==="function") ? _busDbError(e, "포인트 처리 실패") : (e.message || e)));
+  }finally{
+    if(btn){ btn.disabled = false; btn.style.opacity = "1"; btn.style.cursor = "pointer"; }
   }
 }
 
@@ -3993,13 +3995,28 @@ async function saveTracking(busId, riderId){
   showToast("운송장을 등록했어요 📦 파티원에게 발송 알림이 전송돼요");   // 크로스-유저 알림은 mig39 트리거(DB)가 처리
   renderBusRoom(b);
 }
+// Tesseract.js(OCR, ~수MB)는 전역 로드 대신 운송장 스캔을 처음 쓸 때만 동적 로드 → 초기 트래픽 절감
+let _tesseractLoading = null;
+function _ensureTesseract(){
+  if(typeof Tesseract !== "undefined") return Promise.resolve(true);
+  if(!_tesseractLoading){
+    _tesseractLoading = new Promise((res)=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload  = ()=>res(typeof Tesseract !== "undefined");
+      s.onerror = ()=>{ _tesseractLoading = null; res(false); };
+      document.head.appendChild(s);
+    });
+  }
+  return _tesseractLoading;
+}
 // 📷 운송장 스마트 스캔 — Tesseract.js 로 사진에서 숫자 추출 → targetId 입력칸에 채움
 async function scanTracking(e, targetId){
   const file = e.target.files && e.target.files[0];
   e.target.value = "";   // 같은 파일 재선택 허용
   if(!file) return;
-  if(typeof Tesseract === "undefined"){ showToast("스캔 모듈을 불러오지 못했어요. 직접 입력해 주세요."); return; }
   showToast("🔎 운송장 인식 중… 잠시만요");
+  if(!(await _ensureTesseract())){ showToast("스캔 모듈을 불러오지 못했어요. 직접 입력해 주세요."); return; }
   try{
     const { data } = await Tesseract.recognize(file, "eng");
     const text = (data && data.text) || "";
@@ -4775,7 +4792,7 @@ function drawBanner() {
   const m = CM[filt], cnt = filt==="전체보기" ? B.length : B.filter(x=>x.s===filt).length;
   el.style.cssText = `position:relative;height:156px;border-radius:24px;overflow:hidden;background:${m.g};display:flex;flex-direction:column;justify-content:flex-end;padding:16px 18px;box-shadow:0 4px 20px rgba(255,150,180,.2)`;
   const imgHtml = isImg(m.bgImg)
-    ? `<img src="${m.bgImg}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top"/>`
+    ? `<img src="${m.bgImg}" alt="" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top"/>`
     : "";
   const overlayHtml = isImg(m.bgImg)
     ? `<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(255,255,255,.9) 30%,rgba(255,255,255,.2));z-index:1"></div>`
@@ -5387,10 +5404,10 @@ function renderPostDetail(){
   const isMine=currentUserId && p.author_id===currentUserId;
 
   body.innerHTML=`
-    ${img?`<img src="${escapeHtml(img)}" alt="OOTD" style="width:100%;display:block;max-height:58vh;object-fit:cover"/>`:""}
+    ${img?`<img src="${escapeHtml(img)}" alt="OOTD" loading="lazy" decoding="async" style="width:100%;display:block;max-height:58vh;object-fit:cover"/>`:""}
     <div style="padding:18px 22px 30px">
       <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px">
-        <img src="${escapeHtml(avatar)}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#FFF0F5;flex-shrink:0"/>
+        <img src="${escapeHtml(avatar)}" alt="" loading="lazy" decoding="async" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#FFF0F5;flex-shrink:0"/>
         <span style="font-weight:700;color:#D6437A;font-size:14px;font-family:'Jua','Gowun Dodum',sans-serif">${escapeHtml(name)}</span>
         <button id="detailLikeBtn" onclick="togglePostLike('${p.id}')" style="margin-left:auto;display:inline-flex;align-items:center;gap:5px;background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:100px;padding:6px 13px;cursor:pointer;font-size:12px;font-weight:700;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif">${liked?"❤️":"🤍"} ${(p.like_count||0).toLocaleString()}</button>
       </div>
@@ -5458,8 +5475,13 @@ async function godForceDeletePost(postId){
   if(!(_godOverride && isAdminUser())) return;
   if(!confirm("[God Override] 이 게시물을 강제 삭제할까요?\n되돌릴 수 없습니다.")) return;
   try{
-    const { error } = await window.sb.rpc("god_force_delete_post", { p_post_id: postId });
+    const { data, error } = await window.sb.rpc("god_force_delete_post", { p_post_id: postId });
     if(error) throw error;
+    // ★[B1] 삭제된 게시물의 스토리지 이미지(고아) 정리 — best-effort
+    try{
+      const paths = ((data && data.image_urls) || []).map(_storagePathFromUrl).filter(Boolean);
+      if(paths.length) await window.sb.storage.from("posts").remove(paths);
+    }catch(_){ /* 스토리지 정리 실패는 치명적 아님 */ }
     const i = FEED.findIndex(x => x.id === postId);
     if(i >= 0) FEED.splice(i, 1);
     if(_detailPostId === postId) closePostDetail();
@@ -5886,7 +5908,18 @@ const ADMIN_IDS = [
   "6b2482ab-ddde-46a2-bb71-f26880619fd2",  // rmfjwlak114@gmail.com (운영자)
 ];
 const isAdmin = (email) => !!email && ADMIN_EMAILS.includes(String(email).trim().toLowerCase());
-function isAdminUser(){ return !!(typeof authUser !== "undefined" && authUser && (ADMIN_IDS.includes(authUser.id) || isAdmin(authUser.email))); }
+// 관리자 판별: 서버 is_app_admin(단일 진실)을 우선하고, RPC 전/실패 시 클라 ADMIN_IDS 로 폴백.
+//   → 서버 화이트리스트에 추가만 하면 클라 하드코딩을 안 고쳐도 관리자로 인식(이원화 불일치 사고 방지).
+let _serverIsAdmin = false;
+function isAdminUser(){ return !!(_serverIsAdmin || (typeof authUser !== "undefined" && authUser && (ADMIN_IDS.includes(authUser.id) || isAdmin(authUser.email)))); }
+async function syncServerAdmin(){
+  try{
+    if(!window.sb || typeof authUser === "undefined" || !authUser){ _serverIsAdmin = false; return; }
+    const { data, error } = await window.sb.rpc("is_app_admin", { p_uid: authUser.id });
+    if(!error) _serverIsAdmin = !!data;
+  }catch(_){ /* 실패 시 클라 ADMIN_IDS 폴백 유지 */ }
+  if(typeof showGodFab === "function") showGodFab();   // 서버 판정 반영해 God FAB 노출 갱신
+}
 // 고정 닉네임(이메일별) — 앱 전역에서 이 닉네임으로 강제 표시
 const FIXED_NICK = { "luffylove04@naver.com": "KAIWAI디자이너" };
 function fixedNickFor(email){ return email ? (FIXED_NICK[String(email).trim().toLowerCase()] || null) : null; }
@@ -6143,7 +6176,7 @@ function switchAuth(v){
   if(v==="profile" && authUser){
     const _av = document.getElementById("profAvatar");
     if(authUser.profileImg){
-      _av.innerHTML = `<img src="${authUser.profileImg}" alt="프로필" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+      _av.innerHTML = `<img src="${authUser.profileImg}" alt="프로필" loading="lazy" decoding="async" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
     } else {
       _av.textContent = authUser.nickname[0].toUpperCase();
     }
@@ -6196,7 +6229,7 @@ function updateAuthBtn(){
                : authUser.provider==="google" ? "#4285F4"
                : "#E8608D";
     if(authUser.profileImg){
-      btn.innerHTML=`<img src="${authUser.profileImg}" alt="프로필" style="width:34px;height:34px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid #fff;box-shadow:0 0 0 2px ${ring}">`;
+      btn.innerHTML=`<img src="${authUser.profileImg}" alt="프로필" loading="lazy" decoding="async" style="width:34px;height:34px;border-radius:50%;object-fit:cover;background:#fff;border:2px solid #fff;box-shadow:0 0 0 2px ${ring}">`;
     } else {
       const a=authUser.nickname[0].toUpperCase();
       const bg = authUser.provider==="kakao" ? "#FEE500"
@@ -6899,7 +6932,7 @@ function _checkMonthlyLikeReset(){
 ═══════════════════════════════════ */
 _checkMonthlyLikeReset();
 drawFilter(); drawBanner(); drawBrands(); drawRanking(); drawNews(); go("home"); updateAuthBtn();
-renderPoints(); renderNotifBadge(); showGodFab(); if(authUser) checkDailyAttendance();
+renderPoints(); renderNotifBadge(); showGodFab(); syncServerAdmin(); if(authUser) checkDailyAttendance();
 loadLensCatalog();   // 추천 렌즈 카탈로그 SWR 로드(공개 — 로그인 불필요)
 
 /* ═══════════════════════════════════
@@ -6968,7 +7001,7 @@ async function applySupabaseUser(user){
   };
   localStorage.setItem("kaiwai_user", JSON.stringify(authUser));
   updateAuthBtn();
-  showGodFab();                          // 소셜 로그인 등 비동기 로그인 후 God Mode FAB 갱신
+  showGodFab(); syncServerAdmin();       // 소셜 로그인 등 비동기 로그인 후 God Mode FAB·서버 관리자판정 갱신
   currentUserId = user.id;
   checkDailyAttendance();                 // 하루 첫 접속 → 출석 포인트 + 칩 갱신
   fetchUserFavorites();                  // 로그인 → DB 즐겨찾기 동기화
