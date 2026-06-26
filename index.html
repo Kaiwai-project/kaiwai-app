@@ -54,6 +54,8 @@
   .kw-pop [style*="#9A8D93"]{ color:#6f6168 !important; }
   .kw-pop [style*="#C4A8B0"]{ color:#9a7f88 !important; }
   .kw-pop [style*="#8a6f76"]{ color:#5e4a50 !important; }
+  /* 바텀시트(둥근 상단 팝업)는 열릴 때 아래→위 슬라이드로 등장 — 모든 시트에 일괄 보장 */
+  .kw-pop[style*="28px 28px 0 0"]{ animation:slideUp .32s cubic-bezier(.32,.72,0,1); }
   /* 몽글몽글 카드: 둥근 모서리 + 연핑크 점선 + 소프트 섀도우 + 통통 hover */
   .kawaii-card{
     background:var(--card) !important;
@@ -668,12 +670,14 @@
 </div>
 
 <!-- ══ 공구방 대시보드 (투명 장부 + 방장 패널) ══ -->
-<div id="busRoomOverlay" class="kw-pop" style="display:none;position:fixed;inset:0;z-index:57;background:#FFF7FB;overflow-y:auto">
-  <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:14px 18px;background:rgba(255,240,245,.92);backdrop-filter:blur(8px);max-width:460px;margin:0 auto">
-    <button onclick="closeBusRoom()" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid #FFD6E8;color:#D6437A;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0">‹</button>
-    <span style="font-size:15px;font-weight:800;color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🚌 공구방</span>
+<div id="busRoomOverlay" onclick="closeBusRoom()" style="display:none;position:fixed;inset:0;z-index:57;background:rgba(74,74,74,.4);align-items:flex-end;justify-content:center">
+  <div id="busRoomSheet" class="kw-pop" onclick="event.stopPropagation()" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column">
+    <div style="position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:14px 18px;background:rgba(255,240,245,.92);backdrop-filter:blur(8px)">
+      <button onclick="closeBusRoom()" style="width:34px;height:34px;border-radius:50%;background:#fff;border:1.5px solid #FFD6E8;color:#D6437A;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0">‹</button>
+      <span style="font-size:15px;font-weight:800;color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🚌 공구방</span>
+    </div>
+    <div id="busRoomBody"></div>
   </div>
-  <div id="busRoomBody"></div>
 </div>
 
 <!-- ══ 총대 인증 필요 경고 모달 ══ -->
@@ -3239,8 +3243,8 @@ async function openBusRoom(id){
   }
   _roomBusId = id;
   _myReviewedSet = new Set();         // 새 방 진입 시 내 평가 상태 초기화
-  document.getElementById("busRoomOverlay").style.display = "block";
-  document.getElementById("busRoomOverlay").scrollTop = 0;
+  document.getElementById("busRoomOverlay").style.display = "flex";
+  document.getElementById("busRoomSheet").scrollTop = 0;
   document.body.style.overflow = "hidden";
   renderBusRoom(b);                  // 캐시로 즉시 렌더
   b = await reloadBusRoom(id);       // DB 에서 최신 상태(방장이면 PII)로 갱신
