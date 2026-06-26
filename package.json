@@ -1,0 +1,13 @@
+{
+  "name": "kaiwai-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KAIWAI 정적 앱 — Tailwind는 로컬 프리빌드 후 assets/kaiwai.tailwind.css 를 커밋(Vercel은 정적 서빙).",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/tailwind.input.css -o ./assets/kaiwai.tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./src/tailwind.input.css -o ./assets/kaiwai.tailwind.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

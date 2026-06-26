@@ -16,3 +16,6 @@ logos/
 backgrounds/
 
 .vercel
+
+# Node / Tailwind 빌드 (산출물 assets/kaiwai.tailwind.css 만 커밋)
+node_modules/
