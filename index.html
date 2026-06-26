@@ -5160,10 +5160,11 @@ function drawFeed(){
     const name=p.author_display_name || ("@"+(p.author_username||"user"));
     const avatar=p.author_avatar_url || kawaiiAvatar(p.author_id);
     const cap=p.caption ? escapeHtml(p.caption) : "";
+    const godDel=(_godOverride && isAdminUser())?`<button onclick="event.stopPropagation();godForceDeletePost('${p.id}')" style="position:absolute;top:6px;right:6px;z-index:5;width:30px;height:30px;border-radius:50%;border:1.5px solid #E5484D;background:rgba(58,26,34,.92);color:#fff;cursor:pointer;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,.4)" title="강제 삭제">🗑️</button>`:"";
     return `<div class="mitem fu" style="animation-delay:${i*.04}s">
       <div class="kawaii-card" style="overflow:hidden;cursor:pointer" onclick="openPostDetail('${p.id}')">
         <div style="position:relative;overflow:hidden;background:linear-gradient(135deg,#FFE0EC,#FFB3CC)">
-          ${img?`<img src="${escapeHtml(img)}" alt="OOTD" loading="lazy" decoding="async" style="width:100%;display:block"/>`:`<div style="height:180px;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:.3">🎀</div>`}
+          ${godDel}${img?`<img src="${escapeHtml(img)}" alt="OOTD" loading="lazy" decoding="async" style="width:100%;display:block"/>`:`<div style="height:180px;display:flex;align-items:center;justify-content:center;font-size:52px;opacity:.3">🎀</div>`}
         </div>
         <div style="padding:9px 11px">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
@@ -5323,6 +5324,10 @@ function renderPostDetail(){
           <button onclick="editPost()" style="flex:1;padding:12px;border:1.5px solid #FFD6E8;border-radius:14px;cursor:pointer;color:#D6437A;font-weight:700;font-size:14px;background:#fff;font-family:'Jua','Gowun Dodum',sans-serif">수정</button>
           <button onclick="deletePost()" style="flex:1;padding:12px;border:none;border-radius:14px;cursor:pointer;color:#fff;font-weight:700;font-size:14px;background:#E5468A;font-family:'Jua','Gowun Dodum',sans-serif">삭제</button>
         </div>`:""}
+        ${(_godOverride && isAdminUser())?`
+        <div style="margin-top:12px">
+          <button onclick="godForceDeletePost('${p.id}')" style="width:100%;padding:11px;border:1.5px solid #E5484D;border-radius:14px;cursor:pointer;color:#fff;font-weight:800;font-size:13px;background:#3A1A22;font-family:'Jua','Gowun Dodum',sans-serif">🗑️ [God Override] 강제삭제</button>
+        </div>`:""}
       `}
     </div>`;
 }
@@ -5363,6 +5368,23 @@ async function deletePost(){
   closePostDetail();
   showToast('게시물이 삭제됐어요.');
   loadFeed();
+}
+
+/* God Override(관리자 + 토글 ON): 부적절 피드 게시물 강제 삭제 (RLS 우회 RPC) */
+async function godForceDeletePost(postId){
+  if(!(_godOverride && isAdminUser())) return;
+  if(!confirm("[God Override] 이 게시물을 강제 삭제할까요?\n되돌릴 수 없습니다.")) return;
+  try{
+    const { error } = await window.sb.rpc("god_force_delete_post", { p_post_id: postId });
+    if(error) throw error;
+    const i = FEED.findIndex(x => x.id === postId);
+    if(i >= 0) FEED.splice(i, 1);
+    if(_detailPostId === postId) closePostDetail();
+    showToast("게시물을 강제 삭제했습니다 🗑️");
+    drawFeed();
+  }catch(e){
+    showToast("삭제 실패: " + (e.message || e));
+  }
 }
 
 /* ═══════════════════════════════════
