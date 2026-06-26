@@ -529,7 +529,7 @@
         <p style="font-size:12px;font-weight:800;color:#3A2B30;margin:0 0 10px;font-family:'Jua','Gowun Dodum',sans-serif">🛍️ 상품 · 배송 방법</p>
 
         <div id="boardLinkWrap">
-        <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">🔗 구매할 렌즈 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span></label>
+        <label id="boardUrlLabel" style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">🔗 구매할 렌즈 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span></label>
         <input id="boardUrl" placeholder="렌즈 상품 페이지 주소를 붙여넣으세요" oninput="checkBoardDomain()"
           style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:8px;background:#fff"/>
         <p id="boardDomainWarn" style="display:none;font-size:11px;font-weight:700;color:#E5484D;line-height:1.5;margin:0 0 8px"></p>
@@ -2893,6 +2893,7 @@ function boardBus(id){
     return;
   }
   _boardBusId = id;
+  const isLenra = (b.platform || "렌즈라라") === "렌즈라라";   // 플랫폼별 폼 분기(상품명/가격/URL/도수)
   document.getElementById("boardBusTitle").textContent = b.title;
   document.getElementById("boardBusCaptain").textContent = `총대 ${b.captain} · 달성률 ${Math.round(b.current/b.goal*100)}%`;
   const vpBtn = document.getElementById("boardViewProduct");   // 제휴 상품 보기(productUrl 있을 때만)
@@ -2905,8 +2906,9 @@ function boardBus(id){
   const dw = document.getElementById("boardDomainWarn"); if(dw) dw.style.display = "none";
   const biw = document.getElementById("boardImgWrap"); if(biw) biw.style.display = "none";
   // 상품 정보는 방장이 등록한 메인 물품으로 기본 채움 (탑승자가 수정 가능)
-  document.getElementById("boardProdName").value  = b.productName || "";
-  document.getElementById("boardProdPrice").value = b.productPrice || "";
+  // 렌즈라라: 방장 등록 물품으로 기본 채움. 일반 상품: 빈칸/0 으로 두고 탑승자가 직접 입력.
+  document.getElementById("boardProdName").value  = isLenra ? (b.productName || "") : "";
+  document.getElementById("boardProdPrice").value = isLenra ? (b.productPrice || "") : "";
   document.getElementById("boardQty").value = "1";
   if(b.productImg){
     const img = document.getElementById("boardImgPreview");
@@ -2919,17 +2921,20 @@ function boardBus(id){
   document.getElementById("boardPowerR").innerHTML = opts;
   document.getElementById("boardPowerL").value = "0.00";
   document.getElementById("boardPowerR").value = "0.00";
-  // [플랫폼별 폼] 렌즈라라가 아닌 일반 상품이면 렌즈 전용 UI(링크/추천/도수)를 숨기고
-  //   정보 타이틀을 '상품 정보'로 변경. 렌즈라라면 모두 보이도록 복구(매 호출 양방향 설정).
-  const isLenra = (b.platform || "렌즈라라") === "렌즈라라";
+  // [플랫폼별 폼] 렌즈라라가 아닌 일반 상품이면 렌즈 전용 UI를 숨기고 상품용으로 전환.
+  //   ※ 상품 URL 입력칸(boardLinkWrap)은 일반 상품에서도 노출하되 라벨/플레이스홀더/버튼만 전환.
   const _toggleBoard = (elId, on)=>{ const el=document.getElementById(elId); if(el) el.style.display = on ? "" : "none"; };
-  _toggleBoard("boardLinkWrap",    isLenra);
-  _toggleBoard("boardCuratedWrap", isLenra);
-  _toggleBoard("boardPowerWrap",   isLenra);
+  _toggleBoard("boardCuratedWrap", isLenra);   // 추천 렌즈: 렌즈라라만
+  _toggleBoard("boardPowerWrap",   isLenra);   // 도수 선택: 렌즈라라만
+  _toggleBoard("boardFetchBtn",    isLenra);   // '✨ 내 렌즈 불러오기': 렌즈라라만
+  const _urlLabel = document.getElementById("boardUrlLabel");
+  if(_urlLabel) _urlLabel.innerHTML = isLenra
+    ? '🔗 구매할 렌즈 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span>'
+    : '🔗 상품 URL 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span>';
+  const _urlInput = document.getElementById("boardUrl");
+  if(_urlInput) _urlInput.placeholder = isLenra ? "렌즈 상품 페이지 주소를 붙여넣으세요" : "구매할 상품 페이지 주소를 붙여넣으세요";
   const _infoTitle = document.getElementById("boardInfoTitle");
-  if(_infoTitle) _infoTitle.textContent = isLenra
-    ? "📝 렌즈 정보 (직접 입력 / 수정 가능)"
-    : "📝 상품 정보 (직접 입력 / 수정 가능)";
+  if(_infoTitle) _infoTitle.textContent = isLenra ? "📝 렌즈 정보 (직접 입력 / 수정 가능)" : "📝 상품 정보 (직접 입력 / 수정 가능)";
   // 일반 상품은 도수 개념이 없음 → 값 비움(제출 시 빈 문자열로 전송, 서버 검증 통과)
   if(!isLenra){ document.getElementById("boardPowerL").value = ""; document.getElementById("boardPowerR").value = ""; }
   updateReceipt();
@@ -3424,6 +3429,8 @@ function renderBusRoom(b){
         <span style="font-size:14px;font-weight:800;color:#D6437A;flex-shrink:0;font-family:'Jua','Gowun Dodum',sans-serif">${r.amount.toLocaleString()}원</span>
       </div>
       <div style="display:grid;grid-template-columns:62px 1fr;gap:6px 10px;font-size:11.5px;margin-bottom:11px;align-items:start">
+        <span style="color:#9A8D93;font-weight:700">상품</span><span style="color:#4A4A4A;word-break:break-all">${riderProduct(r)}</span>
+        <span style="color:#9A8D93;font-weight:700">상품링크</span>${ r.productUrl ? `<a href="${_esc(r.productUrl)}" target="_blank" rel="noopener" style="color:#2D6FE0;font-weight:700;text-decoration:none;word-break:break-all">🔗 상품 확인 ›</a>` : '<span style="color:#9A8D93">-</span>' }
         <span style="color:#9A8D93;font-weight:700">입금자명</span><b style="color:#D6437A;word-break:break-all">${r.payer||"-"}</b>
         <span style="color:#9A8D93;font-weight:700">실명</span><span style="color:#4A4A4A;word-break:break-all">${r.realName||"-"}</span>
         <span style="color:#9A8D93;font-weight:700">전화번호</span><span style="color:#4A4A4A;word-break:break-all">${r.phone||"-"}</span>
