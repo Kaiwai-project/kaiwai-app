@@ -79,9 +79,9 @@
   /* 배경(그라데이션 핑크 테두리 + 브랜드 컬러 채움)은 브랜드별이라 favCard()에서 인라인 지정.
      여기선 레이아웃/촉감만. border 는 그라데이션 border-box 를 위해 투명 처리. */
   .kw-favcard{ display:flex; align-items:center; gap:12px; border:1.8px solid transparent;
-    border-radius:20px; padding:9px 11px; box-shadow:0 5px 16px -9px rgba(232,96,141,.5); cursor:pointer;
+    border-radius:20px; padding:9px 11px; box-shadow:0 5px 15px -9px rgba(140,110,125,.5); cursor:pointer;
     transition:transform .26s var(--bounce), box-shadow .26s ease; }
-  .kw-favcard:hover{ transform:translateY(-3px); box-shadow:0 13px 24px -11px rgba(214,67,122,.6); }
+  .kw-favcard:hover{ transform:translateY(-3px); box-shadow:0 13px 24px -12px rgba(120,95,110,.55); }
   .kw-favcard:active{ transform:scale(.975); }
   .kw-favcard__thumb{ position:relative; flex:none; width:60px; height:60px; border-radius:16px; overflow:hidden; background:var(--kw-pink-bg); }
   .kw-favcard__heart:hover{ transform:scale(1.15); }
@@ -5547,6 +5547,23 @@ async function godForceDeletePost(postId){
 /* ═══════════════════════════════════
    즐겨찾기
 ═══════════════════════════════════ */
+/* 즐겨찾기 카드 카테고리별 색: fill=배경 채움 / e1,e2=테두리 그라데이션(연→진).
+   key 는 CARD_THEME 와 동일한 카테고리 풀네임. (양산형=연핑크/지뢰계=옅은회색/서브컬쳐=하늘
+   /스나계=연노랑/고스펑크=연보라/로리타=조금 진한 핑크/잡화=연갈색) */
+const FAV_CAT_COLOR = {
+  "양산형":               { fill:"#FFEAF1", e1:"#FFC9DD", e2:"#FF9CC0" },
+  "지뢰계":               { fill:"#EDEDF2", e1:"#D7D7DF", e2:"#B6B6C2" },
+  "서브컬쳐":             { fill:"#E7F4FF", e1:"#BFE2FF", e2:"#8ECBF7" },
+  "서브컬처":             { fill:"#E7F4FF", e1:"#BFE2FF", e2:"#8ECBF7" }, // 표기 변형 alias
+  "비쥬얼계 고스·펑크":   { fill:"#F1E9FC", e1:"#DAC6F3", e2:"#BBA0E6" },
+  "고스펑크":             { fill:"#F1E9FC", e1:"#DAC6F3", e2:"#BBA0E6" }, // 단축 표기 alias
+  "잡화":                 { fill:"#F3E7D5", e1:"#E2CBAD", e2:"#C9A87C" }, // 단축 표기 alias
+  "스나계":               { fill:"#FFF8DC", e1:"#FBE7A2", e2:"#F2D26C" },
+  "로리타":               { fill:"#FFDBEB", e1:"#FFB1D1", e2:"#FF83B5" },
+  "잡화(가방,신발,악세)": { fill:"#F3E7D5", e1:"#E2CBAD", e2:"#C9A87C" },
+};
+function favCatColor(cat){ return FAV_CAT_COLOR[cat] || { fill:"#FFEAF1", e1:"#FFC9DD", e2:"#FF9CC0" }; }
+
 /* 즐겨찾기 전용 컴팩트 카드 — 썸네일+이름+핵심칩+하트/좋아요. (홈 card() 와 분리)
    ID(fav-/lk-)는 tFav 의 카운트·하트 갱신/애니메이션과 호환 위해 유지. */
 function favCard(b, i){
@@ -5555,9 +5572,10 @@ function favCard(b, i){
     ? `<img src="${b.bgImg}" alt="${b.n}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;object-position:center top" onerror="this.parentNode.style.background='linear-gradient(135deg,${b.c},${b.c}AA)';this.style.display='none'"/>`
     : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:26px;background:linear-gradient(135deg,${b.c},${b.c}AA)">🎀</div>`;
   const storeChip = b.st.length ? `🏪 ${b.st.length}개` : `🌐 온라인`;
-  // 배경 2겹: padding-box=흰→브랜드컬러 채움(심심함 해소) / border-box=핑크 그라데이션 테두리
-  const bg = `background:linear-gradient(140deg,#FFFDFE 0%, ${b.c}1F 60%, ${b.c}30 100%) padding-box,`
-           + `linear-gradient(135deg, var(--kw-pink-light), var(--kw-pink) 50%, var(--kw-pink-deep)) border-box`;
+  // 배경 2겹: padding-box=흰→카테고리색 채움 / border-box=카테고리색 그라데이션 테두리
+  const cc = favCatColor(b.s);
+  const bg = `background:linear-gradient(140deg,#FFFFFF 0%, ${cc.fill} 100%) padding-box,`
+           + `linear-gradient(135deg, ${cc.e1}, ${cc.e2}) border-box`;
   return `<div class="fu kw-favcard" style="animation-delay:${(i*.045).toFixed(3)}s;${bg}" onclick="openM(${b.id})">
     <div class="kw-favcard__thumb" style="box-shadow:inset 0 0 0 2px ${b.c}40">${thumb}</div>
     <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
