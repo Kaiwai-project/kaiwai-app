@@ -47,14 +47,14 @@ BRANDS_GROUPS = {
     ],
     1: [
         {"name": "Secret Honey",    "id": 4,  "ig": "secrethoney_official", "tw": "SecretHoney_HB", "color": "#C41055", "emoji": "🐰"},
-        {"name": "pium",            "id": 14, "ig": "",                     "tw": "pium__official",  "color": "#AA7020", "emoji": "🌸"},
-        {"name": "Honey Cinnamon",  "id": 3,  "ig": "",                     "tw": "honeyc0214",      "color": "#C41055", "emoji": "🍯"},
+        {"name": "pium",            "id": 14, "ig": "piumofficial",          "tw": "pium__official",  "color": "#AA7020", "emoji": "🌸"},
+        {"name": "Honey Cinnamon",  "id": 3,  "ig": "honey_cinnamon_jp",     "tw": "honeyc0214",      "color": "#C41055", "emoji": "🍯"},
     ],
     2: [
         {"name": "NOEMIE",      "id": 9,  "ig": "noemie_official_",    "tw": "Noemie_shop",       "color": "#C41055", "emoji": "🩷"},
         {"name": "MA*RS",       "id": 11, "ig": "marsofficialjapan",   "tw": "mars_amoebamars",   "color": "#C41055", "emoji": "♦️"},
         {"name": "DearMyLove",  "id": 13, "ig": "dearmylove_official", "tw": "dearmylove_yume",   "color": "#C41055", "emoji": "💕"},
-        {"name": "DimMoire",    "id": 19, "ig": "",                    "tw": "_DimMoire_",         "color": "#7733BB", "emoji": "🌑"},
+        {"name": "DimMoire",    "id": 19, "ig": "dimmoire_official",    "tw": "_DimMoire_",         "color": "#7733BB", "emoji": "🌑"},
     ],
 }
 
