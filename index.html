@@ -5218,7 +5218,7 @@ function drawMap(){
     return;
   }
   document.getElementById("mapList").innerHTML=pairs.map(({b,s},i)=>`
-<div class="fu kw-bcard" style="animation-delay:${i*.04}s;position:relative;padding:${FRAME_BAND}px;cursor:pointer;border-radius:24px;box-shadow:0 6px 18px -10px rgba(255,150,180,.5);overflow:hidden" onclick="openM(${b.id})">
+<div class="fu kw-bcard" style="animation-delay:${i*.04}s;position:relative;padding:${FRAME_BAND}px;cursor:pointer;border:1.8px solid transparent;border-radius:24px;background:linear-gradient(140deg,#FFFFFF 0%, ${favCatColor(b.s).fill} 42%, ${favCatColor(b.s).e1} 100%) padding-box, linear-gradient(135deg, ${favCatColor(b.s).e1}, ${favCatColor(b.s).e2}) border-box;box-shadow:0 6px 18px -11px rgba(140,110,125,.5);overflow:hidden" onclick="openM(${b.id})">
   <!-- 카테고리별 액자 프레임 (홈 카드와 동일) -->
   <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:1;${cardFrame(b.s)}"></div>
   <div style="position:relative;z-index:2">
