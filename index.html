@@ -2115,11 +2115,16 @@ function previewAffiliateUrl(){
 function drawBus() {
   const el = document.getElementById("busList");
   if(!el) return;
-  if(!BUSES.length){
+  // 출발(마감=ordered)한 버스는 주최자·참여자(또는 관리자)에게만 노출 — 그 외 유저에겐 숨김
+  // + 내가 개설하거나 참여한 공구방은 항상 목록 상단에 고정(안정 정렬 → 그룹 내 기존 순서 유지)
+  const _list = BUSES
+    .filter(b => !(b.ordered && !_amBusMember(b) && !isAdminUser()))
+    .sort((a,b) => (_amBusMember(a)?0:1) - (_amBusMember(b)?0:1));
+  if(!_list.length){
     el.innerHTML = `<div style="text-align:center;padding:64px 24px"><div class="kw-float" style="font-size:54px;margin-bottom:12px">🚌</div><p style="font-size:14px;font-weight:700;color:#8D7B80;font-family:'Jua','Gowun Dodum',sans-serif">진행 중인 버스가 없어요</p><p style="font-size:12px;color:#C4A8B0;margin-top:6px">곧 새로운 공구가 출발해요!</p></div>`;
     return;
   }
-  el.innerHTML = BUSES.map((b)=>{
+  el.innerHTML = _list.map((b)=>{
     const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
     const riders = b.riders ? b.riders.length : 0;
     const isMyRoom = isBusOwner(b);                     // 접속 유저가 이 방의 총대인가
