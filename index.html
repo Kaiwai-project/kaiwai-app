@@ -5424,33 +5424,43 @@ function drawMap(){
     document.getElementById("mapList").innerHTML=`<div style="text-align:center;padding:60px 20px"><div class="kw-float" style="font-size:42px;margin-bottom:12px">🗺️</div><p style="font-size:13px;color:#8D7B80">해당 지역·쇼핑몰의 매장 정보가 없어요</p></div>`;
     return;
   }
-  document.getElementById("mapList").innerHTML=pairs.map(({b,s},i)=>`
-<div class="fu kw-bcard" style="animation-delay:${i*.04}s;position:relative;padding:${FRAME_BAND}px;cursor:pointer;border:1.8px solid transparent;border-radius:24px;background:linear-gradient(140deg,#FFFFFF 0%, ${favCatColor(b.s).fill} 42%, ${favCatColor(b.s).e1} 100%) padding-box, linear-gradient(135deg, ${favCatColor(b.s).e1}, ${favCatColor(b.s).e2}) border-box;box-shadow:0 6px 18px -11px rgba(140,110,125,.5);overflow:hidden" onclick="openM(${b.id})">
-  <!-- 카테고리별 액자 프레임 (홈 카드와 동일) -->
-  <div aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:1;${cardFrame(b.s)}"></div>
-  <div style="position:relative;z-index:2">
-    <div style="height:4px;background:${b.c};border-radius:100px;margin-bottom:11px"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:11px">
-      ${logoEl(b,42,14,'')}
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;color:#4A4A4A;font-size:14px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'Jua','Gowun Dodum',sans-serif">${b.n}</div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-          <span style="background:${b.c}18;color:${b.c};border:1px solid ${b.c}33;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px">${b.s}</span>
-          <span style="background:#FFF0F5;color:#8D7B80;font-size:9px;padding:2px 7px;border-radius:100px">${s.city}</span>
-          ${b.tax?`<span style="background:#E0FFF5;color:#009966;font-size:9px;font-weight:600;padding:2px 7px;border-radius:100px">✓ 면세</span>`:""}
-        </div>
+  document.getElementById("mapList").innerHTML=pairs.map(({b,s},i)=>{
+    // 즐겨찾기 카드와 동일한 무드: 카테고리색 그라데이션 채움(padding-box) + 그라데이션 테두리(border-box)
+    const cc=favCatColor(b.s);
+    const bg=`background:linear-gradient(140deg,#FFFFFF 0%, ${cc.fill} 42%, ${cc.e1} 100%) padding-box,`
+            +`linear-gradient(135deg, ${cc.e1}, ${cc.e2}) border-box`;
+    // 썸네일: 즐겨찾기와 동일(60×60, 브랜드색 이너링). 사진 없으면 브랜드 이니셜로 정체성 유지.
+    const thumb = isImg(b.bgImg)
+      ? `<img src="${b.bgImg}" alt="${b.n}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;object-position:center top" onerror="this.parentNode.style.background='linear-gradient(135deg,${b.c},${b.c}AA)';this.style.display='none'"/>`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;font-family:var(--kw-cute);background:linear-gradient(135deg,${b.c},${b.c}AA)">${b.i}</div>`;
+    return `
+<div class="fu kw-favcard" style="animation-delay:${(i*.04).toFixed(3)}s;flex-direction:column;align-items:stretch;gap:10px;padding:11px 12px;${bg}" onclick="openM(${b.id})">
+  <!-- 상단: 즐겨찾기 카드 레이아웃(썸네일 + 이름 + 핵심칩) -->
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="kw-favcard__thumb" style="box-shadow:inset 0 0 0 2px ${b.c}40">${thumb}</div>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px">
+      <span style="font-weight:800;color:var(--kw-ink);font-size:14.5px;font-family:var(--kw-cute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.n}</span>
+      <div style="display:flex;align-items:center;gap:5px;overflow:hidden">
+        <span style="flex:none;background:${b.c}16;color:${b.c};border:1px solid ${b.c}30;font-size:9.5px;font-weight:700;padding:1.5px 7px;border-radius:100px;white-space:nowrap">${b.s}</span>
+        <span style="flex:none;background:#EEEAFB;color:#6E5AA8;border:1px solid #DAD2F2;font-size:9.5px;font-weight:700;padding:1.5px 6px;border-radius:100px;white-space:nowrap">${s.city}</span>
+        ${b.tax?`<span style="flex:none;background:#E0FFF5;color:var(--kw-ok);font-size:9.5px;font-weight:700;padding:1.5px 6px;border-radius:100px;border:1px solid #B3FFDF;white-space:nowrap">✓ 면세</span>`:""}
       </div>
-    </div>
-    <div style="background:#FFF5F8;border-radius:16px;padding:11px 13px;display:flex;align-items:center;gap:9px;border:1px solid #FFE8F0">
-      <span style="font-size:18px;flex-shrink:0">🏪</span>
-      <div style="flex:1;min-width:0">
-        <p style="font-weight:600;color:#4A4A4A;font-size:13px;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.mall}</p>
-        <p style="color:${b.c};font-size:11px;font-weight:700;margin:0">${s.fl}</p>
-      </div>
-      <a href="${s.map}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="kw-pop" style="background:${b.c};color:#fff;font-size:11px;font-weight:700;padding:8px 11px;border-radius:12px;text-decoration:none;flex-shrink:0;white-space:nowrap;transition:opacity .15s;font-family:'Jua','Gowun Dodum',sans-serif" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">📍 지도</a>
     </div>
   </div>
-</div>`).join("");
+  <!-- 하단: 매장(쇼핑맵 고유 정보) — 글래스 패널 + 블루 지도 버튼(핑크와 분리) -->
+  <div style="display:flex;align-items:center;gap:9px;background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.7);border-radius:14px;padding:9px 11px;box-shadow:inset 0 1px 2px rgba(255,255,255,.6)">
+    <span style="font-size:17px;flex-shrink:0">🏪</span>
+    <div style="flex:1;min-width:0">
+      <p style="font-weight:700;color:var(--kw-ink);font-size:12.5px;margin:0 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--kw-cute)">${s.mall}</p>
+      <p style="color:${b.c};font-size:11px;font-weight:700;margin:0">${s.fl}</p>
+    </div>
+    <a href="${s.map}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="kw-pop" style="display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#3DA0EC,#0B79D0);color:#fff;font-size:11px;font-weight:700;padding:8px 12px;border-radius:12px;text-decoration:none;flex-shrink:0;white-space:nowrap;font-family:var(--kw-cute);box-shadow:0 4px 11px -3px rgba(11,121,208,.55)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex-shrink:0"><path d="M12 21.5S5 14.8 5 9.8a7 7 0 1 1 14 0c0 5-7 11.7-7 11.7Z" fill="#fff"/><circle cx="12" cy="9.6" r="2.6" fill="#0B79D0"/></svg>
+      지도
+    </a>
+  </div>
+</div>`;
+  }).join("");
 }
 
 /* ═══════════════════════════════════
