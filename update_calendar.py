@@ -14,6 +14,12 @@ try:
     from google import genai
 except ImportError:
     genai = None
+try:
+    # IG 직접 API 호출용 — 브라우저 TLS 지문(JA3) 임퍼소네이션이 필요하다.
+    # 표준 urllib/requests 기본 지문은 IG 에 429(Too Many Requests)로 차단됨(실측).
+    from curl_cffi import requests as cffi_requests
+except ImportError:
+    cffi_requests = None
 
 # 한국 표준시(KST). 슬롯/날짜는 한국 기준으로 계산한다.
 KST = timezone(timedelta(hours=9))
@@ -36,6 +42,9 @@ ACTOR_IG = "apify/instagram-scraper"
 # 구 apify/twitter-scraper 는 폐기되어 "Actor not found" 발생 → 현행 액터로 교체.
 # ⚠️ apidojo/tweet-scraper 는 유료(rental) 액터 — 첫 실행 전 Apify 계정에서 사용 가능 여부/요금 확인 권장.
 ACTOR_TW = "apidojo/tweet-scraper"
+# IG 웹 클라이언트 공개 app-id (web_profile_info 직접 호출 시 x-ig-app-id 헤더에 사용)
+IG_APP_ID = "936619743392459"
+IG_UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15"
 
 # "id" = index.html 의 브랜드 고유 id(B 배열). 캘린더 이벤트에 bid 로 기록되어
 # 앱에서 클릭 시 openM(bid) 로 해당 브랜드 상세 모달을 띄우는 데 쓰인다.
@@ -193,17 +202,59 @@ class GeminiAnalyzer:
         return None, False
 
 
-def fetch_instagram(apify: ApifyClient, handle: str) -> list[str]:
+def fetch_instagram_direct(handle: str, limit: int = 5) -> list[str]:
+    """IG 공식 web_profile_info API 직접 호출(Apify 불필요).
+    curl_cffi 의 브라우저 TLS 지문이 필수 — 표준 urllib 는 429 로 차단됨(실측).
+    ⚠️ GitHub Actions 데이터센터 IP 는 IG 가 더 자주 차단하므로 best-effort
+       (실패 시 호출부가 Apify 스크래퍼로 폴백)."""
+    if cffi_requests is None:
+        return []
+    headers = {"x-ig-app-id": IG_APP_ID, "User-Agent": IG_UA}
+    if IG_COOKIE:
+        headers["Cookie"] = f"sessionid={IG_COOKIE}"
+    try:
+        resp = cffi_requests.get(
+            f"https://i.instagram.com/api/v1/users/web_profile_info/?username={handle}",
+            impersonate="safari", headers=headers, timeout=20,
+        )
+        if resp.status_code != 200:
+            print(f"    IG 직접 API 비200 ({handle}): {resp.status_code}")
+            return []
+        user = resp.json()["data"]["user"]
+        edges = user["edge_owner_to_timeline_media"]["edges"][:limit]
+        out = []
+        for e in edges:
+            cap = e["node"]["edge_media_to_caption"]["edges"]
+            txt = cap[0]["node"]["text"] if cap else ""
+            if txt:
+                out.append(txt)
+        return out
+    except Exception as e:
+        print(f"    IG 직접 API 오류 ({handle}): {_short(e)}")
+        return []
+
+
+def fetch_instagram(apify: "ApifyClient | None", handle: str) -> list[str]:
+    # 1순위: IG 공식 web_profile_info 직접 API (Apify 불필요·무비용)
+    posts = fetch_instagram_direct(handle)
+    if posts:
+        print(f"    IG 직접 API 성공 ({handle}): {len(posts)}개")
+        return posts
+    # 2순위: Apify 인스타 스크래퍼 폴백 (직접 API 차단/공백 시 — 잔여 프록시 사용)
+    if apify is None:
+        return []
     try:
         run = apify.actor(ACTOR_IG).call(run_input={
             "directUrls": [f"https://www.instagram.com/{handle}/"],
             "resultsLimit": 5,
             "cookies": [{"name": "sessionid", "value": IG_COOKIE}] if IG_COOKIE else [],
         })
-        return [
+        out = [
             item.get("caption") or item.get("text") or ""
             for item in apify.dataset(run.default_dataset_id).iterate_items()
         ]
+        print(f"    IG Apify 폴백 ({handle}): {len(out)}개")
+        return out
     except Exception as e:
         print(f"    IG 오류 ({handle}): {e}")
         return []
@@ -302,12 +353,15 @@ def main():
     apify = ApifyClient(APIFY_TOKEN) if (APIFY_TOKEN and ApifyClient) else None
     gemini = genai.Client(api_key=GEMINI_API_KEY) if (GEMINI_API_KEY and genai) else None
 
-    # 스크래퍼 키가 없으면(로컬/테스트) 데모 시드 스케줄로 캘린더를 채우고 종료
-    if not apify:
+    # 수집 수단이 전혀 없을 때만(Apify 도 없고 IG 직접 API 도 불가) 데모 시드로 채우고 종료.
+    # curl_cffi 가 있으면 APIFY_TOKEN 없이도 IG 직접 API 로 실데이터를 수집한다.
+    if not apify and cffi_requests is None:
         events = build_seed_schedule(today)
         OUT_PATH.write_text(json.dumps(events, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"⚠️ APIFY_TOKEN 없음 → 데모 시드 {len(events)}개 생성 (하루 3건·8시간 간격·매일)")
+        print(f"⚠️ 수집 수단 없음(Apify·curl_cffi 모두 부재) → 데모 시드 {len(events)}개 생성")
         return
+    if not apify:
+        print("ℹ️ APIFY_TOKEN 없음 → IG 직접 API 단독 수집 모드 (트위터·Apify 폴백 비활성)")
 
     # FORCE_ALL(수동 강제 갱신): 슬롯 무시하고 전 브랜드를 한 번에 수집
     if FORCE_ALL:
@@ -334,15 +388,16 @@ def main():
         # (text, src) 튜플로 수집 — src 는 중복제거 시 우선순위(X>IG>공홈)에 사용
         texts: list[tuple[str, str]] = []
 
-        if apify:
-            if brand["ig"]:
-                ig_posts = fetch_instagram(apify, brand["ig"])
-                print(f"  IG {len(ig_posts)}개 수집")
-                texts.extend((t, "ig") for t in ig_posts)
-            if brand["tw"]:
-                tw_posts = fetch_twitter(apify, brand["tw"])
-                print(f"  TW {len(tw_posts)}개 수집")
-                texts.extend((t, "tw") for t in tw_posts)
+        # IG 는 직접 API(Apify 불필요)라 apify 유무와 무관하게 수집 시도
+        if brand["ig"]:
+            ig_posts = fetch_instagram(apify, brand["ig"])
+            print(f"  IG {len(ig_posts)}개 수집")
+            texts.extend((t, "ig") for t in ig_posts)
+        # 트위터는 Apify 액터 의존(직접 경로 429) → apify 있을 때만
+        if apify and brand["tw"]:
+            tw_posts = fetch_twitter(apify, brand["tw"])
+            print(f"  TW {len(tw_posts)}개 수집")
+            texts.extend((t, "tw") for t in tw_posts)
 
         if not texts:
             print("  수집 없음")
