@@ -348,6 +348,76 @@ def dedup_events(events: list[dict]) -> list[dict]:
     return list(best.values())
 
 
+_CONSOLIDATE_PROMPT = """당신은 일본 서브컬처 패션 브랜드의 캘린더 일정을 정리하는 편집자입니다.
+아래는 같은 브랜드의 같은 날짜({date})에 모인 여러 일정 문구입니다.
+'확실하게 같은 이벤트'를 가리키는 문구들만 하나로 묶고, 각 묶음의 모든 정보(시간·채널·혜택·매장/웹 구분 등)를 빠짐없이 종합해 한 줄로 정리하세요.
+
+⛔ 가장 중요한 규칙 — 보수적으로 통합:
+- 동일 이벤트라고 100% 확신할 때만 합친다 (예: 같은 컬렉션·같은 상품의 발매를 표현만 다르게 쓴 경우)
+- 조금이라도 다른 상품/다른 라인/다른 행사일 가능성이 있으면 절대 합치지 말고 그대로 분리 유지
+- 한쪽이 '신상 공개' 처럼 막연해서 어떤 상품인지 특정 안 되면 합치지 말 것 (확신 불가 → 분리)
+- 애매하면 무조건 분리. '혹시 같을 수도' 정도로는 합치지 않는다
+
+통합 규칙:
+- 각 설명은 50자 이내, 한국 SNS 감성의 자연스러운 한국어 (직역 금지)
+- 통합 시 흩어진 정보를 합칠 것 (예: '웹 드롭' + '20시' + '매장은 다음날' → 한 문장에)
+- 입력 문구의 원래 의미를 바꾸거나 없는 정보를 지어내지 말 것
+
+입력 일정:
+{items}
+
+응답은 JSON 한 줄만 (다른 텍스트 없이):
+{{"events": ["설명1", "설명2", ...]}}
+확실히 같은 이벤트가 없으면 입력 문구를 그대로(다듬어서) 모두 담으세요 — 임의로 줄이지 말 것."""
+
+
+def _ai_merge_group(client: "genai.Client", brand: str, date: str, descs: list[str]) -> list[str] | None:
+    """같은 브랜드·날짜의 설명 묶음을 Gemini 로 의미 기반 통합.
+    반환: 통합된 설명 문자열 리스트, 실패 시 None(호출부는 원본 유지)."""
+    items = "\n".join(f"{i+1}. {d}" for i, d in enumerate(descs))
+    prompt = _CONSOLIDATE_PROMPT.format(date=date, items=items)
+    try:
+        resp = client.models.generate_content(model=MODEL_CHAIN[0], contents=f"브랜드: {brand}\n\n{prompt}")
+        raw = (resp.text or "").strip()
+        if raw.startswith("```"):
+            parts = raw.split("```")
+            raw = parts[1].lstrip("json").strip() if len(parts) > 1 else raw
+        data = json.loads(raw)
+        merged = [str(s).strip() for s in data.get("events", []) if str(s).strip()]
+        return merged or None
+    except Exception as e:
+        print(f"    ⚠️ AI 통합 실패({brand} {date}): {_short(e)} → 원본 유지")
+        return None
+
+
+def consolidate_events(events: list[dict], gemini: "genai.Client | None") -> list[dict]:
+    """같은 브랜드(bid)·날짜(dt) 그룹 안에서 표현만 다른 '같은 이벤트'를 AI 로 묶어
+    정보를 종합한 한 건으로 통합한다. Gemini 가 없으면 원본 그대로(파괴적 변경 회피)."""
+    if gemini is None:
+        return events
+    groups: dict[tuple, list[dict]] = {}
+    out: list[dict] = []
+    for e in events:
+        if e.get("bid") is not None and e.get("dt"):
+            groups.setdefault((e["bid"], e["dt"]), []).append(e)
+        else:
+            out.append(e)
+    for (bid, dt), grp in groups.items():
+        if len(grp) <= 1:
+            out.extend(grp)
+            continue
+        base = max(grp, key=lambda x: _src_rank(x.get("src")))   # 메타·소스는 최우선 소스 기준
+        merged = _ai_merge_group(gemini, base.get("br", ""), dt, [e.get("d", "") for e in grp])
+        if not merged:
+            out.extend(grp)   # 통합 실패 → 원본 보존
+            continue
+        if len(merged) < len(grp):
+            print(f"    🔗 {base.get('br')} {dt}: {len(grp)}건 → {len(merged)}건 통합")
+        for desc in merged:
+            out.append({**base, "d": desc})
+    return out
+
+
 def main():
     today = datetime.now(KST)
     apify = ApifyClient(APIFY_TOKEN) if (APIFY_TOKEN and ApifyClient) else None
@@ -448,6 +518,11 @@ def main():
 
     # 중복 소식 제거: 같은 브랜드·날짜·내용이면 한 건만, 소스 우선순위 X(tw)>IG>공홈 보존
     events = dedup_events(events)
+
+    # AI 의미 기반 통합: 표현만 다른 '같은 이벤트'(예: pium 웹 드롭/오텀 컬렉션/20시…)를
+    # 같은 브랜드·날짜 안에서 묶어 정보를 종합한 한 건으로 합친다. dedup 으로 못 잡는 케이스 처리.
+    events = consolidate_events(events, gemini)
+    events = dedup_events(events)   # 통합 결과 중 완전 동일 설명이 생기면 한 번 더 정리
 
     # 날짜 오름차순 정렬
     events.sort(key=lambda x: x.get("dt", "9999-12-31"))
