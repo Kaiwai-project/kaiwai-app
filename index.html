@@ -4637,7 +4637,7 @@ function _orderSheetText(b){
   const { rows, totalQty, totalYen } = _buildOrderSheet(b);
   const lines = rows.map(r => {
     let text = `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개 / ${r.power}`;
-    if(r.productUrl) text += `\n  🔗 ${_shortOf(r.productUrl)}`;
+    if(r.productUrl) text += `\n  🔗 상품으로 바로 이동: ${_shortOf(r.productUrl)}`;
     return text;
   });
   return `📋 KAIWAI 전체 주문내역\n[${b.title||"공구"}]\n\n${lines.join("\n\n")}\n\n합계: 총 ${totalQty}개\n총 상품 금액: ${totalYen.toLocaleString()}엔`;
@@ -4660,7 +4660,7 @@ async function openOrderSheet(busId){
           </div>
           <p style="font-size:14px;font-weight:800;color:#3A2B30;margin:0 0 4px">${_esc(r.product)}</p>
           <p style="font-size:12.5px;color:#8D7B80;margin:0 ${r.productUrl ? "0 6px" : "0"};font-weight:700">도수: <span style="color:#6B5B60">${_esc(r.power)}</span></p>
-          ${ r.productUrl ? `<p style="font-size:11px;margin:0;word-break:break-all"><a href="${_esc(_shortOf(r.productUrl))}" target="_blank" rel="noopener" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 ${_esc(_shortOf(r.productUrl))} ›</a></p>` : "" }
+          ${ r.productUrl ? `<p style="font-size:11px;margin:0;word-break:break-all"><a href="${_esc(_shortOf(r.productUrl))}" target="_blank" rel="noopener" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 상품으로 바로 이동 — ${_esc(_shortOf(r.productUrl))} ›</a></p>` : "" }
         </div>`).join("")}
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:2px dashed #FFD6E8;display:flex;justify-content:space-between;align-items:center">
