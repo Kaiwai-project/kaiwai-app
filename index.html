@@ -4319,6 +4319,8 @@ function editHostOptions(busId){
   if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다."); return; }
   // 상품 옵션 수정은 1회만 — 이미 소진 시 차단(서버 트리거로도 강제됨)
   if(b.hostEdited && !isAdminUser()){ alert("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n이미 수정하셔서 더 이상 변경할 수 없어요."); return; }
+  // 수정 시작 전 1회 제한 동의 경고
+  if(!isAdminUser() && !confirm("✋ 공구 옵션(상품명·가격·수량·도수) 수정은 단 1회만 가능합니다.\n저장하면 이후 변경할 수 없어요.\n\n동의하고 수정하시겠어요?")) return;
   _editHostBusId = busId;
 
   // 도수 옵션 채우기
@@ -4361,11 +4363,7 @@ async function saveEditHostOptions(){
     return;
   }
 
-  // ⚠️ 1회 제한 경고 — 저장하면 이후 옵션 수정 불가(서버 트리거로 강제)
-  const changed = prodName !== (b.productName||"") || prodPrice !== (b.productPrice||0)
-               || qty !== (b.hostQty||1) || powerL !== (b.hostPowerL||"0.00") || powerR !== (b.hostPowerR||"0.00");
-  if(changed && !isAdminUser() && !confirm("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n저장하면 이후 상품명·가격·수량·도수를 더 이상 바꿀 수 없어요.\n계속할까요?")) return;
-
+  // (1회 제한 동의 경고는 수정 시작 시점 editHostOptions 에서 이미 받음)
   const btn = document.getElementById("ehSaveBtn");
   btn.disabled = true;
   try{
@@ -4408,6 +4406,8 @@ async function editMyInfo(busId, idx){
   if(!r) return;
   // UX 사전 차단 (DB RLS 로도 막히지만 먼저 튕겨냄)
   if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다. 총대에게 문의하세요."); return; }
+  // 상품/주문 수정을 아직 안 썼다면(소진 전) 1회 제한 동의 경고
+  if(!r.orderEdited && !isAdminUser() && !confirm("✋ 상품/주문 정보(상품명·가격·수량·도수·수령방법) 수정은 단 1회만 가능합니다.\n총대 승인 시 확정되며 이후 변경할 수 없어요.\n(배송지·연락처 등은 여러 번 수정 가능)\n\n동의하고 수정하시겠어요?")) return;
   _editTarget = { busId, idx };
 
   // 도수 셀렉트 채우고 기존값 파싱("좌 X / 우 Y")
@@ -4489,13 +4489,11 @@ async function saveEditMyInfo(){
   let orderChanged = (qty !== (r.qty || 1)) || (power !== (r.power || "")) || (method !== (r.method || "conv"))
                   || (prodName !== (r.productName || "")) || (yen !== (r.yen || 0));
   if(orderChanged && !prodName){ alert("상품명을 입력해주세요."); return; }
-  // 1회 제한: 이미 소진(승인 완료)이면 상품/주문 변경은 막고 PII/메모만 저장
+  // 1회 제한: 이미 소진(승인 완료)이면 상품/주문 변경은 막고 PII/메모만 저장(동의 경고는 editMyInfo 진입 시 받음)
   if(orderChanged && r.orderEdited && !isAdminUser()){
     alert("⚠️ 상품/주문 정보 수정은 1회만 가능합니다.\n이미 수정하셔서 상품 항목은 변경할 수 없어요. (배송지·연락처는 저장됩니다)");
     orderChanged = false;
   }
-  // 첫 수정 경고 — 승인되면 1회 소진
-  if(orderChanged && !isAdminUser() && !confirm("⚠️ 상품/주문 정보(상품명·가격·수량·도수·수령방법) 수정은 1회만 가능합니다.\n총대 승인 시 확정되며 이후 변경할 수 없어요.\n수정 요청을 보낼까요?")) return;
 
   const btn = document.getElementById("emSaveBtn");
   if(btn) btn.disabled = true;
