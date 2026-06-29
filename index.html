@@ -4339,10 +4339,11 @@ function editHostOptions(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
   if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다."); return; }
-  // 상품 옵션 수정은 1회만 — 이미 소진 시 차단(서버 트리거로도 강제됨)
-  if(b.hostEdited && !isAdminUser()){ alert("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n이미 수정하셔서 더 이상 변경할 수 없어요."); return; }
-  // 수정 시작 전 1회 제한 동의 경고
-  if(!isAdminUser() && !confirm("✋ 공구 옵션(상품명·가격·수량·도수) 수정은 단 1회만 가능합니다.\n저장하면 이후 변경할 수 없어요.\n\n동의하고 수정하시겠어요?")) return;
+  // 1회 제한은 '탑승자가 있을 때만' 적용 — 탑승자 0명이면 자유 수정(서버 트리거도 동일)
+  const _hasRiders = (b.riders || []).length > 0;
+  if(_hasRiders && b.hostEdited && !isAdminUser()){ alert("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n이미 수정하셔서 더 이상 변경할 수 없어요."); return; }
+  // 탑승자 있을 때만 수정 시작 전 1회 제한 동의 경고
+  if(_hasRiders && !isAdminUser() && !confirm("✋ 탑승자가 있어 공구 옵션(상품명·가격·수량·도수) 수정은 단 1회만 가능합니다.\n저장하면 이후 변경할 수 없어요.\n\n동의하고 수정하시겠어요?")) return;
   _editHostBusId = busId;
 
   // 도수 옵션 채우기
