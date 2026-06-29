@@ -1088,7 +1088,16 @@
     <button onclick="closeEditMyInfo()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 정보 수정</h2>
-      <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 수정할 수 있어요. <b style="color:#D6437A">수량·도수·수령방법</b> 변경은 <b style="color:#D6437A">총대 승인 후</b> 반영됩니다.</p>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 12px">주문 시작 전까지만 수정할 수 있어요. <b style="color:#D6437A">상품명·가격·수량·도수·수령방법</b> 변경은 <b style="color:#D6437A">총대 승인 후</b> 반영되며, <b style="color:#D6437A">1회만</b> 가능합니다.</p>
+      <div id="emOrderLockNote" style="display:none;background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;font-weight:700;color:#D6437A;line-height:1.5">🔒 상품/주문 정보는 이미 1회 수정하셨어요. 아래 상품 항목은 변경할 수 없고, 배송지·연락처 등만 수정할 수 있어요.</div>
+
+      <!-- 상품명 (변경 시 총대 승인 필요) -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">상품명 *</label>
+      <input id="emProdName" type="text" placeholder="상품명" style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:14px;background:#fff"/>
+
+      <!-- 단가 (엔) -->
+      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">단가 (엔) *</label>
+      <input id="emProdPrice" type="number" min="0" inputmode="numeric" placeholder="엔화 단가" style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:14px;background:#fff"/>
 
       <!-- 수량 (변경 시 총대 승인 필요) -->
       <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">수량 *</label>
@@ -2203,6 +2212,7 @@ function _mapRider(row, priv){
     hasAddr: row.has_addr,
     memo: row.memo,
     modRequest: row.mod_request || null,   // 승인 대기 수정안(비-PII)
+    orderEdited: !!row.order_edited,       // 상품/주문 수정 1회 소진 여부(총대 승인 시 set)
     me: !!(_busUid() && row.user_id === _busUid()),
     realName: p.real_name || "",
     phone: p.phone || "",
@@ -2238,6 +2248,7 @@ function _mapBus(row, localId, riders){
     ownerId: row.owner_id,
     notice: row.notice || "",
     ordered: row.ordered,
+    hostEdited: !!row.host_edited,   // 총대 공구 옵션 수정 1회 소진 여부
     finalized: !!row.finalized,   // 배송 완료 → 상호 평가 활성화
     productUrl: row.product_url || null,   // 제휴 트래킹 주입된 주문 링크(서버 보증)
     hostAccount: null,   // bus_host_accounts 에서 별도 부착(RLS: 방장/탑승자만 열람)
@@ -3407,7 +3418,7 @@ function _subscribeBusRoom(dbId, localId){
   const onChange = async ()=>{
     if(_roomBusId !== localId) return;
     const nb = await reloadBusRoom(localId);
-    if(_roomBusId === localId) renderBusRoom(nb);
+    if(_roomBusId === localId){ renderBusRoom(nb); _refreshOpenOrderViews(localId); }
   };
   _busRoomChannel = window.sb.channel("busroom:" + dbId)
     .on("postgres_changes", { event:"*", schema:"public", table:"bus_riders", filter:"bus_id=eq." + dbId }, onChange)
@@ -3416,6 +3427,18 @@ function _subscribeBusRoom(dbId, localId){
 }
 function _unsubscribeBusRoom(){
   if(_busRoomChannel){ try{ window.sb.removeChannel(_busRoomChannel); }catch(_){} _busRoomChannel = null; }
+}
+
+// 데이터 변경 시 '열려있는' 의존 팝업(전체 주문내역 / 발주 진행)을 즉시 다시 그린다.
+// → 총대 옵션수정·수정요청 승인이 모든 가용 영역에 실시간 반영되도록.
+function _refreshOpenOrderViews(localId){
+  const os = document.getElementById("orderSheetOverlay");
+  if(os && os.style.display === "flex" && _orderSheetBusId === localId) openOrderSheet(localId);
+  const op = document.getElementById("orderProcessOverlay");
+  if(op && op.style.display === "flex" && _orderProcBusId === localId) openOrderProcess(localId);
+  // 총대 수정요청 검토 모달이 열려 있으면 목록도 갱신
+  const mr = document.getElementById("modReqOverlay");
+  if(mr && mr.style.display === "flex" && _roomBusId === localId) openModRequests(localId);
 }
 
 function renderBusRoom(b){
@@ -4253,6 +4276,7 @@ let _editTarget = { busId:null, idx:null };
 // 일반택배 선택 시에만 상세주소 칸 노출
 function changeEmQty(d){
   const el = document.getElementById("emQty");
+  if(el.disabled) return;   // 상품/주문 1회 수정 소진 시 잠금
   let q = parseInt(el.value, 10);
   if(isNaN(q)) q = 1;
   el.value = Math.max(1, Math.min(100, q + d));
@@ -4293,6 +4317,8 @@ function editHostOptions(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
   if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다."); return; }
+  // 상품 옵션 수정은 1회만 — 이미 소진 시 차단(서버 트리거로도 강제됨)
+  if(b.hostEdited && !isAdminUser()){ alert("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n이미 수정하셔서 더 이상 변경할 수 없어요."); return; }
   _editHostBusId = busId;
 
   // 도수 옵션 채우기
@@ -4335,6 +4361,11 @@ async function saveEditHostOptions(){
     return;
   }
 
+  // ⚠️ 1회 제한 경고 — 저장하면 이후 옵션 수정 불가(서버 트리거로 강제)
+  const changed = prodName !== (b.productName||"") || prodPrice !== (b.productPrice||0)
+               || qty !== (b.hostQty||1) || powerL !== (b.hostPowerL||"0.00") || powerR !== (b.hostPowerR||"0.00");
+  if(changed && !isAdminUser() && !confirm("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n저장하면 이후 상품명·가격·수량·도수를 더 이상 바꿀 수 없어요.\n계속할까요?")) return;
+
   const btn = document.getElementById("ehSaveBtn");
   btn.disabled = true;
   try{
@@ -4357,6 +4388,7 @@ async function saveEditHostOptions(){
     await loadBuses();
     const nb = BUSES.find(x=>x.id===_editHostBusId);
     if(nb) renderBusRoom(nb);
+    _refreshOpenOrderViews(_editHostBusId);   // 열린 주문서/발주 팝업도 즉시 갱신
   }catch(err){
     showToast(_busDbError(err, "공구 옵션 수정에 실패했습니다."));
   }finally{
@@ -4386,14 +4418,24 @@ async function editMyInfo(busId, idx){
   document.getElementById("emPowerL").value = (pm && POWER_OPTIONS.includes(pm[1])) ? pm[1] : "0.00";
   document.getElementById("emPowerR").value = (pm && POWER_OPTIONS.includes(pm[2])) ? pm[2] : "0.00";
 
-  // 수량 — 승인 대기 중(mod_request)이면 그 값, 아니면 현재 장부 값
-  const pendQty = r.modRequest && r.modRequest.qty;
-  document.getElementById("emQty").value = pendQty || r.qty || 1;
+  // 상품/수량 — 승인 대기 중(mod_request)이면 그 값, 아니면 현재 장부 값
+  const mreq = r.modRequest || {};
+  document.getElementById("emProdName").value  = (mreq.product_name != null ? mreq.product_name : r.productName) || "";
+  document.getElementById("emProdPrice").value = (mreq.yen != null ? mreq.yen : r.yen) || 0;
+  document.getElementById("emQty").value = mreq.qty || r.qty || 1;
 
   // 수령방법 (etc 는 모달에 없으므로 home 으로 취급)
   const method = (r.method === "home" || r.method === "etc") ? "home" : "conv";
   const radio = document.querySelector(`input[name="emShip"][value="${method}"]`);
   if(radio) radio.checked = true;
+
+  // 1회 소진 시 상품/주문 필드 잠금(PII 는 계속 수정 가능). 서버 트리거로도 강제됨.
+  const locked = !!r.orderEdited && !isAdminUser();
+  document.getElementById("emOrderLockNote").style.display = locked ? "block" : "none";
+  ["emProdName","emProdPrice","emQty","emPowerL","emPowerR"].forEach(id=>{
+    const el = document.getElementById(id); if(el){ el.disabled = locked; el.style.opacity = locked ? "0.55" : ""; }
+  });
+  document.querySelectorAll('input[name="emShip"]').forEach(el=>{ el.disabled = locked; });
 
   // PII 는 룸 뷰에 본인 것이 안 실려있을 수 있어 직접 조회 (RLS: 본인 허용)
   let priv = { real_name:r.realName, phone:r.phone, address:r.store, payer:r.payer };
@@ -4435,14 +4477,25 @@ async function saveEditMyInfo(){
     if(!/^01[016789]\d{7,8}$/.test(phoneD)){ alert("올바른 휴대폰 번호를 입력해주세요. (예: 010-1234-5678)"); return; }
     if(_noSpaceLen(addr) < 4){ alert("배송지 주소를 정확히 입력해주세요."); return; }
   }
-  const method = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
-  const power  = `좌 ${document.getElementById("emPowerL").value} / 우 ${document.getElementById("emPowerR").value}`;
-  const qty    = Math.max(1, Math.min(100, parseInt(document.getElementById("emQty").value, 10) || 1));
-  const memo   = document.getElementById("emMemo").value.trim() || null;
+  const method  = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
+  const power   = `좌 ${document.getElementById("emPowerL").value} / 우 ${document.getElementById("emPowerR").value}`;
+  const qty     = Math.max(1, Math.min(100, parseInt(document.getElementById("emQty").value, 10) || 1));
+  const prodName = document.getElementById("emProdName").value.trim();
+  const yen      = Math.max(0, Math.min(1000000, parseInt(document.getElementById("emProdPrice").value, 10) || 0));
+  const memo    = document.getElementById("emMemo").value.trim() || null;
 
-  // 주문에 영향 주는 필드(수량·도수·수령방법) 변경 여부 → 변경 시 총대 승인 필요(mod_request).
-  // (DB 트리거가 파티원의 qty/amount 직접수정을 막으므로 승인 워크플로우로 우회)
-  const orderChanged = (qty !== (r.qty || 1)) || (power !== (r.power || "")) || (method !== (r.method || "conv"));
+  // 주문에 영향 주는 필드(상품명·가격·수량·도수·수령방법) 변경 여부 → 변경 시 총대 승인 필요(mod_request).
+  // (DB 트리거가 파티원의 product/qty/yen/amount 직접수정을 막으므로 승인 워크플로우로 우회)
+  let orderChanged = (qty !== (r.qty || 1)) || (power !== (r.power || "")) || (method !== (r.method || "conv"))
+                  || (prodName !== (r.productName || "")) || (yen !== (r.yen || 0));
+  if(orderChanged && !prodName){ alert("상품명을 입력해주세요."); return; }
+  // 1회 제한: 이미 소진(승인 완료)이면 상품/주문 변경은 막고 PII/메모만 저장
+  if(orderChanged && r.orderEdited && !isAdminUser()){
+    alert("⚠️ 상품/주문 정보 수정은 1회만 가능합니다.\n이미 수정하셔서 상품 항목은 변경할 수 없어요. (배송지·연락처는 저장됩니다)");
+    orderChanged = false;
+  }
+  // 첫 수정 경고 — 승인되면 1회 소진
+  if(orderChanged && !isAdminUser() && !confirm("⚠️ 상품/주문 정보(상품명·가격·수량·도수·수령방법) 수정은 1회만 가능합니다.\n총대 승인 시 확정되며 이후 변경할 수 없어요.\n수정 요청을 보낼까요?")) return;
 
   const btn = document.getElementById("emSaveBtn");
   if(btn) btn.disabled = true;
@@ -4457,7 +4510,7 @@ async function saveEditMyInfo(){
     //    ⚠️ mod_request 는 공개 SELECT 테이블이므로 PII 를 절대 담지 않는다(qty/power/method 만).
     const upd = { memo };
     if(orderChanged){
-      upd.mod_request = { qty, power, method, requested_at: new Date().toISOString() };
+      upd.mod_request = { qty, power, method, product_name: prodName, yen, requested_at: new Date().toISOString() };
     }
     const { error: e1 } = await window.sb.from("bus_riders").update(upd).eq("id", r.id);
     if(e1) throw e1;
@@ -4470,7 +4523,7 @@ async function saveEditMyInfo(){
   // 클라 즉시 반영 — 메모/PII 만(주문 영향 필드는 승인 전까지 장부값 유지, 대기 표시).
   r.memo = memo;
   if(piiSaved){ r.realName = name; r.phone = phoneD; r.store = addr; r.payer = payer; }
-  if(orderChanged){ r.modRequest = { qty, power, method }; }
+  if(orderChanged){ r.modRequest = { qty, power, method, product_name: prodName, yen }; }
   closeEditMyInfo();
   showToast(orderChanged
     ? "총대님께 수정 요청을 보냈습니다. 승인 후 반영됩니다 ✅"
@@ -4492,8 +4545,10 @@ function openModRequests(busId){
     body.innerHTML = reqs.map(r=>{
       const req = r.modRequest || {};
       const nq = req.qty || 1, np = req.power || "도수 미입력", nm = req.method || "conv";
+      const npn = (req.product_name != null ? req.product_name : (r.productName || "")) || "상품 미입력";
+      const nyen = (req.yen != null ? req.yen : (r.yen || 0));
       const fee = nm === "home" ? 3500 : nm === "conv" ? 1800 : 0;
-      const newAmount = (r.yen || 0) * nq * YEN_TO_KRW + fee;
+      const newAmount = nyen * nq * YEN_TO_KRW + fee;
       const cell = (asv, tov, changed)=>`
         <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
           <span style="flex:1;font-size:12px;color:#9A8D93;text-decoration:line-through">${_esc(String(asv))}</span>
@@ -4503,6 +4558,8 @@ function openModRequests(busId){
       return `<div class="rounded-2xl p-4 mb-3" style="background:#FFF5F8;border:1.5px solid #FFD6E8">
         <p style="font-size:13px;font-weight:800;color:#3A2B30;margin-bottom:6px">🙋 ${_esc(r.nick)} <span style="font-size:11px;color:#D6437A">님의 수정 요청</span></p>
         <div style="display:flex;font-size:10px;font-weight:800;color:#8D7B80"><span style="flex:1">AS-IS</span><span style="width:18px"></span><span style="flex:1">TO-BE</span></div>
+        ${cell(r.productName||"상품 미입력", npn, npn!==(r.productName||""))}
+        ${cell("단가 "+(r.yen||0).toLocaleString()+"엔", "단가 "+nyen.toLocaleString()+"엔", nyen!==(r.yen||0))}
         ${cell("수량 "+(r.qty||1)+"개", "수량 "+nq+"개", nq!==(r.qty||1))}
         ${cell(r.power||"도수 미입력", np, np!==(r.power||""))}
         ${cell(methodShort(r.method), methodShort(nm), nm!==(r.method||"conv"))}
@@ -4538,6 +4595,7 @@ async function approveModRequest(riderId, busId){
     sendNotification(nb.captain, "🎉 목표 금액 달성! 공구방이 자동으로 마감되었습니다.", "목표 금액 100% 달성으로 공구방이 자동 마감됐어요. 발주를 진행해 주세요.");
   }
   if(_roomBusId === busId) renderBusRoom(nb || b);
+  _refreshOpenOrderViews(busId);   // 열린 주문서/발주 팝업 즉시 갱신(수량·가격·상품명 반영)
   openModRequests(busId);   // 모달 목록 갱신(남은 요청 표시)
 }
 async function rejectModRequest(riderId, busId){
