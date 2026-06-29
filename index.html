@@ -3613,6 +3613,14 @@ function renderBusRoom(b){
   const ORDER_MIN_YEN = b.minimumGoal || 10000;
   const orderReached = (b.current || 0) >= ORDER_MIN_YEN;
 
+  // 관리자 모더레이션: 본인이 개설하지 않은 방(참여/타인 방)에선 방장 패널이 안 뜨므로
+  // 강제 삭제 버튼을 별도로 노출 (개설한 방은 아래 방장 패널의 삭제 버튼이 처리).
+  const godDelBar = (isAdminUser() && !owner) ? `
+    <div class="rounded-2xl p-3 mt-4" style="background:#3A1A22;border:1.5px solid #E5484D">
+      <p style="font-size:11px;font-weight:800;color:#FF8A8A;margin:0 0 8px;font-family:'Jua','Gowun Dodum',sans-serif">🛡️ 관리자 모더레이션</p>
+      <button onclick="godDeleteBus(${b.id})" class="w-full rounded-xl py-3" style="border:1.5px solid #E5484D;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#fff;background:#7A1020">🗑️ 이 공구방 강제 삭제 (탑승자 보증금 자동 환불)</button>
+    </div>` : "";
+
   const adminPanel = canMng ? `
     <div class="rounded-2xl p-4 mt-5" style="background:#2B2330;border:1.5px solid #3E3447">
       <div class="flex items-center gap-2 mb-1">
@@ -3682,6 +3690,8 @@ function renderBusRoom(b){
         ? `<div class="w-full mt-4 rounded-xl py-3" style="text-align:center;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:700;color:#1A9E5E;background:#E3F6EC;border:1px solid #B6E6CA">✅ 이미 이 버스에 탑승했어요</div>`
         : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-4 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#E8608D,#D6437A);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>` }
 
+      ${godDelBar}
+
       ${ (b.notice || owner) ? `
       <div class="rounded-xl p-4 mt-6 mb-3" style="background:#FFF7E6;border:1px solid #FCE3A8">
         <div class="flex items-start gap-2">
@@ -3735,14 +3745,31 @@ function methodShort(m){
   return m === "home" ? "자택" : m === "etc" ? "기타" : "반택";
 }
 
+// 관리자 강제 삭제 — 본인이 개설하지 않은 방(참여/타인 방)에서도 삭제 가능.
+// 개설자가 아니어서 방장 패널이 안 뜨는 경우를 위한 별도 모더레이션 버튼용.
+async function godDeleteBus(busId){
+  if(!isAdminUser()){ showToast("관리자 전용 기능이에요"); return; }
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b){ return; }
+  if(!window.sb){ alert("연결 오류로 삭제하지 못했어요."); return; }
+  if(!confirm("[관리자 강제 삭제] 이 공구방을 삭제할까요?\n\n• 탑승자 보증금(300P)은 전원 자동 환불됩니다.\n• 되돌릴 수 없습니다.")) return;
+  try{
+    const { data, error } = await window.sb.rpc("god_force_delete_bus", { p_bus_id: b.dbId });
+    if(error) throw error;
+    alert("강제 삭제 완료 — 탑승자 " + ((data&&data.refunded_riders)||0) + "명에게 보증금 환불되었어요.");
+  }catch(err){ showToast(_busDbError(err, "강제 삭제에 실패했어요.")); return; }
+  closeBusRoom();
+  await loadBuses();
+}
+
 // 공구방 취소/삭제 (방장 전용) — 입금자 있으면 차단
 async function cancelBus(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
-  // God Override(관리자 + 토글 ON): 주문/입금 제약 무시하고 서버 RPC 로 강제 삭제 + 탑승자 환불
-  if(_godOverride && isAdminUser()){
+  // 관리자: 주문/입금 제약 무시하고 서버 RPC 로 강제 삭제 + 탑승자 환불 (override 토글 불필요)
+  if(isAdminUser()){
     if(!window.sb){ alert("연결 오류로 삭제하지 못했어요."); return; }
-    if(!confirm("[God Override] 모든 제약을 무시하고 이 공구를 강제 삭제할까요?\n탑승자 보증금(300P)은 자동 환불됩니다.")) return;
+    if(!confirm("[관리자 강제 삭제] 모든 제약을 무시하고 이 공구를 강제 삭제할까요?\n탑승자 보증금(300P)은 자동 환불됩니다.")) return;
     try{
       const { data, error } = await window.sb.rpc("god_force_delete_bus", { p_bus_id: b.dbId });
       if(error) throw error;
