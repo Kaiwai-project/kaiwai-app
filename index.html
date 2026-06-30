@@ -2121,19 +2121,30 @@ function previewAffiliateUrl(){
   }
 }
 
+// 종료(터미널) 상태 판정 + 내역에서 내가 숨겼는지 판정
+function _coopTerminal(b){ return b.status === "completed" || b.status === "canceled" || b.status === "expired"; }
+function _coopHiddenForMe(b){
+  if(isBusOwner(b)) return !!b.hostHiddenAt;
+  const mine = (b.riders || []).find(r=>r.me);
+  return !!(mine && mine.hiddenAt);
+}
+
 function drawBus() {
   const el = document.getElementById("busList");
   if(!el) return;
-  // 출발(마감=ordered)한 버스는 주최자·참여자(또는 관리자)에게만 노출 — 그 외 유저에겐 숨김
-  // + 내가 개설하거나 참여한 공구방은 항상 목록 상단에 고정(안정 정렬 → 그룹 내 기존 순서 유지)
-  const _list = BUSES
+  // ① 진행중(모집/마감) — 비참여자에겐 마감방 숨김 / 종료방은 제외
+  // ② 지난 공구(완료/취소/만료) — 당사자에게만, '내역에서 삭제' 안 한 것만
+  const _active = BUSES
+    .filter(b => !_coopTerminal(b))
     .filter(b => !(b.ordered && !_amBusMember(b) && !isAdminUser()))
     .sort((a,b) => (_amBusMember(a)?0:1) - (_amBusMember(b)?0:1));
-  if(!_list.length){
+  const _past = BUSES
+    .filter(b => _coopTerminal(b) && _amBusMember(b) && !_coopHiddenForMe(b));
+  if(!_active.length && !_past.length){
     el.innerHTML = `<div style="text-align:center;padding:64px 24px"><div class="kw-float" style="font-size:54px;margin-bottom:12px">🚌</div><p style="font-size:14px;font-weight:700;color:#8D7B80;font-family:'Jua','Gowun Dodum',sans-serif">진행 중인 버스가 없어요</p><p style="font-size:12px;color:#C4A8B0;margin-top:6px">곧 새로운 공구가 출발해요!</p></div>`;
     return;
   }
-  el.innerHTML = _list.map((b)=>{
+  const _activeHtml = _active.map((b)=>{
     const pct = Math.min(100, Math.max(0, Math.round((b.current / b.goal) * 100)));
     const riders = b.riders ? b.riders.length : 0;
     const isMyRoom = isBusOwner(b);                     // 접속 유저가 이 방의 총대인가
@@ -2153,6 +2164,7 @@ function drawBus() {
 
       <div class="flex items-center gap-1.5 mt-2.5" style="flex-wrap:wrap">
         <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
+        ${ b.status === "closed" ? _coopBadge("closed") : "" }
         ${(_godOverride && isAdminUser())?`<button onclick="event.stopPropagation();godGrantToUserEl(this)" data-uid="${b.ownerId}" data-name="${escapeHtml(b.captain||'')}" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0;line-height:1" title="방장에게 포인트">🎁</button>`:""}
         ${_trustBadgeHtml(b)}
         ${_mannerHtml(b.ownerId)}
@@ -2170,8 +2182,36 @@ function drawBus() {
       </div>
 
       ${cardBtn}
+      ${ (isMyRoom && b.status === "closed")
+        ? `<button onclick="event.stopPropagation();completeCoop(${b.id})" class="w-full mt-2 rounded-xl py-2.5" style="border:1.5px solid #1F7A45;background:#E3F6EA;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#1F7A45">📦 수령완료 선언</button>` : "" }
+      ${ (amBoarded && !isMyRoom && b.status === "closed")
+        ? `<button onclick="event.stopPropagation();reportCoop(${b.id})" class="w-full mt-2 rounded-xl py-2" style="border:1px solid #E5C9CF;background:#fff;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:11px;font-weight:700;color:#B0656F">🛡️ 미수령·문제 신고</button>` : "" }
     </div>`;
   }).join("");
+
+  // ── 지난 공구(완료/취소/만료) — 당사자 내역 ──
+  const _pastHtml = !_past.length ? "" : `
+    <div style="margin-top:22px">
+      <p style="font-size:12px;font-weight:800;color:#8D7B80;font-family:'Jua','Gowun Dodum',sans-serif;margin-bottom:10px">📁 지난 공구 (${_past.length})</p>
+      ${_past.map((b)=>{
+        const riders = b.riders ? b.riders.length : 0;
+        return `
+        <div onclick="enterBusRoom(${b.id})" class="bg-white rounded-2xl p-3.5 mb-2.5" style="border:1.5px solid #EFE6EA;cursor:pointer;opacity:.92">
+          <div class="flex items-center gap-1.5" style="flex-wrap:wrap">
+            ${_coopBadge(b.status)}
+            <span style="font-size:13px;font-weight:800;color:#6B5B60;font-family:'Jua','Gowun Dodum',sans-serif">${_esc(b.title)}</span>
+            <span style="margin-left:auto;font-size:11px;color:#C4A8B0">👥 ${riders}명</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2.5">
+            ${ (b.status === "canceled" || b.status === "expired")
+              ? `<span style="font-size:11px;color:#1F7A45;font-weight:700">💰 보증금 환불 완료</span>` : "" }
+            <button onclick="event.stopPropagation();hideCoopHistory(${b.id})" style="margin-left:auto;border:none;background:none;cursor:pointer;font-size:11px;font-weight:700;color:#B0A0A6;text-decoration:underline;font-family:'Jua','Gowun Dodum',sans-serif">내역에서 삭제</button>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+
+  el.innerHTML = _activeHtml + _pastHtml;
 }
 
 /* ═══════════════════════════════════
@@ -2215,6 +2255,7 @@ function _mapRider(row, priv){
     modRequest: row.mod_request || null,   // 승인 대기 수정안(비-PII)
     orderEdited: !!row.order_edited,       // 상품/주문 수정 1회 소진 여부(총대 승인 시 set)
     me: !!(_busUid() && row.user_id === _busUid()),
+    hiddenAt: row.hidden_at || null,       // 내역에서 삭제(per-user 숨김)
     realName: p.real_name || "",
     phone: p.phone || "",
     store: p.address || "",
@@ -2249,6 +2290,10 @@ function _mapBus(row, localId, riders){
     ownerId: row.owner_id,
     notice: row.notice || "",
     ordered: row.ordered,
+    status: row.status || (row.ordered ? "closed" : "recruiting"),   // 라이프사이클 상태머신(서버 권위)
+    completedAt: row.completed_at || null,
+    endedAt: row.ended_at || null,
+    hostHiddenAt: row.host_hidden_at || null,   // 총대 '내역에서 삭제'
     hostEdited: !!row.host_edited,   // 총대 공구 옵션 수정 1회 소진 여부
     finalized: !!row.finalized,   // 배송 완료 → 상호 평가 활성화
     productUrl: row.product_url || null,   // 제휴 트래킹 주입된 주문 링크(서버 보증)
@@ -3809,6 +3854,63 @@ async function cancelBus(busId){
   alert("방이 삭제되었습니다.");
   closeBusRoom();
   await loadBuses();   // 공구 홈으로
+}
+
+/* ═══════════════════════════════════
+   공구 라이프사이클 액션 (수령완료 / 신고 / 내역 숨김)
+   서버 권위: complete_coop · report_coop · hide_my_coop_history (mig56)
+═══════════════════════════════════ */
+const COOP_STATUS_BADGE = {
+  recruiting: { t:"모집중", bg:"#FFE0EE", fg:"#D6437A" },
+  closed:     { t:"마감·진행중", bg:"#E5EDFB", fg:"#1E3A5F" },
+  completed:  { t:"수령완료", bg:"#E3F6EA", fg:"#1F7A45" },
+  canceled:   { t:"취소됨", bg:"#F0ECEE", fg:"#8D7B80" },
+  expired:    { t:"기한만료", bg:"#F0ECEE", fg:"#8D7B80" },
+};
+function _coopBadge(status){
+  const s = COOP_STATUS_BADGE[status] || COOP_STATUS_BADGE.recruiting;
+  return `<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 9px;border-radius:100px;background:${s.bg};color:${s.fg}">${s.t}</span>`;
+}
+
+// 총대: 수령완료 선언 (closed → completed)
+async function completeCoop(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || !window.sb) return;
+  if(!confirm("물품 분배(수령)를 모두 마쳤나요?\n수령완료로 선언하면 이 공구는 '과거 내역'으로 이동합니다.")) return;
+  try{
+    const { error } = await window.sb.rpc("complete_coop", { p_bus_id: b.dbId });
+    if(error) throw error;
+    showToast("수령완료로 처리했어요 🎉");
+  }catch(err){ showToast(_busDbError(err, "완료 처리에 실패했어요.")); return; }
+  closeBusRoom();
+  await loadBuses();
+}
+
+// 탑승자/총대: 미수령·사기 신고 (분쟁 잠금 트리거)
+async function reportCoop(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || !window.sb) return;
+  const reason = prompt("신고 사유를 입력하세요 (예: 미수령, 입금 후 연락두절, 사기 의심)\n신고 접수 시 관리자 확인 전까지 이 공구의 자동 만료·삭제가 잠깁니다.");
+  if(reason === null) return;
+  if(!reason.trim()){ showToast("신고 사유를 입력해주세요."); return; }
+  try{
+    const { error } = await window.sb.rpc("report_coop", { p_bus_id: b.dbId, p_reason: reason.trim(), p_detail: null });
+    if(error) throw error;
+    showToast("신고가 접수되었어요. 관리자가 확인합니다 🛡️");
+  }catch(err){ showToast(_busDbError(err, "신고 접수에 실패했어요.")); }
+}
+
+// 당사자: 내역에서 삭제 (per-user 숨김, DB 보존)
+async function hideCoopHistory(busId){
+  const b = BUSES.find(x=>x.id===busId);
+  if(!b || !window.sb) return;
+  if(!confirm("이 공구를 내 내역에서 삭제할까요?\n(거래 증빙은 서버에 일정 기간 보관됩니다.)")) return;
+  try{
+    const { error } = await window.sb.rpc("hide_my_coop_history", { p_bus_id: b.dbId });
+    if(error) throw error;
+    showToast("내역에서 삭제했어요.");
+  }catch(err){ showToast(_busDbError(err, "삭제에 실패했어요.")); return; }
+  await loadBuses();
 }
 
 // HTML 이스케이프 (방장 공지·파티원 메모 등 사용자 입력 표시용)

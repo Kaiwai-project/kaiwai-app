@@ -23,11 +23,19 @@
   const MAX_CANCELS = 3;                        // 누적 무산 N회 이상 → 총대 자격 정지
   const HOST_FAULT_PENALTY = 20;               // 귀책 무산 시 신뢰점수 차감폭
 
+  // 상태값은 DB(buses.status enum) / docs/coop_lifecycle_decision.md 와 통일.
+  //   recruiting → closed → completed  /  recruiting|closed → canceled  /  recruiting → expired
+  //   (내부 참조 키 ORDER_STARTED/CANCELLED/DONE 는 하위호환 위해 보존, 값만 표준화 + 별칭 추가)
   const COOP_STATUS = Object.freeze({
     RECRUITING: "recruiting",     // 모집 중
-    ORDER_STARTED: "order_started", // 주문 시작(정보 잠금)
-    CANCELLED: "cancelled",       // 무산
-    DONE: "done",                 // 완료
+    ORDER_STARTED: "closed",      // 마감/출발(정보 잠금)
+    CANCELLED: "canceled",        // 취소
+    DONE: "completed",            // 수령완료
+    EXPIRED: "expired",           // 기한 만료(미달)
+    // 스펙 표준 별칭
+    CLOSED: "closed",
+    CANCELED: "canceled",
+    COMPLETED: "completed",
   });
   const RIDER_STATUS = Object.freeze({
     JOINED: "joined",
