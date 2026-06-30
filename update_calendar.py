@@ -58,6 +58,7 @@ BRANDS_GROUPS = {
         {"name": "Secret Honey",    "id": 4,  "ig": "secrethoney_official", "tw": "SecretHoney_HB", "color": "#C41055", "emoji": "🐰"},
         {"name": "pium",            "id": 14, "ig": "piumofficial",          "tw": "pium__official",  "color": "#AA7020", "emoji": "🌸"},
         {"name": "Honey Cinnamon",  "id": 3,  "ig": "honey_cinnamon_jp",     "tw": "honeyc0214",      "color": "#C41055", "emoji": "🍯"},
+        {"name": "michellMacaron",  "id": 60, "ig": "michellmacaron_official","tw": "michellMacar0n",  "color": "#C41055", "emoji": "🧁"},
     ],
     2: [
         {"name": "NOEMIE",      "id": 9,  "ig": "noemie_official_",    "tw": "Noemie_shop",       "color": "#C41055", "emoji": "🩷"},
