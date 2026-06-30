@@ -235,7 +235,7 @@
          순수 코어에서는 상태 변경(라이더 추가)만 담당. */
       joinCoop: function (userId, deposit) {
         const dep = (deposit == null) ? DEPOSIT : deposit;
-        const u = _user(userId);
+        _user(userId); // 존재 검증 가드(없는 유저면 throw) — 반환값은 사용 안 함
         if (coop.status !== COOP_STATUS.RECRUITING) throw new Error("모집 중인 공구만 탑승할 수 있습니다.");
         if (coop.isOrderStarted) throw new Error("이미 주문이 시작되어 탑승할 수 없습니다.");
         if (userId === coop.hostId) throw new Error("방장은 자신의 공구에 탑승할 수 없습니다.");

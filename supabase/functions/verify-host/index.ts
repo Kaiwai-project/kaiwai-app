@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
     const ciHash = await sha256Hex(salt + "|" + pass.ci);
 
     // ④ DB 키스톤 RPC — 결합검증/중복/승격을 DB 트랜잭션에서 강제
-    const { data, error } = await admin.rpc("finalize_host_verification", {
+    const { error } = await admin.rpc("finalize_host_verification", {
       p_uid: uid,
       p_real_name: pass.realName,
       p_phone: pass.phone,

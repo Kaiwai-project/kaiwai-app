@@ -120,11 +120,11 @@
   /* mSheet 는 .kw-pop[style*="28px..."](특이도 0,2,0)이 .su 를 덮어 재오픈 시 애니메이션이
      1회만 재생되던 버그 → .su 토글이 항상 이기도록 보강(밑에서 올라오는 모달 일관성) */
   .kw-pop.su{animation:slideUp .32s cubic-bezier(.32,.72,0,1) !important}
-  .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .clamp2{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .masonry{columns:2;column-gap:10px}
   .mitem{break-inside:avoid;margin-bottom:10px}
   a{text-decoration:none}
-  .auth-input{width:100%;padding:13px 16px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none}
+  .auth-input{width:100%;padding:13px 16px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
   .auth-input:focus{border-color:#E8608D;box-shadow:0 0 0 3px rgba(255,111,168,.12)}
   .auth-input::placeholder{color:#C4A8B0}
   @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
@@ -278,7 +278,7 @@
       <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;color:var(--kw-sub)">🔍</span>
       <input id="searchBox" type="search" placeholder="브랜드명, 스타일, 키워드로 검색…"
         oninput="setSearch(this.value)"
-        style="width:100%;background:#fff;border:1.5px solid var(--kw-pink-pale);border-radius:100px;padding:10px 40px 10px 36px;color:var(--kw-ink);font-size:13px;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;box-shadow:0 2px 12px rgba(255,150,180,.1)"
+        style="width:100%;background:#fff;border:1.5px solid var(--kw-pink-pale);border-radius:100px;padding:10px 40px 10px 36px;color:var(--kw-ink);font-size:13px;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;box-shadow:0 2px 12px rgba(255,150,180,.1)"
         onfocus="this.style.borderColor='var(--kw-pink)';this.style.boxShadow='0 0 0 3px rgba(232,96,141,.15)'"
         onblur="this.style.borderColor='var(--kw-pink-pale)';this.style.boxShadow='0 2px 12px rgba(255,150,180,.1)'"/>
       <button id="searchClear" onclick="clearSearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--kw-sub);cursor:pointer;font-size:14px;padding:0;width:26px;height:26px;line-height:1">✕</button>
