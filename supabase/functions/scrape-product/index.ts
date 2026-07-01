@@ -77,6 +77,58 @@ function parse(html: string) {
   return { title, imageUrl, price };
 }
 
+// ── SSRF 방어: 사설/루프백/링크로컬 대역 및 내부 호스트 차단 ──
+function ipv4ToParts(host: string): number[] | null {
+  const m = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return null;
+  const p = m.slice(1).map(Number);
+  return p.some((n) => n > 255) ? null : p;
+}
+function isPrivateIpv4(p: number[]): boolean {
+  const [a, b] = p;
+  return (
+    a === 10 || a === 127 || a === 0 ||
+    (a === 172 && b >= 16 && b <= 31) ||
+    (a === 192 && b === 168) ||
+    (a === 169 && b === 254) ||           // 링크로컬(클라우드 메타데이터 169.254.169.254 포함)
+    (a === 100 && b >= 64 && b <= 127)    // CGNAT
+  );
+}
+function isBlockedHost(host: string): boolean {
+  const h = host.toLowerCase().replace(/\.$/, "");
+  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal")) return true;
+  const inner = h.replace(/^\[|\]$/g, "");
+  if (inner === "::1" || inner.startsWith("fc") || inner.startsWith("fd") || inner.startsWith("fe80") || inner.startsWith("::ffff:")) return true;
+  const p = ipv4ToParts(inner);
+  return !!(p && isPrivateIpv4(p));
+}
+async function assertPublicUrl(raw: string): Promise<void> {
+  let u: URL;
+  try { u = new URL(raw); } catch { throw new Error("blocked-host"); }
+  if (u.protocol !== "http:" && u.protocol !== "https:") throw new Error("bad-scheme");
+  if (isBlockedHost(u.hostname)) throw new Error("blocked-host");
+  // DNS 기반 SSRF: 공개 호스트명이 사설 IP 로 해석되면 차단 (best-effort — 권한 없으면 통과)
+  try {
+    const ips = await Deno.resolveDns(u.hostname.replace(/^\[|\]$/g, ""), "A").catch(() => [] as string[]);
+    for (const ip of ips) { const p = ipv4ToParts(ip); if (p && isPrivateIpv4(p)) throw new Error("blocked-resolved"); }
+  } catch (e) {
+    if (String(e).includes("blocked-resolved")) throw e;
+    // resolveDns 미지원/권한없음 → 리터럴 IP 차단만으로 진행
+  }
+}
+// 각 홉을 재검증하며 리다이렉트를 수동 추적(자동 follow 로 내부망 피벗 방지)
+async function safeFetch(startUrl: string, headers: HeadersInit, signal: AbortSignal): Promise<Response> {
+  let current = startUrl;
+  for (let i = 0; i < 4; i++) {
+    await assertPublicUrl(current);
+    const res = await fetch(current, { redirect: "manual", signal, headers });
+    const loc = res.headers.get("location");
+    if (res.status >= 300 && res.status < 400 && loc) { current = new URL(loc, current).href; continue; }
+    return res;
+  }
+  throw new Error("too-many-redirects");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return json({ ok: false, reason: "method" }, 405);
@@ -89,17 +141,19 @@ Deno.serve(async (req) => {
     const timer = setTimeout(() => ctrl.abort(), 12000);
     let html = "";
     try {
-      const res = await fetch(target, {
-        redirect: "follow",
-        signal: ctrl.signal,
-        headers: {
-          "User-Agent": UA,
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "ko,ja;q=0.9,en;q=0.8",
-        },
-      });
+      const res = await safeFetch(target, {
+        "User-Agent": UA,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko,ja;q=0.9,en;q=0.8",
+      }, ctrl.signal);
       if (!res.ok) return json({ ok: false, reason: "http-" + res.status }, 200);
       html = await res.text();
+    } catch (e) {
+      const msg = String(e);
+      if (msg.includes("blocked-host") || msg.includes("blocked-resolved") || msg.includes("bad-scheme")) {
+        return json({ ok: false, reason: "blocked-url" }, 200);   // SSRF 차단
+      }
+      throw e;
     } finally { clearTimeout(timer); }
 
     const { title, imageUrl, price } = parse(html);

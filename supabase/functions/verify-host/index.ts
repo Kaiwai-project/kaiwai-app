@@ -136,8 +136,17 @@ Deno.serve(async (req) => {
     const pSecret = Deno.env.get("PORTONE_API_SECRET");
     const tSecret = Deno.env.get("TOSS_SECRET_KEY");
     const verifMode = Deno.env.get("VERIFICATION_MODE") ?? "live";
+    const allowMock = verifMode === "mock";        // Mock 은 명시적 opt-in 일 때만 허용
+    const keysPresent = !!(pKey && pSecret && tSecret);
 
-    const isMock = !pKey || !pSecret || !tSecret || verifMode === "mock";
+    // ★[H3] fail-closed: live 모드인데 제공자 키가 누락되면 자동 Mock 폴백을 금지한다.
+    //   (기존엔 키 하나만 빠져도 조용히 Mock → 클라 입력값으로 verified_host 승격되는 구멍.
+    //    Mock 을 계속 쓰려면 반드시 VERIFICATION_MODE=mock 을 명시적으로 설정해야 한다.)
+    if (!allowMock && !keysPresent) {
+      return json({ error: "본인인증 서비스가 준비 중입니다. 잠시 후 다시 시도해 주세요." }, 503);
+    }
+
+    const isMock = allowMock;
 
     let pass: { realName: string; phone: string; ci: string };
     let bank: { accountHolder: string };
