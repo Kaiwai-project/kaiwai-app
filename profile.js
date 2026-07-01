@@ -12,6 +12,9 @@
 
   const sb = window.sb; // auth.js 가 생성·전역 노출한 클라이언트
 
+  // HTML 이스케이프 (DB에서 온 값을 innerHTML/속성에 넣을 때 XSS 방지)
+  const _esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   /* 최고 관리자 화이트리스트 — 계정 UUID 기준
      (소셜 로그인은 이메일이 제공자마다 다르거나 비어있을 수 있어 id 로 식별).
      새 관리자 추가 시 해당 Supabase 계정 id 를 배열에 넣으면 됨. */
@@ -219,7 +222,7 @@
     cell.setAttribute("tabindex", "0");
     cell.setAttribute("aria-label", "피드에서 이 게시물 보기");
     cell.innerHTML = img
-      ? `<img src="${img}" alt="OOTD" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`
+      ? `<img src="${_esc(img)}" alt="OOTD" loading="lazy" decoding="async" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>`
       : `<span class="cell__ico">🎀</span>`;
     // 클릭 → 피드 탭의 해당 게시물 상세로 이동 (index.html 에서 ?post= 처리)
     const goToPost = () => { location.href = "index.html?post=" + encodeURIComponent(p.id); };

@@ -281,7 +281,7 @@
         style="width:100%;background:#fff;border:1.5px solid var(--kw-pink-pale);border-radius:100px;padding:10px 40px 10px 36px;color:var(--kw-ink);font-size:13px;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none;box-shadow:0 2px 12px rgba(255,150,180,.1)"
         onfocus="this.style.borderColor='var(--kw-pink)';this.style.boxShadow='0 0 0 3px rgba(232,96,141,.15)'"
         onblur="this.style.borderColor='var(--kw-pink-pale)';this.style.boxShadow='0 2px 12px rgba(255,150,180,.1)'"/>
-      <button id="searchClear" onclick="clearSearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--kw-sub);cursor:pointer;font-size:14px;padding:0;width:26px;height:26px;line-height:1">✕</button>
+      <button id="searchClear" onclick="clearSearch()" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--kw-sub);cursor:pointer;font-size:14px;padding:0;width:26px;height:26px;line-height:1" aria-label="검색어 지우기">✕</button>
     </div>
   </div>
 
@@ -435,7 +435,7 @@
   <div onclick="event.stopPropagation()" style="width:100%;max-width:340px;background:#14101F;border:1.5px solid #2F5A2C;border-radius:20px;padding:20px;box-shadow:0 0 30px rgba(123,232,168,.35)">
     <div class="flex items-center justify-between" style="margin-bottom:12px">
       <span style="font-size:15px;font-weight:800;color:#7BE8A8;font-family:'Jua','Gowun Dodum',sans-serif">🐞 God Mode 디버그</span>
-      <button onclick="closeGodPanel()" style="width:28px;height:28px;border-radius:50%;border:none;background:#2A2440;color:#9A8FB5;cursor:pointer;font-size:12px">✕</button>
+      <button onclick="closeGodPanel()" style="width:28px;height:28px;border-radius:50%;border:none;background:#2A2440;color:#9A8FB5;cursor:pointer;font-size:12px" aria-label="닫기">✕</button>
     </div>
     <pre id="godState" style="font-size:11px;color:#B6E6CA;background:#0C0916;border:1px solid #241C38;border-radius:10px;padding:10px;max-height:170px;overflow:auto;white-space:pre-wrap;margin:0 0 12px;font-family:ui-monospace,monospace"></pre>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -475,7 +475,7 @@
 <div id="uploadOverlay" onclick="closeUpload()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:50;align-items:flex-end;justify-content:center">
   <div id="uploadSheet" onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeUpload()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeUpload()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:24px 24px 40px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 20px">OOTD 업로드 📸</h2>
 
@@ -484,7 +484,7 @@
       <div id="uploadDrop" onclick="document.getElementById('uploadFile').click()"
            style="position:relative;width:100%;aspect-ratio:1/1;border:2px dashed #FFB3CC;border-radius:20px;background:#FFF5F8;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:background .2s"
            onmouseover="this.style.background='#FFE0EE'" onmouseout="this.style.background='#FFF5F8'">
-        <img id="uploadPreview" alt="미리보기" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>
+        <img id="uploadPreview" alt="미리보기" loading="lazy" decoding="async" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover"/>
         <div id="uploadPlaceholder" style="text-align:center;pointer-events:none">
           <div style="font-size:40px;margin-bottom:8px">🎀</div>
           <p style="font-size:13px;font-weight:700;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif">사진을 첨부해 주세요</p>
@@ -512,7 +512,7 @@
 <!-- ══ 게시물 상세 모달 ══ -->
 <div id="postDetailOverlay" onclick="closePostDetail()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:50;align-items:flex-end;justify-content:center">
   <div id="postDetailSheet" onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow:hidden;max-height:92vh;display:flex;flex-direction:column">
-    <button onclick="closePostDetail()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closePostDetail()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div id="postDetailBody" style="overflow-y:auto"></div>
   </div>
 </div>
@@ -521,7 +521,7 @@
 <div id="boardOverlay" onclick="closeBoard()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:55;align-items:flex-end;justify-content:center">
   <div id="boardSheet" onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;max-height:92vh;display:flex;flex-direction:column;overflow:hidden">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 4px"></div>
-    <button onclick="closeBoard()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeBoard()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <form id="boardForm" onsubmit="submitBoard(event)" style="display:flex;flex-direction:column;min-height:0;flex:1">
       <!-- 스크롤 본문 -->
       <div style="overflow-y:auto;flex:1;padding:8px 24px 18px">
@@ -559,7 +559,7 @@
 
         <!-- 상품 미리보기 썸네일 -->
         <div id="boardImgWrap" style="display:none;margin-bottom:12px;text-align:center">
-          <img id="boardImgPreview" alt="렌즈 미리보기" style="max-width:100%;max-height:150px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
+          <img id="boardImgPreview" alt="렌즈 미리보기" loading="lazy" decoding="async" style="max-width:100%;max-height:150px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
         </div>
 
         <!-- 상품 정보 (자동/수동) -->
@@ -713,7 +713,7 @@
 <div id="captainOverlay" class="cap-overlay" onclick="if(event.target===this)closeCaptainVerify()">
   <div class="cap-sheet">
     <span class="cap-grab"></span>
-    <button type="button" onclick="closeCaptainVerify()" class="cap-close">✕</button>
+    <button type="button" onclick="closeCaptainVerify()" class="cap-close" aria-label="닫기">✕</button>
     <form id="captainForm" onsubmit="capSubmit(event)" class="cap-body">
       <h2 class="cap-title">🛡️ 총대(공구주) 안심 인증</h2>
       <p class="cap-intro">100% 안전한 공구 문화를 위해 실명 인증을 진행합니다. 2단계 인증 완료 시 즉시 총대 권한이 부여됩니다.</p>
@@ -781,7 +781,7 @@
 <div id="createBusOverlay" onclick="closeCreateBus()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:58;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeCreateBus()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeCreateBus()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <form id="createBusForm" onsubmit="submitCreateBus(event)" style="padding:24px 24px 36px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">🚌 공구방 개설</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 18px">새로운 렌즈 버스를 출발시켜 보세요!</p>
@@ -810,7 +810,7 @@
           style="width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:13px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 8px 18px -8px rgba(168,85,247,.7)">✨ 링크로 자동 불러오기</button>
         <!-- 이미지 미리보기 썸네일 -->
         <div id="cbImgWrap" style="display:none;margin-top:10px;text-align:center">
-          <img id="cbImgPreview" alt="상품 미리보기" style="max-width:100%;max-height:160px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
+          <img id="cbImgPreview" alt="상품 미리보기" loading="lazy" decoding="async" style="max-width:100%;max-height:160px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
         </div>
         <input id="cbImage" type="hidden"/>
       </div>
@@ -898,7 +898,7 @@
 <!-- ══ 안심 공구 3대 철칙 안내 모달 ══ -->
 <div id="ruleOverlay" onclick="closeRuleModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:59;align-items:center;justify-content:center;padding:22px">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;background:#FFF7FB;border-radius:24px;padding:24px 22px;box-shadow:0 24px 60px -16px rgba(0,0,0,.4)">
-    <button onclick="closeRuleModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#F0ECEE;border:none;color:#8D7B80;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeRuleModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#F0ECEE;border:none;color:#8D7B80;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:2px 0 18px;line-height:1.4">🛡️ KAIWAI 안심 공구 3대 철칙</h2>
 
     <div class="rounded-xl p-4 mb-3" style="background:#FFF0F5;border:1.5px solid #FFE0EE">
@@ -928,7 +928,7 @@
 <div id="notifOverlay" onclick="closeNotifs()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:59;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:80vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeNotifs()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeNotifs()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:22px 22px 36px">
       <div class="flex items-center justify-between" style="margin:6px 0 16px">
         <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A">🔔 알림함</h2>
@@ -946,7 +946,7 @@
 <div id="orderProcessOverlay" onclick="closeOrderProcess()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:90vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeOrderProcess()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeOrderProcess()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:22px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:20px;color:#3A2B30;margin:4px 0 14px">🛒 렌즈라라 주문 진행</h2>
       <div id="orderProcBody"></div>
@@ -962,7 +962,7 @@
 <div id="orderSheetOverlay" onclick="closeOrderSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:62;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;display:flex;flex-direction:column;width:100%;max-width:430px;max-height:88vh;background:#FFF7FB;border-radius:28px 28px 0 0;overflow:hidden">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0;flex-shrink:0"></div>
-    <button onclick="closeOrderSheet()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeOrderSheet()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:18px 22px 6px;flex-shrink:0">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:21px;color:#3A2B30;margin:2px 0 4px">📋 전체 주문내역</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0;line-height:1.5">주문 내역을 합산했어요. 편하게 보고 복사하세요</p>
@@ -978,7 +978,7 @@
 <div id="guideOverlay" onclick="closeGuideModal()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:62;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeGuideModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeGuideModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:22px 22px 32px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:21px;color:#3A2B30;margin:2px 0 4px">📖 카이와이 안심 공구 가이드</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 18px;line-height:1.5">공구를 이용하기 전에 꼭 읽어주세요. 포인트 정책과 총대·탑승자 역할을 안내해요.</p>
@@ -1052,7 +1052,7 @@
 <div id="reviewOverlay" onclick="closeReview()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:63;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeReview()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeReview()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">⭐ 매너 평가</h2>
       <p id="reviewWho" style="font-size:12.5px;color:#8D7B80;margin:0 0 16px;line-height:1.5">평가는 익명으로 집계되며, 누가 평가했는지는 상대방에게 공개되지 않아요.</p>
@@ -1073,7 +1073,7 @@
 <div id="modReqOverlay" onclick="closeModRequests()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:61;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeModRequests()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeModRequests()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">🚨 정보 수정 요청</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">파티원이 요청한 변경 내역이에요. 확인 후 <b style="color:#1A9E5E">승인</b>하면 장부에 반영됩니다.</p>
@@ -1085,7 +1085,7 @@
 <div id="editMyInfoOverlay" onclick="closeEditMyInfo()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeEditMyInfo()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeEditMyInfo()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 정보 수정</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 12px">주문 시작 전까지만 수정할 수 있어요. <b style="color:#D6437A">상품명·가격·수량·도수·수령방법</b> 변경은 <b style="color:#D6437A">총대 승인 후</b> 반영되며, <b style="color:#D6437A">1회만</b> 가능합니다.</p>
@@ -1160,7 +1160,7 @@
 <div id="editHostOptionsOverlay" onclick="closeEditHostOptions()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeEditHostOptions()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeEditHostOptions()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 공구 옵션 수정</h2>
       <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 상품 종류, 가격, 수량, 도수를 수정할 수 있어요.</p>
@@ -1230,7 +1230,7 @@
 <div id="menuOverlay" onclick="closeMenu()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:55;align-items:flex-end;justify-content:center">
   <div id="menuSheet" onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:88vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeMenu()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeMenu()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:22px 24px 40px">
       <h2 id="menuTitle" style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:21px;color:#4A4A4A;margin:6px 0 18px"></h2>
       <div id="menuBody" style="font-family:'Gowun Dodum',sans-serif;font-size:13px;color:#6B5B5F;line-height:1.75"></div>
@@ -1242,7 +1242,7 @@
 <div id="pointHistoryOverlay" onclick="closePointHistory()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:56;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;display:flex;flex-direction:column;max-height:80vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closePointHistory()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closePointHistory()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:18px 24px 10px;flex-shrink:0">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
         <div style="min-width:0">
@@ -1264,7 +1264,7 @@
 <div id="rewardShopOverlay" onclick="closeRewardShop()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.45);z-index:58;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;display:flex;flex-direction:column;max-height:90vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0;flex-shrink:0"></div>
-    <button onclick="closeRewardShop()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeRewardShop()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:16px 24px 6px;flex-shrink:0">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:20px;color:#4A4A4A;margin:6px 0 2px">🛍️ 리워드 상점</h2>
       <p style="font-size:12.5px;color:#8D7B80;margin:0">모은 포인트로 제휴 혜택을 교환하세요 🎀</p>
@@ -1286,7 +1286,7 @@
 <div id="authOverlay" onclick="closeAuth()" style="display:none;position:fixed;inset:0;background:rgba(74,74,74,.4);z-index:50;align-items:flex-end;justify-content:center">
   <div id="authSheet" onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:linear-gradient(rgba(255,242,247,.90),rgba(255,247,250,.95)),url('wallpaper.jpg') center center / cover;border-radius:28px 28px 0 0;overflow-y:auto;max-height:92vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-    <button onclick="closeAuth()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+    <button onclick="closeAuth()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
 
     <!-- 로그인 뷰 -->
     <div id="viewLogin" style="padding:20px 24px 44px">
@@ -2160,11 +2160,11 @@ function drawBus() {
       : `<button onclick="event.stopPropagation();boardBus(${b.id})" class="w-full mt-3.5 rounded-xl py-3" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#E8608D,#D6437A);box-shadow:0 8px 18px -8px rgba(196,16,85,.7)">🚀 지금 탑승하기 (300P)</button>`;
     return `
     <div onclick="enterBusRoom(${b.id})" class="bg-white rounded-2xl shadow-md p-4" style="border:1.5px solid #FFE0EE;cursor:pointer;position:relative">
-      ${ isAdminUser() ? `<button onclick="event.stopPropagation();godDeleteBus(${b.id})" title="관리자 강제 삭제 (탑승자 보증금 자동 환불)" style="position:absolute;top:8px;right:8px;z-index:5;width:28px;height:28px;border-radius:50%;border:1.5px solid #E5484D;background:rgba(58,26,34,.92);color:#fff;cursor:pointer;font-size:13px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)">✕</button>` : "" }
-      <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'Jua','Gowun Dodum',sans-serif;${isAdminUser()?'padding-right:30px;':''}">${b.title}</h3>
+      ${ isAdminUser() ? `<button onclick="event.stopPropagation();godDeleteBus(${b.id})" title="관리자 강제 삭제 (탑승자 보증금 자동 환불)" style="position:absolute;top:8px;right:8px;z-index:5;width:28px;height:28px;border-radius:50%;border:1.5px solid #E5484D;background:rgba(58,26,34,.92);color:#fff;cursor:pointer;font-size:13px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)" aria-label="관리자 강제 삭제">✕</button>` : "" }
+      <h3 style="font-size:15px;font-weight:800;line-height:1.45;color:#3A2B30;font-family:'Jua','Gowun Dodum',sans-serif;${isAdminUser()?'padding-right:30px;':''}">${_esc(b.title)}</h3>
 
       <div class="flex items-center gap-1.5 mt-2.5" style="flex-wrap:wrap">
-        <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
+        <span style="font-size:12px;font-weight:700;color:#6B5B60">${_esc(b.captain)}</span>
         ${ b.status === "closed" ? _coopBadge("closed") : "" }
         ${(_godOverride && isAdminUser())?`<button onclick="event.stopPropagation();godGrantToUserEl(this)" data-uid="${b.ownerId}" data-name="${escapeHtml(b.captain||'')}" style="border:none;background:none;cursor:pointer;font-size:12px;padding:0;line-height:1" title="방장에게 포인트">🎁</button>`:""}
         ${_trustBadgeHtml(b)}
@@ -3005,7 +3005,7 @@ function renderLensPicker(){
   if(!el) return;
   el.innerHTML = (curatedLenses || []).map((l,i)=>{
     const cat = l.category ? `<span style="margin-left:5px;font-size:9px;font-weight:800;color:#A855F7">${escapeHtml(l.category)}</span>` : "";
-    const thumb = l.image ? `<img src="${escapeHtml(l.image)}" alt="" loading="lazy" style="width:100%;height:84px;object-fit:cover;border-radius:8px;margin-bottom:6px;background:#FBE9F1" onerror="this.style.display='none'"/>` : "";
+    const thumb = l.image ? `<img src="${escapeHtml(l.image)}" alt="" loading="lazy" decoding="async" style="width:100%;height:84px;object-fit:cover;border-radius:8px;margin-bottom:6px;background:#FBE9F1" onerror="this.style.display='none'"/>` : "";
     return `<button type="button" onclick="pickCuratedLens(${i})" style="flex-shrink:0;width:140px;text-align:left;border:1.5px solid #F2B8DC;background:#fff;border-radius:12px;padding:8px;cursor:pointer;font-family:'Gowun Dodum',sans-serif">
       ${thumb}
       <span style="display:block;font-size:11px;font-weight:700;color:#4A4A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.name)}</span>
@@ -3573,7 +3573,7 @@ function renderBusRoom(b){
   const riderLines = riders.length ? riders.map((r,i)=>`
     <div class="rounded-xl p-3" style="${rowStyle(r.me, r.issue)}">
       <div class="flex items-center justify-between">
-        <span style="font-size:13px;font-weight:800;color:#3A2B30;display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0">${r.trackingNumber?"🚚 ":""}${r.nick}${r.me?` <span style="font-size:10px;color:#D6437A">(나)</span>`:""}${_mannerHtml(r.user_id)}</span>
+        <span style="font-size:13px;font-weight:800;color:#3A2B30;display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0">${r.trackingNumber?"🚚 ":""}${_esc(r.nick)}${r.me?` <span style="font-size:10px;color:#D6437A">(나)</span>`:""}${_mannerHtml(r.user_id)}</span>
         <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif;flex-shrink:0">${r.amount.toLocaleString()}원</span>
       </div>
       <p style="font-size:11px;color:#8D7B80;margin-top:3px">${riderProduct(r)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
@@ -3611,7 +3611,7 @@ function renderBusRoom(b){
   const adminRows = riders.map((r,i)=>`
     <div class="rounded-xl" style="background:#fff;border:1px solid #F3D9E4;padding:12px;margin-bottom:10px">
       <div class="flex items-center justify-between" style="gap:8px;margin-bottom:9px">
-        <span style="font-size:13px;font-weight:800;color:#3A2B30;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nick}</span>
+        <span style="font-size:13px;font-weight:800;color:#3A2B30;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc(r.nick)}</span>
         <span style="font-size:14px;font-weight:800;color:#D6437A;flex-shrink:0;font-family:'Jua','Gowun Dodum',sans-serif">${r.amount.toLocaleString()}원</span>
       </div>
       <div style="display:grid;grid-template-columns:62px 1fr;gap:6px 10px;font-size:11.5px;margin-bottom:11px;align-items:start">
@@ -3678,7 +3678,7 @@ function renderBusRoom(b){
       ${ riders.some(r=>r.memo) ? `
       <div class="rounded-xl p-3 mt-3" style="background:#3E3447">
         <p style="font-size:11px;font-weight:800;color:#FFD166;margin-bottom:6px">📝 파티원 메모</p>
-        ${ riders.filter(r=>r.memo).map(r=>`<p style="font-size:11px;color:#D8CFD4;line-height:1.55;margin-bottom:3px"><b style="color:#fff">${r.nick}</b> · ${_esc(r.memo)}</p>`).join("") }
+        ${ riders.filter(r=>r.memo).map(r=>`<p style="font-size:11px;color:#D8CFD4;line-height:1.55;margin-bottom:3px"><b style="color:#fff">${_esc(r.nick)}</b> · ${_esc(r.memo)}</p>`).join("") }
       </div>` : "" }
       <div style="margin-top:12px">
         ${ b.ordered
@@ -3706,9 +3706,9 @@ function renderBusRoom(b){
 
   document.getElementById("busRoomBody").innerHTML = `
     <div style="padding:20px 20px 48px;max-width:460px;margin:0 auto">
-      <h2 style="font-size:18px;font-weight:800;line-height:1.4;color:#3A2B30;font-family:'Jua','Gowun Dodum',sans-serif">${b.title}</h2>
+      <h2 style="font-size:18px;font-weight:800;line-height:1.4;color:#3A2B30;font-family:'Jua','Gowun Dodum',sans-serif">${_esc(b.title)}</h2>
       <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">
-        <span style="font-size:12px;font-weight:700;color:#6B5B60">${b.captain}</span>
+        <span style="font-size:12px;font-weight:700;color:#6B5B60">${_esc(b.captain)}</span>
         ${_trustBadgeHtml(b)}
         ${_mannerHtml(b.ownerId)}
         ${ b.ordered ? `<span style="display:inline-flex;align-items:center;font-size:10px;font-weight:800;padding:3px 8px;border-radius:100px;background:#1E3A5F;color:#fff">🔒 주문 진행 중 (수정 불가)</span>` : "" }
@@ -4170,7 +4170,7 @@ function openOrderProcess(busId){
     total += r.amount || 0;
     return `<div class="flex items-center justify-between" style="padding:9px 2px;border-bottom:1px solid #F0ECEE">
       <div style="min-width:0">
-        <p style="font-size:13px;font-weight:800;color:#3A2B30">${i+1}. ${r.nick}</p>
+        <p style="font-size:13px;font-weight:800;color:#3A2B30">${i+1}. ${_esc(r.nick)}</p>
         <p style="font-size:11px;color:#8D7B80;margin-top:2px">${riderProduct(r)} · ${r.power||"도수 미입력"} · ${methodShort(r.method)}</p>
       </div>
       <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif;flex-shrink:0">${(r.amount||0).toLocaleString()}원</span>
@@ -5659,7 +5659,7 @@ function drawFeed(){
         </div>
         <div style="padding:9px 11px">
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <img src="${escapeHtml(avatar)}" alt="" loading="lazy" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#FFF0F5"/>
+            <img src="${escapeHtml(avatar)}" alt="" loading="lazy" decoding="async" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#FFF0F5"/>
             <span style="font-size:11px;font-weight:700;color:#D6437A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(name)}</span>${godPoint}
           </div>
           ${cap?`<p class="clamp2" style="font-size:11px;color:#8D7B80;margin:0 0 5px;line-height:1.5">${cap}</p>`:""}
@@ -6053,7 +6053,7 @@ function openM(id){
   const hC = th.dark ? "#E5E7EB" : "#374151";   // 섹션 라벨 색 (진하고 뚜렷하게)
   document.getElementById("mBody").innerHTML=`
 <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
-<button onclick="closeModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center">✕</button>
+<button onclick="closeModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
 ${mHeader(b,fv,th.dark)}
 <div style="height:1px;background:#FFE8F0;margin:0 20px"></div>
 <div style="padding:15px 20px">
@@ -6210,7 +6210,7 @@ function renderQuizQuestion(){
     <div style="padding:22px 20px 8px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <span class="logo-font" style="font-size:18px;color:#D6437A">취향 진단 🎀</span>
-        <button onclick="closeQuiz()" style="width:32px;height:32px;border-radius:50%;background:#fff;border:1.5px solid #FFD6E8;color:#8D7B80;cursor:pointer;font-size:14px;line-height:1">✕</button>
+        <button onclick="closeQuiz()" style="width:32px;height:32px;border-radius:50%;background:#fff;border:1.5px solid #FFD6E8;color:#8D7B80;cursor:pointer;font-size:14px;line-height:1" aria-label="닫기">✕</button>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <div style="flex:1;height:9px;background:#FFE0EE;border-radius:100px;overflow:hidden">
@@ -6289,7 +6289,7 @@ function renderQuizResult(){
     <div style="position:relative;min-height:100%;flex:1;display:flex;flex-direction:column;background:${r.bg}">
       <div style="position:relative;z-index:1;flex:1;padding:24px 20px 40px;display:flex;flex-direction:column;align-items:center">
         <div style="width:100%;display:flex;justify-content:flex-end">
-          <button onclick="closeQuiz()" style="width:34px;height:34px;border-radius:50%;background:${closeBtnBg};border:none;color:${fg};cursor:pointer;font-size:14px;line-height:1">✕</button>
+          <button onclick="closeQuiz()" style="width:34px;height:34px;border-radius:50%;background:${closeBtnBg};border:none;color:${fg};cursor:pointer;font-size:14px;line-height:1" aria-label="닫기">✕</button>
         </div>
         <p style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:${sub};margin:6px 0 22px">나의 서브컬쳐 패션 유형은</p>
         <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:22px;color:${fg};text-align:center;line-height:1.4;margin:0 0 16px;word-break:keep-all">${r.name}</h2>
