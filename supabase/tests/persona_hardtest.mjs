@@ -27,12 +27,15 @@ async function currentOf(busId){
   const rs=await srvGet(`bus_riders?bus_id=eq.${busId}&select=yen,qty`);
   return (b.product_price||0)*(b.host_qty||1)+rs.reduce((s,r)=>s+(r.yen||0)*(r.qty||1),0);
 }
-const jb=(id,yen)=>({p_bus_id:id,p_nick:'R',p_product_name:'렌즈',p_qty:1,p_yen:yen,p_power:'좌 0.00 / 우 -1.00',p_method:'conv',p_amount:yen*9+1800,p_real_name:'홍길동',p_phone:'01012345678',p_address:'서울 1-2',p_payer:'홍길동',p_memo:null});
+// p_power 는 렌즈 도수 제거 후 서버가 무시하는 잔여 파라미터(RPC 시그니처 호환). 빈 값 전송.
+const jb=(id,yen)=>({p_bus_id:id,p_nick:'R',p_product_name:'상품',p_qty:1,p_yen:yen,p_power:'',p_method:'conv',p_amount:yen*9+1800,p_real_name:'홍길동',p_phone:'01012345678',p_address:'서울 1-2',p_payer:'홍길동',p_memo:null});
 const ts=Date.now(), E=t=>`hard_${t}_${ts}@kaiwai-test.dev`;
+// Persona S 용 범용 테스트 제휴사(렌즈라라 시드 제거됨 → 테스트가 자체 시드/정리)
+const AFF=`kwtestaff-${ts}.example.com`;
 let ids={}; const busIds=[];
-const mkBus=async(jwt,owner,price,goal,minGoal)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'hard',goal,minimum_goal:minGoal||goal,product_name:'렌즈',product_price:price},'return=representation');if(!b.ok)throw new Error('bus '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
+const mkBus=async(jwt,owner,price,goal,minGoal)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'hard',goal,minimum_goal:minGoal||goal,product_name:'상품',product_price:price},'return=representation');if(!b.ok)throw new Error('bus '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
 const _hostOf=u=>u.replace(/^[a-z]+:\/\//i,'').replace(/^www\./i,'').split(/[\/?#]/)[0].toLowerCase();
-const mkBusUrl=async(jwt,owner,url)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'aff',goal:30000,minimum_goal:10000,product_name:'렌즈',product_price:11000,product_url:url,target_domain:_hostOf(url)},'return=representation');if(!b.ok)throw new Error('busUrl '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
+const mkBusUrl=async(jwt,owner,url)=>{const b=await uRest(jwt,'POST','buses',{owner_id:owner,captain:'H',title:'aff',goal:30000,minimum_goal:10000,product_name:'상품',product_price:11000,product_url:url,target_domain:_hostOf(url)},'return=representation');if(!b.ok)throw new Error('busUrl '+JSON.stringify(b.data));busIds.push(b.data[0].id);return b.data[0].id;};
 try{
   for(const k of ['H','A','B1','B2a','B2b','B2c','C']) ids[k]=await aC(E(k));
   const J={}; for(const k of Object.keys(ids)) J[k]=await li(E(k));
@@ -76,7 +79,7 @@ try{
 
   console.log('[페르소나 D] 서버 권한형 expired_at 강제 (클라 시계 위조 방어)');
   // 클라가 과거(2020) expired_at 주입 → BEFORE INSERT 트리거가 now()+deadline_hours(12h) 로 덮어씀
-  const dRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'dl',goal:30000,minimum_goal:10000,product_name:'렌즈',product_price:11000,deadline_hours:12,expired_at:'2020-01-01T00:00:00Z'},'return=representation');
+  const dRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'dl',goal:30000,minimum_goal:10000,product_name:'상품',product_price:11000,deadline_hours:12,expired_at:'2020-01-01T00:00:00Z'},'return=representation');
   if(dRes.ok) busIds.push(dRes.data[0].id);
   const dHrs=dRes.ok?(new Date(dRes.data[0].expired_at)-Date.now())/3600000:-999;
   log(dRes.ok && dHrs>11 && dHrs<13, `D 위조 expired_at(2020) 무시 → 서버 강제 ${dHrs.toFixed(2)}h 후 (기대 ≈12h)`);
@@ -89,7 +92,7 @@ try{
       `E 무배미달(${await currentOf(bE)}/10000) 출발 차단 → "${(upE.data.message||'').slice(0,40)}"`);
 
   console.log('[페르소나 F] minimum_goal 10,000엔 CHECK 제약 (개설 거부)');
-  const fRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'f',goal:30000,minimum_goal:5000,product_name:'렌즈',product_price:11000},'return=representation');
+  const fRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'f',goal:30000,minimum_goal:5000,product_name:'상품',product_price:11000},'return=representation');
   if(fRes.ok && Array.isArray(fRes.data)) busIds.push(fRes.data[0].id);   // 혹시 통과 시 정리용
   log(!fRes.ok && (fRes.status===400 || String(fRes.data.code||'')==='23514'),
       `F 최소금액 5000(<1만) 개설 거부 → status ${fRes.status} ${fRes.data.code||''}`);
@@ -148,15 +151,17 @@ try{
   const seeOwn = await uRest(J.A,'GET',`coop_reviews?select=id`);
   log(Array.isArray(seeOwn.data) && seeOwn.data.length>=1, `R12 작성자 본인 리뷰 조회 가능 (${Array.isArray(seeOwn.data)?seeOwn.data.length:'?'}행)`);
 
-  console.log('[페르소나 S] 제휴 링크 변환 + 트래픽 트래킹 (Step 9)');
-  const seed = await srvGet(`affiliate_partners?domain=eq.lenslala.com&select=param_value`);
-  log(seed[0] && seed[0].param_value==='kaiwai_test', `S0 시드 param_value=kaiwai_test (${seed[0]&&seed[0].param_value})`);
+  console.log('[페르소나 S] 제휴 링크 변환 + 트래픽 트래킹 (Step 9 · 범용 테스트 제휴사 자가시드)');
+  // 렌즈라라 시드는 mig60 에서 제거됨 → 테스트가 자체 범용 제휴사 시드/정리(finally 에서 삭제)
+  await srvPost('affiliate_partners?on_conflict=domain', {domain:AFF, param_key:'partner_id', param_value:'kaiwai_test', is_active:true}, 'resolution=merge-duplicates');
+  const seed = await srvGet(`affiliate_partners?domain=eq.${AFF}&select=param_value`);
+  log(seed[0] && seed[0].param_value==='kaiwai_test', `S0 테스트 제휴사 시드 param_value=kaiwai_test (${seed[0]&&seed[0].param_value})`);
 
-  const bAff1 = await mkBusUrl(J.H, ids.H, 'https://lenslala.com/product/1');
+  const bAff1 = await mkBusUrl(J.H, ids.H, `https://${AFF}/product/1`);
   const u1 = (await srvGet(`buses?id=eq.${bAff1}&select=product_url`))[0].product_url;
-  log(/[?&]partner_id=kaiwai_test/.test(u1), `S1 무파라미터 렌즈라라 → 트래킹 주입: ${u1}`);
+  log(/[?&]partner_id=kaiwai_test/.test(u1), `S1 무파라미터 제휴사 → 트래킹 주입: ${u1}`);
 
-  const bAff2 = await mkBusUrl(J.H, ids.H, 'https://lenslala3.com/x?partner_id=other&c=1');
+  const bAff2 = await mkBusUrl(J.H, ids.H, `https://${AFF}/x?partner_id=other&c=1`);
   const u2 = (await srvGet(`buses?id=eq.${bAff2}&select=product_url`))[0].product_url;
   log(/partner_id=kaiwai_test/.test(u2) && /c=1/.test(u2) && !/partner_id=other/.test(u2), `S2 위조 치환+기존파라미터 보존: ${u2}`);
 
@@ -174,7 +179,7 @@ try{
   const see = await uRest(J.A,'GET',`affiliate_traffic_logs?bus_id=eq.${bAff1}&select=id`);
   log(Array.isArray(see.data) && see.data.length===0, `S7 비관리자 트래픽 조회 0행(RLS) (${Array.isArray(see.data)?see.data.length:'?'})`);
   const srvSee = await srvGet(`affiliate_traffic_logs?bus_id=eq.${bAff1}&select=id,click_type,target_domain`);
-  log(srvSee.length===2 && srvSee.every(r=>r.target_domain==='lenslala.com'), `S8 service_role 2건 + target_domain 서버파생 (${srvSee.length})`);
+  log(srvSee.length===2 && srvSee.every(r=>r.target_domain===AFF), `S8 service_role 2건 + target_domain 서버파생 (${srvSee.length})`);
 
   const ins = await uRest(J.A,'POST',`affiliate_traffic_logs`,{bus_id:bAff1,click_type:'product_view'},'return=minimal');
   log(ins.ok || ins.status===201, `S9 authenticated 직접 적재 허용 (${ins.status}${ins.ok?'':' '+JSON.stringify(ins.data).slice(0,70)})`);
@@ -195,6 +200,7 @@ try{
 }catch(e){console.error('THREW:',e.message);fail++;}
 finally{
   for(const id of busIds){ await srvDel(`buses?id=eq.${id}`); }
+  await srvDel(`affiliate_partners?domain=eq.${AFF}`);   // 테스트 제휴사 시드 정리
   for(const k of Object.keys(ids)){ if(ids[k]) await aDel(ids[k]); }
   console.log('\n-- cleanup done --');
   console.log(`=== 페르소나 하드테스트: OK ${pass} / XX ${fail} ===`);

@@ -79,7 +79,6 @@
     return {
       id: opts.id,
       hostId: opts.hostId,
-      platform: opts.platform || "렌즈라라",
       goalYen: goal,
       status: COOP_STATUS.RECRUITING,
       isOrderStarted: false,
@@ -247,7 +246,6 @@
           deposit: dep,
           status: RIDER_STATUS.JOINED,
           paid: false,
-          lensId: null, power: null,
           courierName: null, trackingNumber: null,
           issueAt: 0, noshowAt: 0, issueReason: null,
           refundStatus: REFUND_STATUS.NONE,
@@ -327,7 +325,7 @@
         if (coop.status === COOP_STATUS.CANCELLED) throw new Error("무산된 공구는 수정할 수 없습니다.");
         if (coop.isOrderStarted) throw new Error("주문이 시작되어 정보를 수정할 수 없습니다. (트랜잭션 잠금)");
         if (patch && typeof patch === "object") {
-          ["lensId", "power", "courierName"].forEach(function (k) {
+          ["courierName"].forEach(function (k) {
             if (Object.prototype.hasOwnProperty.call(patch, k)) r[k] = patch[k];
           });
         }
@@ -460,7 +458,7 @@
     const host = createUserProfile("host", "contact@kaiwai.kr");
     const u1 = createUserProfile("u1", "party1@test.com"); u1.points = 500;
     const u2 = createUserProfile("u2", "party2@test.com"); u2.points = 100; // 포인트 부족 케이스
-    const coop = createCoop({ id: "qa", hostId: "host", goalYen: 10000, platform: "렌즈라라" });
+    const coop = createCoop({ id: "qa", hostId: "host", goalYen: 10000 });
     const sys = createCoopSystem(coop, [host, u1, u2], { now: now });
 
     // ── 1) 파티원 탑승 ──
@@ -470,7 +468,7 @@
     check("2) 방장 주문 시작 → Lock 작동", function () { return sys.startOrder("host") === true && coop.isOrderStarted === true; });
 
     // ── 3) Lock 이후 파티원 수정/취소 시도 (방어) ──
-    expectThrow("3) Lock 후 정보 수정 차단", function () { sys.editRiderInfo("u1", { power: "-2.00" }); }, "트랜잭션 잠금");
+    expectThrow("3) Lock 후 정보 수정 차단", function () { sys.editRiderInfo("u1", { courierName: "CJ" }); }, "트랜잭션 잠금");
     expectThrow("3-2) Lock 후 탑승 취소 차단", function () { sys.cancelRide("u1"); }, "트랜잭션 잠금");
 
     // ── 4) 노쇼 경고 연속 2번 (쿨다운 방어) ──
@@ -500,7 +498,7 @@
      실제 추출 결과(title/imageUrl/price)를 console.table 로 출력
      ════════════════════════════════════════════════════════════════ */
   async function runScraperTest(url) {
-    const target = url || "https://www.lenslala.com/products/flurry-1day";
+    const target = url || "https://example.com/products/sample-item";
     const log = (typeof console !== "undefined") ? console : { log: function () {}, table: function () {} };
 
     // 1) 잘못된 URL 사전 차단 검증

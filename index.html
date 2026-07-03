@@ -381,7 +381,7 @@
     <div class="flex items-center justify-between">
       <div>
         <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🚌 안심 공구</h1>
-        <p style="color:#8D7B80;font-size:10px;margin-top:2px">안전하고 저렴하게! 렌즈라라 무배 버스 🛒</p>
+        <p style="color:#8D7B80;font-size:10px;margin-top:2px">안전하고 저렴하게! 무배 안심 공구 🛒</p>
       </div>
       <span id="busPointChip" title="내 포인트 내역 보기 (탑승 1회 300P)" onclick="openPointHistory()" style="display:none;cursor:pointer;align-items:center;gap:4px;background:linear-gradient(120deg,#FFF4C2,#FFE08A);border:1.5px solid #F2D27A;color:#8A6D1B;font-weight:800;font-size:13px;padding:7px 13px;border-radius:100px;font-family:'Jua','Gowun Dodum',sans-serif;white-space:nowrap;flex-shrink:0"><span style="font-size:13px">🪙</span> 0P</span>
     </div>
@@ -530,7 +530,7 @@
         <div id="boardBusInfo" class="rounded-2xl px-4 py-3 mb-4" style="background:#FFF5F8;border:1.5px solid #FFE0EE">
           <p id="boardBusTitle" style="font-size:13px;font-weight:800;color:#3A2B30;line-height:1.45"></p>
           <p id="boardBusCaptain" style="font-size:11px;color:#8D7B80;margin-top:3px"></p>
-          <button type="button" id="boardViewProduct" onclick="viewBusProduct(_boardBusId)" class="active:scale-95 transition-transform" style="display:none;margin-top:9px;border:1.5px solid #BBD6F5;background:#fff;color:#0064FF;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:11px;font-weight:800;padding:7px 13px;border-radius:100px">🔗 렌즈라라에서 상품 보기</button>
+          <button type="button" id="boardViewProduct" onclick="viewBusProduct(_boardBusId)" class="active:scale-95 transition-transform" style="display:none;margin-top:9px;border:1.5px solid #BBD6F5;background:#fff;color:#0064FF;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:11px;font-weight:800;padding:7px 13px;border-radius:100px">🔗 상품 페이지 보기</button>
         </div>
 
         <!-- 🛂 면세 한도 안내 (관부가세 폭탄 방지) -->
@@ -543,28 +543,22 @@
         <p style="font-size:12px;font-weight:800;color:#3A2B30;margin:0 0 10px;font-family:'Jua','Gowun Dodum',sans-serif">🛍️ 상품 · 배송 방법</p>
 
         <div id="boardLinkWrap">
-        <label id="boardUrlLabel" style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">🔗 구매할 렌즈 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span></label>
-        <input id="boardUrl" placeholder="렌즈 상품 페이지 주소를 붙여넣으세요" oninput="checkBoardDomain()"
+        <label id="boardUrlLabel" style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">🔗 구매할 상품 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span></label>
+        <input id="boardUrl" placeholder="구매할 상품 페이지 주소를 붙여넣으세요" oninput="checkBoardDomain()"
           style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:8px;background:#fff"/>
         <p id="boardDomainWarn" style="display:none;font-size:11px;font-weight:700;color:#E5484D;line-height:1.5;margin:0 0 8px"></p>
         <button type="button" id="boardFetchBtn" onclick="autofillBoardFromUrl()"
-          style="width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:13px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 8px 18px -8px rgba(168,85,247,.7);margin-bottom:10px">✨ 내 렌즈 불러오기</button>
-        </div>
-
-        <!-- 추천 렌즈 빠른 담기 (lens_catalog SWR) -->
-        <div id="boardCuratedWrap" style="margin-bottom:12px">
-          <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">✨ 추천 렌즈에서 빠르게 담기</label>
-          <div id="boardCurated" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch"></div>
+          style="width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:13px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 8px 18px -8px rgba(168,85,247,.7);margin-bottom:10px">✨ 상품 정보 불러오기</button>
         </div>
 
         <!-- 상품 미리보기 썸네일 -->
         <div id="boardImgWrap" style="display:none;margin-bottom:12px;text-align:center">
-          <img id="boardImgPreview" alt="렌즈 미리보기" loading="lazy" decoding="async" style="max-width:100%;max-height:150px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
+          <img id="boardImgPreview" alt="상품 미리보기" loading="lazy" decoding="async" style="max-width:100%;max-height:150px;border-radius:12px;border:1.5px solid #EBC9F5;background:#fff" onerror="this.parentElement.style.display='none'"/>
         </div>
 
         <!-- 상품 정보 (자동/수동) -->
         <div style="background:#FFF6FB;border:1.5px dashed #F2B8DC;border-radius:16px;padding:14px;margin-bottom:16px">
-          <p id="boardInfoTitle" style="font-size:11px;font-weight:800;color:#D6437A;margin:0 0 10px;font-family:'Jua','Gowun Dodum',sans-serif">📝 렌즈 정보 (직접 입력 / 수정 가능)</p>
+          <p id="boardInfoTitle" style="font-size:11px;font-weight:800;color:#D6437A;margin:0 0 10px;font-family:'Jua','Gowun Dodum',sans-serif">📝 상품 정보 (직접 입력 / 수정 가능)</p>
           <label style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">상품명 *</label>
           <input id="boardProdName" maxlength="60" oninput="updateBoardBtn()" placeholder="예) Bambi Series 원데이 (아몬드)"
             style="width:100%;padding:11px 12px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:13px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:10px;background:#fff"/>
@@ -586,22 +580,6 @@
             style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">+</button>
         </div>
         <p id="boardLimitWarn" style="display:none;font-size:11px;font-weight:800;color:#E5484D;line-height:1.5;margin:-8px 0 16px"></p>
-
-        <div id="boardPowerWrap">
-        <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">도수 선택 * <span style="color:#8D7B80;font-weight:600">(무도수는 0.00)</span></label>
-        <div class="flex gap-2" style="margin-bottom:16px">
-          <div style="flex:1">
-            <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">좌 (L)</span>
-            <select id="boardPowerL" onchange="updateBoardBtn()"
-              style="width:100%;padding:12px 12px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-          </div>
-          <div style="flex:1">
-            <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">우 (R)</span>
-            <select id="boardPowerR" onchange="updateBoardBtn()"
-              style="width:100%;padding:12px 12px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-          </div>
-        </div>
-        </div>
 
         <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:8px;font-family:'Jua','Gowun Dodum',sans-serif">수령 방법 *</label>
         <div class="flex flex-col gap-2" style="margin-bottom:20px">
@@ -653,7 +631,7 @@
         </div>
 
         <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">총대에게 남길 메모 (선택)</label>
-        <textarea id="boardMemo" rows="2" placeholder="예) 만약 품절이면 환불해주세요 / 도수 변경 가능할까요?"
+        <textarea id="boardMemo" rows="2" placeholder="예) 만약 품절이면 환불해주세요 / 옵션 변경 가능할까요?"
           style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;margin-bottom:20px"></textarea>
 
         <!-- 섹션 C: 실시간 영수증 -->
@@ -784,28 +762,13 @@
     <button onclick="closeCreateBus()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <form id="createBusForm" onsubmit="submitCreateBus(event)" style="padding:24px 24px 36px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:22px;color:#4A4A4A;margin:8px 0 4px">🚌 공구방 개설</h2>
-      <p style="font-size:12px;color:#8D7B80;margin:0 0 18px">새로운 렌즈 버스를 출발시켜 보세요!</p>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 18px">새로운 안심 공구를 출발시켜 보세요!</p>
 
-      <!-- 플랫폼 선택 (최상단) — '렌즈라라' 선택 시에만 링크 파싱·도수 입력 활성화 -->
-      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">플랫폼 선택 *</label>
-      <select id="cbPlatform" required onchange="onPlatformChange()"
-        style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff;margin-bottom:16px">
-        <option value="렌즈라라" selected>렌즈라라</option>
-        <option value="기타">기타</option>
-      </select>
-
-      <!-- 렌즈라라 전용 섹션: 링크 자동 파싱 + 좌/우 도수 -->
-      <div id="cbLenslalaSection">
-      <!-- 🔗 상품 링크 자동 불러오기 -->
+      <!-- 🔗 상품 링크 자동 불러오기 (범용) -->
       <div class="rounded-xl p-3 mb-4" style="background:linear-gradient(120deg,#F5E0FF,#FFE0EE);border:1.5px solid #EBC9F5">
         <label style="display:block;font-size:12px;font-weight:800;color:#7733BB;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">🔗 상품 링크(URL) 입력</label>
-        <input id="cbUrl" type="url" inputmode="url" placeholder="렌즈라라 등 상품 페이지 주소 붙여넣기" oninput="previewAffiliateUrl()"
+        <input id="cbUrl" type="url" inputmode="url" placeholder="구매할 상품 페이지 주소 붙여넣기"
           style="width:100%;padding:11px 13px;border:1.5px solid #E3C7F0;border-radius:12px;font-size:13px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;margin-bottom:8px"/>
-        <!-- 제휴 변환 링크 미리보기(렌즈라라 등 등록 도메인일 때) -->
-        <div id="cbAffiliatePreview" style="display:none;margin-bottom:8px;padding:9px 11px;border-radius:10px;background:#EAF7EE;border:1px solid #BFE6CC">
-          <p style="font-size:11px;font-weight:800;color:#1A9E5E;margin:0 0 2px">🔗 제휴 주문 링크로 자동 변환돼요</p>
-          <p id="cbAffiliatePreviewUrl" style="font-size:10.5px;color:#3A6B4E;margin:0;word-break:break-all;line-height:1.45"></p>
-        </div>
         <button type="button" id="cbFetchBtn" onclick="autofillFromUrl()"
           style="width:100%;padding:12px;border:none;border-radius:12px;cursor:pointer;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:13px;background:linear-gradient(135deg,#A855F7,#EC4899);box-shadow:0 8px 18px -8px rgba(168,85,247,.7)">✨ 링크로 자동 불러오기</button>
         <!-- 이미지 미리보기 썸네일 -->
@@ -814,20 +777,6 @@
         </div>
         <input id="cbImage" type="hidden"/>
       </div>
-
-      <!-- 좌/우 렌즈 도수 (렌즈라라 전용) -->
-      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">렌즈 도수 (좌/우) *</label>
-      <div style="display:flex;gap:10px;margin-bottom:16px">
-        <div style="flex:1">
-          <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">좌 (Left)</span>
-          <select id="cbPowerL" style="width:100%;padding:12px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-        </div>
-        <div style="flex:1">
-          <span style="display:block;font-size:11px;font-weight:700;color:#8D7B80;margin-bottom:4px">우 (Right)</span>
-          <select id="cbPowerR" style="width:100%;padding:12px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-        </div>
-      </div>
-      </div><!-- /#cbLenslalaSection -->
 
       <!-- 직접 입력 토글 -->
       <div style="margin:-4px 0 14px;text-align:right">
@@ -942,17 +891,17 @@
 <!-- 운송장 등록은 관리자 패널 인라인 폼으로 이동(모달 제거) — saveTracking(busId,riderId) -->
 
 
-<!-- ══ 렌즈라라 주문 진행 모달 (팀원 요약 + 복사 + 바로가기) ══ -->
+<!-- ══ 일괄 주문 진행 모달 (팀원 요약 + 복사 + 바로가기) ══ -->
 <div id="orderProcessOverlay" onclick="closeOrderProcess()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;align-items:flex-end;justify-content:center">
   <div onclick="event.stopPropagation()" class="kw-pop" style="position:relative;width:100%;max-width:430px;background:#FFF7FB;border-radius:28px 28px 0 0;overflow-y:auto;max-height:90vh">
     <div style="width:44px;height:4px;background:#FFD6E8;border-radius:100px;margin:12px auto 0"></div>
     <button onclick="closeOrderProcess()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:22px 22px 28px">
-      <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:20px;color:#3A2B30;margin:4px 0 14px">🛒 렌즈라라 주문 진행</h2>
+      <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:20px;color:#3A2B30;margin:4px 0 14px">🛒 일괄 주문 진행</h2>
       <div id="orderProcBody"></div>
       <button onclick="copyOrderSheet()" class="w-full rounded-xl py-3 mt-4" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#2B2330;background:#FFD166">📋 주문서 복사</button>
-      <button id="orderGoBtn" onclick="goOrderAndFinalize()" class="w-full rounded-xl py-3 mt-2" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,#E8608D,#D6437A)">🛒 렌즈라라에서 주문하고 완료 처리하기</button>
-      <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:8px;text-align:center">먼저 [주문서 복사]로 내역을 복사하세요. 아래 버튼을 누르면 렌즈라라가 열리고, 동시에 참여자 정보가 잠기며 전체 알림이 발송됩니다.</p>
+      <button id="orderGoBtn" onclick="goOrderAndFinalize()" class="w-full rounded-xl py-3 mt-2" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,#E8608D,#D6437A)">🛒 주문처로 이동하고 완료 처리하기</button>
+      <p style="font-size:10px;color:#B6AAB0;line-height:1.5;margin-top:8px;text-align:center">먼저 [주문서 복사]로 내역을 복사하세요. 아래 버튼을 누르면 주문처가 열리고, 동시에 참여자 정보가 잠기며 전체 알림이 발송됩니다.</p>
     </div>
   </div>
 </div>
@@ -1016,7 +965,7 @@
           </div>
           <div>
             <p style="font-size:13px;font-weight:800;color:#3A2B30;margin:0 0 2px">✏️ 총대 본인 옵션 수정</p>
-            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">주문이 시작되기 전까지 총대님은 본인의 <b style="color:#7733BB">물품 수량·단가·도수 옵션</b>을 자유롭게 수정할 수 있어요. <span style="color:#9A8D93">(단, 면세 한도 범위 내로 제한)</span></p>
+            <p style="font-size:12.5px;color:#6B5B60;line-height:1.6;margin:0">주문이 시작되기 전까지 총대님은 본인의 <b style="color:#7733BB">물품 수량·단가 옵션</b>을 자유롭게 수정할 수 있어요. <span style="color:#9A8D93">(단, 면세 한도 범위 내로 제한)</span></p>
           </div>
         </div>
       </div>
@@ -1026,7 +975,7 @@
         <p style="font-size:15px;font-weight:800;color:#7733BB;font-family:'Jua','Gowun Dodum',sans-serif;margin:0 0 12px">👑 총대(주최자) 전용 가이드</p>
         <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;counter-reset:gnum">
           <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">1</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">공구방 개설(도메인 고정)</b> — 개설 시 첫 번째 입력한 '상품주소(URL)'의 <b style="color:#7733BB">사이트에서만 탑승자가 물건을 고를 수 있게</b> 강제 차단해 발주 혼선을 막아요.</p></li>
-          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">2</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">정보 변경 결재 시스템</b> — 탑승자의 도수/수량 수정은 즉시 반영되지 않고, 총대님 화면 최상단에 <b style="color:#E5484D">🚨 [수정 요청] 배너</b>로 떠요. 확인 후 <b style="color:#1A9E5E">[승인]</b>해야 장부에 반영됩니다.</p></li>
+          <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">2</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">정보 변경 결재 시스템</b> — 탑승자의 상품/수량 수정은 즉시 반영되지 않고, 총대님 화면 최상단에 <b style="color:#E5484D">🚨 [수정 요청] 배너</b>로 떠요. 확인 후 <b style="color:#1A9E5E">[승인]</b>해야 장부에 반영됩니다.</p></li>
           <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">3</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">마감 및 발주</b> — '주문 완료' 시 방이 닫혀요. 탑승자의 민감한 개인정보(주소·번호)는 <b style="color:#7733BB">오직 총대님에게만</b> 안전하게 보입니다.</p></li>
           <li style="display:flex;gap:9px"><span style="flex-shrink:0;width:21px;height:21px;border-radius:50%;background:#A855F7;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center">4</span><p style="font-size:12.5px;color:#4A4A4A;line-height:1.6;margin:0"><b style="color:#3A2B30">안전 발송의 책임</b> — 물건을 수령해 탑승자에게 재발송할 책임이 있으며, 완수 시 <b style="color:#D6437A">포인트 보상</b>이 주어져요.</p></li>
         </ol>
@@ -1088,7 +1037,7 @@
     <button onclick="closeEditMyInfo()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 정보 수정</h2>
-      <p style="font-size:12px;color:#8D7B80;margin:0 0 12px">주문 시작 전까지만 수정할 수 있어요. <b style="color:#D6437A">상품명·가격·수량·도수·수령방법</b> 변경은 <b style="color:#D6437A">총대 승인 후</b> 반영되며, <b style="color:#D6437A">1회만</b> 가능합니다.</p>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 12px">주문 시작 전까지만 수정할 수 있어요. <b style="color:#D6437A">상품명·가격·수량·수령방법</b> 변경은 <b style="color:#D6437A">총대 승인 후</b> 반영되며, <b style="color:#D6437A">1회만</b> 가능합니다.</p>
       <div id="emOrderLockNote" style="display:none;background:#FFF0F5;border:1.5px solid #FFD6E8;border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:11.5px;font-weight:700;color:#D6437A;line-height:1.5">🔒 상품/주문 정보는 이미 1회 수정하셨어요. 아래 상품 항목은 변경할 수 없고, 배송지·연락처 등만 수정할 수 있어요.</div>
 
       <!-- 상품명 (변경 시 총대 승인 필요) -->
@@ -1105,13 +1054,6 @@
         <button type="button" onclick="changeEmQty(-1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">−</button>
         <input id="emQty" type="number" min="1" value="1" inputmode="numeric" readonly style="flex:1;text-align:center;padding:11px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:16px;font-weight:800;color:#4A4A4A;outline:none;font-family:'Jua','Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"/>
         <button type="button" onclick="changeEmQty(1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">+</button>
-      </div>
-
-      <!-- 도수 -->
-      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">도수 (좌 / 우) *</label>
-      <div class="flex gap-2" style="margin-bottom:16px">
-        <select id="emPowerL" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-        <select id="emPowerR" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
       </div>
 
       <!-- 수령 방법 -->
@@ -1145,7 +1087,7 @@
 
       <!-- 메모 -->
       <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">총대에게 남길 메모 (선택)</label>
-      <textarea id="emMemo" rows="2" placeholder="예) 도수 변경 가능할까요?"
+      <textarea id="emMemo" rows="2" placeholder="예) 옵션 변경 가능할까요?"
         style="width:100%;padding:13px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;resize:none;line-height:1.6;margin-bottom:20px"></textarea>
 
       <div class="flex gap-2">
@@ -1163,7 +1105,7 @@
     <button onclick="closeEditHostOptions()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;background:#FFF0F5;border:none;color:#8D7B80;cursor:pointer;font-size:13px;z-index:10;display:flex;align-items:center;justify-content:center" aria-label="닫기">✕</button>
     <div style="padding:20px 22px 28px">
       <h2 style="font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:19px;color:#3A2B30;margin:4px 0 4px">✏️ 내 공구 옵션 수정</h2>
-      <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 상품 종류, 가격, 수량, 도수를 수정할 수 있어요.</p>
+      <p style="font-size:12px;color:#8D7B80;margin:0 0 16px">주문 시작 전까지만 상품 종류, 가격, 수량을 수정할 수 있어요.</p>
 
       <!-- 상품명 -->
       <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">상품명 *</label>
@@ -1179,13 +1121,6 @@
         <button type="button" onclick="changeEhQty(-1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">−</button>
         <input id="ehQty" type="number" min="1" value="1" inputmode="numeric" readonly style="flex:1;text-align:center;padding:11px;border:1.5px solid #FFD6E8;border-radius:12px;font-size:16px;font-weight:800;color:#4A4A4A;outline:none;font-family:'Jua','Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"/>
         <button type="button" onclick="changeEhQty(1)" style="width:42px;height:42px;border-radius:12px;border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;font-size:20px;font-weight:800;cursor:pointer;flex-shrink:0">+</button>
-      </div>
-
-      <!-- 도수 -->
-      <label style="display:block;font-size:12px;font-weight:800;color:#D6437A;margin-bottom:6px;font-family:'Jua','Gowun Dodum',sans-serif">도수 (좌 / 우) *</label>
-      <div class="flex gap-2" style="margin-bottom:20px">
-        <select id="ehPowerL" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
-        <select id="ehPowerR" style="flex:1;min-width:0;padding:12px 14px;border:1.5px solid #FFD6E8;border-radius:14px;font-size:14px;color:#4A4A4A;outline:none;font-family:'Gowun Dodum',sans-serif;box-sizing:border-box;background:#fff"></select>
       </div>
 
       <div class="flex gap-2">
@@ -1953,7 +1888,7 @@ function goHome() {
 }
 
 /* ═══════════════════════════════════
-   공구(렌즈 버스) — MVP 더미 렌더링
+   공구(안심 공구) — MVP 더미 렌더링
    추후 Supabase 'buses' 테이블로 교체 예정
 ═══════════════════════════════════ */
 // 공구방 목록 — Supabase 'buses' 에서 loadBuses() 로 채워짐 (더미 제거됨).
@@ -1968,15 +1903,10 @@ function maskName(name){
   return s[0] + "*".repeat(s.length - 2) + s[s.length - 1];
 }
 
-// 렌즈 id → 이름 (장부/주문서 표기용; curatedLenses 는 아래에 정의됨)
-function lensName(id){
-  const l = (typeof curatedLenses !== "undefined") && curatedLenses.find(x=>x.id===id);
-  return l ? l.name : (id || "-");
-}
-// 탑승자 표시용 상품명 — 신규(productName/qty) 우선, 구 더미(lensId) 호환
+// 탑승자 표시용 상품명 — productName/qty 기반
 function riderProduct(r){
   if(r && r.productName) return r.productName + ((r.qty && r.qty > 1) ? ` ×${r.qty}` : "");
-  return lensName(r && r.lensId);
+  return (r && r.lensId) || "상품";
 }
 
 const BUS_TIER = {
@@ -2078,48 +2008,6 @@ function _mannerHtml(uid){
   if(tb.length){ const bd = _reviewBadgeByCode[tb[0].code]; if(bd) badge = `<span title="${escapeHtml(bd.label)}" style="font-size:12px;margin-left:3px">${bd.emoji||"🏅"}</span>`; }
   const warn = m.is_warned ? `<span title="부정 피드백 누적 주의" style="font-size:12px;margin-left:3px">⚠️</span>` : "";
   return star + badge + warn;
-}
-
-/* ── 제휴 커미션 링크 변환 (Step 9) — affiliate_partners SWR + _toAffiliateUrl ── */
-let _affiliateMap = {};   // domain → {k:param_key, v:param_value}
-async function loadAffiliatePartners(){
-  try{ const c = JSON.parse(localStorage.getItem("kaiwai_affiliate")||"null"); if(c && typeof c==="object") _affiliateMap = c; }catch(_){}
-  if(!window.sb) return;
-  try{
-    const { data } = await window.sb.from("affiliate_partners").select("domain,param_key,param_value").eq("is_active", true);
-    if(Array.isArray(data)){
-      const m = {}; data.forEach(p=>{ m[p.domain] = { k:p.param_key, v:p.param_value }; });
-      _affiliateMap = m;
-      try{ localStorage.setItem("kaiwai_affiliate", JSON.stringify(m)); }catch(_){}
-    }
-  }catch(_){}
-}
-// 호스트가 제휴사면 트래킹 코드 주입(기존 값 덮어쓰기). 비제휴/파싱실패면 원본 반환.
-// ※ 클라 변환은 UX 미리보기용 — 서버 트리거(enforce_affiliate_url)가 최종 강제 보증.
-function _toAffiliateUrl(url){
-  const raw = String(url==null?"":url).trim();
-  if(!raw) return raw;
-  const host = _domainOf(raw);                 // www 제거·소문자 호스트
-  const p = host && _affiliateMap[host];
-  if(!p) return raw;                           // 비제휴 → 원본 유지
-  try{
-    const u = new URL(/^https?:\/\//i.test(raw) ? raw : ("https://" + raw));
-    u.searchParams.set(p.k, p.v);              // 기존 값 있으면 치환
-    return u.toString();
-  }catch(_){ return raw; }
-}
-function previewAffiliateUrl(){
-  const box = document.getElementById("cbAffiliatePreview");
-  const out = document.getElementById("cbAffiliatePreviewUrl");
-  if(!box || !out) return;
-  const raw = (document.getElementById("cbUrl").value||"").trim();
-  const host = _domainOf(raw);
-  if(raw && host && _affiliateMap[host]){
-    out.textContent = _toAffiliateUrl(raw);
-    box.style.display = "block";
-  } else {
-    box.style.display = "none";
-  }
 }
 
 // 종료(터미널) 상태 판정 + 내역에서 내가 숨겼는지 판정
@@ -2243,7 +2131,6 @@ function _mapRider(row, priv){
     productUrl: row.product_url || null,
     yen: row.yen,
     qty: row.qty,
-    power: row.power,
     method: row.method,
     amount: row.amount,
     paid: row.paid,
@@ -2284,9 +2171,6 @@ function _mapBus(row, localId, riders){
     productName: row.product_name,
     productImg: row.product_img,
     productPrice: row.product_price,
-    platform: row.platform || "렌즈라라",
-    hostPowerL: row.host_power_l || null,
-    hostPowerR: row.host_power_r || null,
     targetDomain: row.target_domain || null,   // 구매처 도메인 락
     ownerId: row.owner_id,
     notice: row.notice || "",
@@ -2338,7 +2222,6 @@ async function loadBuses(){
     await _attachTrustScores();   // 총대 신뢰점수(서버 RPC) 부착
     await _attachHostAccounts();  // 계좌 스냅샷 부착(RLS: 방장/탑승자만)
     await loadReviewBadges();     // 매너 배지 마스터(SWR)
-    await loadAffiliatePartners();// 제휴사 설정(SWR) — 링크 변환/미리보기용
     await _attachMannerProfiles();// 매너 프로필(상호 평점) 부착
     drawBus();
   }catch(err){
@@ -2443,31 +2326,6 @@ let isVerifiedHost = false;
 // 300P 탑승 수수료 → 총대 수고비 지급 구조가 부활하여 true (관련 안내 노출).
 const REWARDS_ENABLED = true;
 
-// 개설 폼 좌/우 도수 옵션: 0.00 + 0.5단위(-1.00 ~ -8.00), 단 -0.50(시력 0.5)은 제외. 기본 0.00
-const CB_POWER_OPTIONS = (function(){
-  const arr = ["0.00"];
-  for(let v=0.5; v<=8.0001; v+=0.5){
-    if(Math.abs(v-0.5) < 1e-9) continue;   // 좌우 시력 0.5(-0.50) 제외
-    arr.push("-" + v.toFixed(2));
-  }
-  return arr;
-})();
-function _fillCbPower(){
-  ["cbPowerL","cbPowerR"].forEach(id=>{
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.innerHTML = CB_POWER_OPTIONS.map(p=>`<option value="${p}">${p}</option>`).join("");
-    el.value = "0.00";
-  });
-}
-// 플랫폼 변경 → '렌즈라라'만 링크 파싱/도수 활성. '기타'는 스크래핑 불가라 수동 입력 폼 노출.
-function onPlatformChange(){
-  const sel = document.getElementById("cbPlatform");
-  const isLens = (sel && sel.value === "렌즈라라");
-  const sec = document.getElementById("cbLenslalaSection");
-  if(sec) sec.style.display = isLens ? "block" : "none";
-  if(!isLens && typeof toggleManualForm === "function") toggleManualForm(true);
-}
 async function openCreateBus(){
   // 로그인 가드
   if(!window.sb || !_busUid()){
@@ -2492,9 +2350,6 @@ async function openCreateBus(){
   const ci = document.getElementById("cbImage"); if(ci) ci.value = "";
   const rn = document.getElementById("cbRewardNote");
   if(rn) rn.style.display = REWARDS_ENABLED ? "block" : "none";
-  _fillCbPower();                                            // 좌/우 도수 옵션 채움(기본 0.00)
-  const pf = document.getElementById("cbPlatform"); if(pf) pf.value = "렌즈라라";
-  onPlatformChange();                                        // 렌즈라라 기준 섹션 표시
   syncDeadlineUI();
   document.getElementById("createBusOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -2899,15 +2754,12 @@ async function submitCreateBus(e){
 
   // 물품 정보 (상품명/이미지/가격) — 자동 또는 수동
   const prodName  = (document.getElementById("cbProdName").value || "").trim();
-  const prodImg   = (document.getElementById("cbProdImg").value || "").trim();   // 선택(렌즈랄라 og:image 누락 잦음)
+  const prodImg   = (document.getElementById("cbProdImg").value || "").trim();   // 선택(og:image 누락 잦음)
   const prodPrice = parseInt(document.getElementById("cbProdPrice").value, 10);
-  const platform  = (document.getElementById("cbPlatform").value || "렌즈라라");
-  const powerL    = (document.getElementById("cbPowerL").value || "0.00");
-  const powerR    = (document.getElementById("cbPowerR").value || "0.00");
-  // 구매처 도메인 락 — 개설 시 입력한 첫 링크의 호스트(플랫폼 무관). 미입력이면 null(제한 없음).
+  // 구매처 도메인 락 — 개설 시 입력한 첫 링크의 호스트. 미입력이면 null(제한 없음).
   const targetDomain = _domainOf(document.getElementById("cbUrl").value) || null;
-  // 제휴 변환 주문 링크(클라 미리보기용). 서버 트리거(enforce_affiliate_url)가 최종 강제 보증.
-  const productUrl = _toAffiliateUrl(document.getElementById("cbUrl").value) || null;
+  // 주문 바로가기용 상품 링크. 서버 트리거(enforce_affiliate_url)가 제휴사면 트래킹 보증(현재 비제휴=원본).
+  const productUrl = (document.getElementById("cbUrl").value || "").trim() || null;
   // 방어: 상품명/가격은 필수(이미지는 선택 — 스크래핑 실패/누락 허용)
   if(!prodName || !prodPrice || prodPrice < 1){
     alert("상품명과 가격을 정확히 입력해주세요.");
@@ -2934,9 +2786,6 @@ async function submitCreateBus(e){
       product_name: prodName,
       product_img: prodImg || null,
       product_price: prodPrice,
-      platform: platform,
-      host_power_l: (platform === "렌즈라라") ? powerL : null,
-      host_power_r: (platform === "렌즈라라") ? powerR : null,
       target_domain: targetDomain,
       product_url: productUrl,
       ordered: false,
@@ -2961,79 +2810,8 @@ async function submitCreateBus(e){
 
 let _boardBusId = null;
 
-// 큐레이션 렌즈 더미 데이터 (추후 Supabase 'lens_catalog' 로 교체 예정)
-// 추천 렌즈 — 서버 lens_catalog(SSOT)에서 SWR 로드. 아래는 첫 로드/오프라인 폴백.
-let curatedLenses = [
-  { id: 'L01', name: 'Flurry 원데이 (칭찬받는 판다)', price: 1760, category: '갸루' },
-  { id: 'L02', name: 'Flurry 먼슬리 (사랑받는 링고)', price: 1320, category: '내추럴' },
-  { id: 'L03', name: 'Bambi Series 원데이 (아몬드)', price: 1760, category: '내추럴' },
-  { id: 'L04', name: 'Bambi Series 먼슬리 (스완 블루)', price: 1650, category: '양산형' },
-  { id: 'L05', name: "Chu's Lens 원데이 (모테 브라운)", price: 1705, category: '양산형' },
-  { id: 'L06', name: 'Majolica Majorca (지뢰계 블랙)', price: 1600, category: '지뢰계' },
-];
-
-/* 렌즈 카탈로그 SWR(Stale-While-Revalidate) — 캐시 즉시 표시 + 백그라운드 갱신.
-   관리자가 lens_catalog(DB)만 수정해도 다음 방문 시 동적 반영. */
-const LENS_CACHE_KEY = "kaiwai_lens_catalog";
-function _mapLens(row){
-  return { id: row.code || row.id, name: row.name, price: row.price_yen,
-           brand: row.brand || "", image: row.image_url || "", category: row.category || "" };
-}
-async function loadLensCatalog(){
-  // 1) 캐시 즉시 반영(있으면)
-  try{
-    const c = JSON.parse(localStorage.getItem(LENS_CACHE_KEY) || "null");
-    if(c && Array.isArray(c.data) && c.data.length){ curatedLenses = c.data; renderLensPicker(); }
-  }catch(_){}
-  // 2) 백그라운드 갱신(SWR) — 활성 행만, sort_order
-  if(!window.sb) return;
-  try{
-    const { data, error } = await window.sb.from("lens_catalog")
-      .select("code,brand,name,price_yen,image_url,category")
-      .eq("is_active", true).order("sort_order", { ascending:true });
-    if(error) throw error;
-    if(Array.isArray(data) && data.length){
-      curatedLenses = data.map(_mapLens);
-      localStorage.setItem(LENS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: curatedLenses }));
-      renderLensPicker();
-    }
-  }catch(_){ /* 실패 시 캐시/폴백 유지(graceful) */ }
-}
-// 탑승 모달 '✨ 추천 렌즈에서 빠르게 담기' 칩 렌더
-function renderLensPicker(){
-  const el = document.getElementById("boardCurated");
-  if(!el) return;
-  el.innerHTML = (curatedLenses || []).map((l,i)=>{
-    const cat = l.category ? `<span style="margin-left:5px;font-size:9px;font-weight:800;color:#A855F7">${escapeHtml(l.category)}</span>` : "";
-    const thumb = l.image ? `<img src="${escapeHtml(l.image)}" alt="" loading="lazy" decoding="async" style="width:100%;height:84px;object-fit:cover;border-radius:8px;margin-bottom:6px;background:#FBE9F1" onerror="this.style.display='none'"/>` : "";
-    return `<button type="button" onclick="pickCuratedLens(${i})" style="flex-shrink:0;width:140px;text-align:left;border:1.5px solid #F2B8DC;background:#fff;border-radius:12px;padding:8px;cursor:pointer;font-family:'Gowun Dodum',sans-serif">
-      ${thumb}
-      <span style="display:block;font-size:11px;font-weight:700;color:#4A4A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(l.name)}</span>
-      <span style="font-size:11px;font-weight:800;color:#D6437A">¥${Number(l.price||0).toLocaleString()}</span>${cat}</button>`;
-  }).join("");
-}
-// 추천 렌즈 선택 → 수동 폼 자동 채움
-function pickCuratedLens(i){
-  const l = (curatedLenses || [])[i]; if(!l) return;
-  const n = document.getElementById("boardProdName"); if(n) n.value = l.name || "";
-  const p = document.getElementById("boardProdPrice"); if(p) p.value = l.price || "";
-  if(l.image){
-    const w = document.getElementById("boardImgWrap"), im = document.getElementById("boardImgPreview");
-    if(w && im){ im.src = l.image; w.style.display = "block"; }
-  }
-  if(typeof updateBoardBtn === "function") updateBoardBtn();
-  if(typeof updateReceipt === "function") updateReceipt();
-  showToast("추천 렌즈를 담았어요 ✨ 도수·수량을 확인해 주세요");
-}
-
 // 결제 계산 상수 (고정 환율 100엔=900원 → ×9)
 const YEN_TO_KRW = 9;
-// 도수 드롭다운 옵션: 0.00 ~ -8.00 (0.25 단위)
-const POWER_OPTIONS = (function(){
-  const arr = ["0.00"];
-  for(let v=0.25; v<=8.0001; v+=0.25){ arr.push("-" + v.toFixed(2)); }
-  return arr;
-})();
 // 수령 방법별 배송비 (etc 는 사용자 직접입력)
 const SHIP_METHODS = {
   conv: { label: "편의점 반택", fee: 1800 },
@@ -3067,50 +2845,25 @@ function boardBus(id){
     return;
   }
   _boardBusId = id;
-  const isLenra = (b.platform || "렌즈라라") === "렌즈라라";   // 플랫폼별 폼 분기(상품명/가격/URL/도수)
   document.getElementById("boardBusTitle").textContent = b.title;
   document.getElementById("boardBusCaptain").textContent = `총대 ${b.captain} · 달성률 ${Math.round(b.current/b.goal*100)}%`;
-  const vpBtn = document.getElementById("boardViewProduct");   // 제휴 상품 보기(productUrl 있을 때만)
+  const vpBtn = document.getElementById("boardViewProduct");   // 상품 보기(productUrl 있을 때만)
   if(vpBtn) vpBtn.style.display = b.productUrl ? "inline-block" : "none";
   document.getElementById("boardForm").reset();
-  renderLensPicker();   // 추천 렌즈 픽커 갱신(SWR 로 로드된 최신 카탈로그)
   // 링크/미리보기 초기화
   const urlEl = document.getElementById("boardUrl");
   urlEl.value = ""; urlEl.style.borderColor = "#FFD6E8"; urlEl.style.background = "#fff";
   const dw = document.getElementById("boardDomainWarn"); if(dw) dw.style.display = "none";
   const biw = document.getElementById("boardImgWrap"); if(biw) biw.style.display = "none";
-  // 상품 정보는 방장이 등록한 메인 물품으로 기본 채움 (탑승자가 수정 가능)
-  // 렌즈라라: 방장 등록 물품으로 기본 채움. 일반 상품: 빈칸/0 으로 두고 탑승자가 직접 입력.
-  document.getElementById("boardProdName").value  = isLenra ? (b.productName || "") : "";
-  document.getElementById("boardProdPrice").value = isLenra ? (b.productPrice || "") : "";
+  // 상품 정보는 탑승자가 직접 입력(빈칸/0). 방장 등록 이미지가 있으면 미리보기만 노출.
+  document.getElementById("boardProdName").value  = "";
+  document.getElementById("boardProdPrice").value = "";
   document.getElementById("boardQty").value = "1";
   if(b.productImg){
     const img = document.getElementById("boardImgPreview");
     img.src = b.productImg;
     document.getElementById("boardImgWrap").style.display = "block";
   }
-  // 도수 드롭다운(좌·우) 채움 — 0.00 ~ -10.00 (0.25 단위), 기본 0.00
-  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
-  document.getElementById("boardPowerL").innerHTML = opts;
-  document.getElementById("boardPowerR").innerHTML = opts;
-  document.getElementById("boardPowerL").value = "0.00";
-  document.getElementById("boardPowerR").value = "0.00";
-  // [플랫폼별 폼] 렌즈라라가 아닌 일반 상품이면 렌즈 전용 UI를 숨기고 상품용으로 전환.
-  //   ※ 상품 URL 입력칸(boardLinkWrap)은 일반 상품에서도 노출하되 라벨/플레이스홀더/버튼만 전환.
-  const _toggleBoard = (elId, on)=>{ const el=document.getElementById(elId); if(el) el.style.display = on ? "" : "none"; };
-  _toggleBoard("boardCuratedWrap", isLenra);   // 추천 렌즈: 렌즈라라만
-  _toggleBoard("boardPowerWrap",   isLenra);   // 도수 선택: 렌즈라라만
-  _toggleBoard("boardFetchBtn",    isLenra);   // '✨ 내 렌즈 불러오기': 렌즈라라만
-  const _urlLabel = document.getElementById("boardUrlLabel");
-  if(_urlLabel) _urlLabel.innerHTML = isLenra
-    ? '🔗 구매할 렌즈 링크 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span>'
-    : '🔗 상품 URL 입력 <span style="color:#8D7B80;font-weight:600">(선택)</span>';
-  const _urlInput = document.getElementById("boardUrl");
-  if(_urlInput) _urlInput.placeholder = isLenra ? "렌즈 상품 페이지 주소를 붙여넣으세요" : "구매할 상품 페이지 주소를 붙여넣으세요";
-  const _infoTitle = document.getElementById("boardInfoTitle");
-  if(_infoTitle) _infoTitle.textContent = isLenra ? "📝 렌즈 정보 (직접 입력 / 수정 가능)" : "📝 상품 정보 (직접 입력 / 수정 가능)";
-  // 일반 상품은 도수 개념이 없음 → 값 비움(제출 시 빈 문자열로 전송, 서버 검증 통과)
-  if(!isLenra){ document.getElementById("boardPowerL").value = ""; document.getElementById("boardPowerR").value = ""; }
   updateReceipt();
   document.getElementById("boardOverlay").style.display = "flex";
   document.getElementById("boardSheet").scrollTop = 0;
@@ -3136,11 +2889,11 @@ function changeQty(d){
 function _boardYen(){ const v = parseInt(document.getElementById("boardProdPrice").value, 10); return isNaN(v)||v<0 ? 0 : v; }
 function _boardQty(){ const v = parseInt(document.getElementById("boardQty").value, 10); return isNaN(v)||v<1 ? 1 : v; }
 
-// 🔗 내 렌즈 링크 → 상품명/이미지/가격 자동 채우기
+// 🔗 상품 링크 → 상품명/이미지/가격 자동 채우기
 async function autofillBoardFromUrl(){
   const url = document.getElementById("boardUrl").value.trim();
   const btn = document.getElementById("boardFetchBtn");
-  if(!url){ showToast("렌즈 링크(URL)를 입력해 주세요"); return; }
+  if(!url){ showToast("상품 링크(URL)를 입력해 주세요"); return; }
   const orig = btn.innerHTML;
   btn.disabled = true; btn.style.opacity = "0.85";
   btn.innerHTML = '<span class="cb-spin">⏳</span> 불러오는 중…';
@@ -3157,7 +2910,7 @@ async function autofillBoardFromUrl(){
         document.getElementById("boardImgWrap").style.display = "block"; filled++;
       }
       updateReceipt();
-      showToast(filled ? "렌즈 정보를 불러왔어요 ✨ 확인 후 수정하세요" : "링크 파싱에 실패했습니다. 상품명과 가격을 직접 입력해 주세요");
+      showToast(filled ? "상품 정보를 불러왔어요 ✨ 확인 후 수정하세요" : "링크 파싱에 실패했습니다. 상품명과 가격을 직접 입력해 주세요");
     } else {
       showToast("링크 파싱에 실패했습니다. 상품명과 가격을 직접 입력해 주세요");
     }
@@ -3333,7 +3086,7 @@ function _myNick(){
 
 async function submitBoard(e){
   e.preventDefault();
-  if(!boardFormValid()){ alert("렌즈 정보(상품명·가격·수량)와 배송 정보를 정확히 입력해주세요."); return; }
+  if(!boardFormValid()){ alert("상품 정보(상품명·가격·수량)와 배송 정보를 정확히 입력해주세요."); return; }
   const bus  = BUSES.find(b=>b.id===_boardBusId);
   if(!bus) return;
   if(!window.sb || !_busUid()){ alert("로그인이 필요해요. 다시 로그인 후 시도해 주세요."); return; }
@@ -3341,7 +3094,7 @@ async function submitBoard(e){
   let prodName = document.getElementById("boardProdName").value.trim();
   let yen = _boardYen();
   const qty = _boardQty();
-  if(isAdminUser() && (!prodName || !yen)){ prodName = prodName || (bus.productName || "테스트 렌즈"); yen = yen || (bus.productPrice || 1000); }
+  if(isAdminUser() && (!prodName || !yen)){ prodName = prodName || (bus.productName || "테스트 상품"); yen = yen || (bus.productPrice || 1000); }
   // 탑승 수수료 300P 검사 (로컬 유지) — 관리자는 우회. 실제 차감은 DB 저장 성공 후에만.
   if(!isAdminUser() && getPoints() < 300){ alert("포인트가 부족합니다. 매일 로그인하여 포인트를 모아보세요!"); return; }
 
@@ -3374,9 +3127,7 @@ async function submitBoard(e){
       p_product_name: prodName,
       p_qty:          qty,
       p_yen:          yen,
-      p_power:        ((bus.platform || "렌즈라라") === "렌즈라라")
-                        ? `좌 ${document.getElementById("boardPowerL").value} / 우 ${document.getElementById("boardPowerR").value}`
-                        : "",
+      p_power:        "",   // 렌즈 도수 제거 — 범용 공구. RPC 시그니처 호환 위해 빈 값 유지(서버 무시)
       p_method:       method,
       p_amount:       goods + fee,
       p_real_name:    document.getElementById("bName").value.trim(),
@@ -3550,9 +3301,6 @@ function renderBusRoom(b){
   // 방장(총대) 본인 주문도 투명하게 노출 — 총대는 bus_riders 에 없고 buses.product_* 에 저장돼
   // 그동안 장부에서 빠져 탑승자가 못 봤음. 항상 장부 최상단에 표시.
   const meHost = isBusOwner(b);
-  const hostPower = (b.hostPowerL || b.hostPowerR)
-    ? `좌 ${_esc(b.hostPowerL||"-")} / 우 ${_esc(b.hostPowerR||"-")}`
-    : "도수 미입력";
   const hostQty = b.hostQty || 1;
   const hostTotalPrice = (b.productPrice || 0) * hostQty;
   const hostLine = `
@@ -3561,7 +3309,7 @@ function renderBusRoom(b){
         <span style="font-size:13px;font-weight:800;color:#3A2B30">👑 ${_esc(b.captain||"총대")} <span style="font-size:10px;font-weight:800;color:#B8860B;background:#FFF3D6;border:1px solid #F2D788;padding:2px 7px;border-radius:100px">총대</span>${meHost?` <span style="font-size:10px;color:#D6437A">(나)</span>`:""}</span>
         <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif">${Math.round(hostTotalPrice*YEN_TO_KRW).toLocaleString()}원</span>
       </div>
-      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${_esc(b.productName||"상품 미입력")} · ${hostPower} · <b style="color:#6B5B60">수량 ${hostQty}개</b> · <b style="color:#6B5B60">총대 본인 물품</b></p>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${_esc(b.productName||"상품 미입력")} · <b style="color:#6B5B60">수량 ${hostQty}개</b> · <b style="color:#6B5B60">총대 본인 물품</b></p>
       ${ meHost && !locked
         ? `<div class="flex gap-1.5 mt-2">
              <button onclick="editHostOptions(${b.id})" style="border:1.5px solid #FFD6E8;background:#fff;color:#D6437A;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:11px;font-weight:800;padding:6px 12px;border-radius:100px">✏️ 내 공구 옵션 수정</button>
@@ -3576,7 +3324,7 @@ function renderBusRoom(b){
         <span style="font-size:13px;font-weight:800;color:#3A2B30;display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0">${r.trackingNumber?"🚚 ":""}${_esc(r.nick)}${r.me?` <span style="font-size:10px;color:#D6437A">(나)</span>`:""}${_mannerHtml(r.user_id)}</span>
         <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif;flex-shrink:0">${r.amount.toLocaleString()}원</span>
       </div>
-      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${riderProduct(r)} · ${r.power||"도수 미입력"} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
+      <p style="font-size:11px;color:#8D7B80;margin-top:3px">${riderProduct(r)} · <b style="color:#6B5B60">${methodShort(r.method)}</b></p>
       <div class="flex items-center gap-1.5 mt-2" style="flex-wrap:wrap">${statusTag(r)}${payTag(r.paid)}${addrTag(r.hasAddr)}${ r.modRequest ? `<span style="font-size:10px;font-weight:800;color:#fff;background:#C77800;border:1px solid #A66400;padding:3px 8px;border-radius:100px">⏳ 수정 승인 대기중</span>` : "" }${ (owner && riderNeedsCheck(r)) ? `<span style="font-size:10px;font-weight:800;color:#fff;background:#E5484D;border:1px solid #C73B3F;padding:3px 8px;border-radius:100px">⚠️ 정보 확인 필요</span>` : "" }</div>
       ${ r.me ? (locked
         ? `<div class="mt-2" style="font-size:11px;font-weight:700;color:#9A8D93">🔒 주문이 시작되어 수정·취소가 잠겼어요</div>`
@@ -3596,7 +3344,7 @@ function renderBusRoom(b){
              <div style="display:flex;align-items:center;gap:9px">
                <span style="font-size:18px;flex-shrink:0;line-height:1.2">🚚</span>
                <div style="flex:1;min-width:0">
-                 <p style="font-size:12px;font-weight:800;color:#1E40AF;margin:0">내 렌즈가 발송되었어요!</p>
+                 <p style="font-size:12px;font-weight:800;color:#1E40AF;margin:0">내 상품이 발송되었어요!</p>
                  <p style="font-size:11.5px;color:#3A2B30;margin:2px 0 0;line-height:1.45">[${_esc(r.courierName||"택배")}] 운송장 번호: <b style="color:#D6437A">${_esc(r.trackingNumber)}</b></p>
                </div>
                <button onclick="event.stopPropagation();_copy('${_esc(r.trackingNumber)}','운송장 번호를 복사했어요 📋')" style="flex-shrink:0;border:none;cursor:pointer;font-size:11px;font-weight:800;color:#fff;background:#2D6FE0;padding:7px 13px;border-radius:100px;font-family:'Jua','Gowun Dodum',sans-serif">복사</button>
@@ -3652,10 +3400,8 @@ function renderBusRoom(b){
 
   const allTracked = riders.length === 0 || riders.every(r => r.trackingNumber && r.trackingNumber.trim() !== "");
 
-  // [개선1] 주문 버튼 라벨 — 플랫폼이 렌즈라라면 연동 문구, 그 외엔 일반 주문 문구
-  const orderBtnLabel = (b.platform || "렌즈라라") === "렌즈라라"
-    ? "🛒 렌즈라라 연동하여 주문 진행하기"
-    : "🛒 주문 진행하기";
+  // [개선1] 주문 버튼 라벨
+  const orderBtnLabel = "🛒 주문 진행하기";
   // [개선2] 최소 출발 금액(10,000엔) 달성 시에만 주문 진행 버튼 활성화 (서버 guard 와 정합)
   const ORDER_MIN_YEN = b.minimumGoal || 10000;
   const orderReached = (b.current || 0) >= ORDER_MIN_YEN;
@@ -3683,7 +3429,7 @@ function renderBusRoom(b){
       <div style="margin-top:12px">
         ${ b.ordered
           ? `<div class="w-full rounded-xl py-3" style="text-align:center;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#7BE8A8;background:#22351F;border:1px solid #2F5A2C">✅ 주문 진행 중 · 파티원 정보 잠금됨</div>
-             <button onclick="goOrderLink(${b.id})" class="w-full rounded-xl py-3 mt-2.5 active:scale-95 transition-transform" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 ${b.platform||"렌즈라라"} 주문 바로가기</button>
+             <button onclick="goOrderLink(${b.id})" class="w-full rounded-xl py-3 mt-2.5 active:scale-95 transition-transform" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#2D6FE0,#1E3A5F)">🛒 주문처 바로가기</button>
              ${ b.finalized
                 ? `<div class="w-full rounded-xl py-3 mt-2.5" style="text-align:center;font-family:'Jua','Gowun Dodum',sans-serif;font-size:13px;font-weight:800;color:#C77800;background:#FFF6E0;border:1px solid #F2D27A">🎉 배송 완료 · 상호 평가가 활성화됐어요</div>`
                 : (allTracked
@@ -4151,16 +3897,15 @@ async function saveIssue(){
 }
 
 // ── 방장: 구매 시작(주문 진행) → 정보 잠금 + 전체 알림 ──
-// 플랫폼별 주문 사이트 URL
-const PLATFORM_URL = { "렌즈라라": "https://lenslala3.com/", "파스비": "https://fasbee.com" };
+// 주문처 URL: 등록된 상품 링크 우선(제휴사면 서버 트리거가 트래킹 보증), 없으면 상품명 검색.
 function platformUrl(b){
-  if(b && b.productUrl) return b.productUrl;   // 제휴 변환 상품 링크 우선(커미션 트래킹)
-  const p = (b && b.platform) || "렌즈라라";
-  return PLATFORM_URL[p] || ("https://search.naver.com/search.naver?query=" + encodeURIComponent(p));
+  if(b && b.productUrl) return b.productUrl;
+  const q = (b && b.productName) || "";
+  return "https://search.naver.com/search.naver?query=" + encodeURIComponent(q);
 }
 
 let _orderProcBusId = null;
-// '렌즈라라 연동하여 주문 진행하기' → 팀원 요약 + 복사 + 바로가기 모달
+// '주문 진행하기' → 팀원 요약 + 복사 + 바로가기 모달
 function openOrderProcess(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
@@ -4171,18 +3916,18 @@ function openOrderProcess(busId){
     return `<div class="flex items-center justify-between" style="padding:9px 2px;border-bottom:1px solid #F0ECEE">
       <div style="min-width:0">
         <p style="font-size:13px;font-weight:800;color:#3A2B30">${i+1}. ${_esc(r.nick)}</p>
-        <p style="font-size:11px;color:#8D7B80;margin-top:2px">${riderProduct(r)} · ${r.power||"도수 미입력"} · ${methodShort(r.method)}</p>
+        <p style="font-size:11px;color:#8D7B80;margin-top:2px">${riderProduct(r)} · ${methodShort(r.method)}</p>
       </div>
       <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif;flex-shrink:0">${(r.amount||0).toLocaleString()}원</span>
     </div>`;
   }).join("") : `<p style="text-align:center;color:#C4A8B0;font-size:12px;padding:24px 0">탑승객이 없어요</p>`;
   document.getElementById("orderProcBody").innerHTML = `
-    <p style="font-size:12px;color:#8D7B80;margin:0 0 10px">총 <b style="color:#D6437A">${riders.length}명</b> · 합계 <b style="color:#3A2B30">${total.toLocaleString()}원</b> — 주문서를 복사해 ${b.platform||"렌즈라라"}에서 한 번에 주문하세요.</p>
+    <p style="font-size:12px;color:#8D7B80;margin:0 0 10px">총 <b style="color:#D6437A">${riders.length}명</b> · 합계 <b style="color:#3A2B30">${total.toLocaleString()}원</b> — 주문서를 복사해 주문처에서 한 번에 주문하세요.</p>
     <div style="max-height:40vh;overflow-y:auto;border:1.5px solid #FFE0EE;border-radius:14px;padding:2px 12px">${rows}</div>`;
   _orderProcBusId = busId;
   _roomBusId = busId;   // copyOrderSheet 가 참조
   const goBtn = document.getElementById("orderGoBtn");
-  if(goBtn) goBtn.textContent = "🛒 " + (b.platform||"렌즈라라") + "에서 주문하고 완료 처리하기";
+  if(goBtn) goBtn.textContent = "🛒 주문처로 이동하고 완료 처리하기";
   document.getElementById("orderProcessOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";
 }
@@ -4190,7 +3935,7 @@ function closeOrderProcess(){
   document.getElementById("orderProcessOverlay").style.display = "none";
   document.body.style.overflow = "";
 }
-// 렌즈라라 바로가기 + 주문 완료 처리(정보 잠금 + 전체 알림)를 한 번에
+// 주문처 바로가기 + 주문 완료 처리(정보 잠금 + 전체 알림)를 한 번에
 async function goOrderAndFinalize(){
   const b = BUSES.find(x=>x.id===_orderProcBusId);
   if(!b) return;
@@ -4203,7 +3948,7 @@ async function goOrderAndFinalize(){
       return;
     }
   }
-  if(!confirm("렌즈라라로 이동하며 주문을 완료 처리할까요?\n참여자 정보가 잠기고 모든 참여자에게 알림이 발송됩니다.")) return;
+  if(!confirm("주문처로 이동하며 주문을 완료 처리할까요?\n참여자 정보가 잠기고 모든 참여자에게 알림이 발송됩니다.")) return;
   if(!window.sb){ alert("연결 오류로 주문 완료 처리를 못했어요."); return; }
   try{
     // ordered=true 로 잠금 (RLS: 방장만 + 트리거: 목표달성/관리자). 이후 신규 탑승·PII 수정 차단.
@@ -4215,9 +3960,9 @@ async function goOrderAndFinalize(){
     alert(m); return;
   }
   logAffiliateClick(b.id, "order_intent");             // 제휴 트래픽 적재(비차단)
-  window.open(platformUrl(b), "_blank", "noopener");   // 렌즈라라 바로가기(제휴 변환 링크)
+  window.open(platformUrl(b), "_blank", "noopener");   // 주문처 바로가기(등록 상품 링크)
   b.ordered = true;                                    // 클라 즉시 반영
-  (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "렌즈라라 일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 일본에서 발송됩니다 ✈️"));
+  (b.riders||[]).forEach(r=> sendNotification(r.nick, "버스 출발! 🚀 주문이 시작됐어요", "일괄 주문이 시작됐어요! 이제 정보 수정/취소가 불가하며, 곧 발송됩니다 ✈️"));
   closeOrderProcess();
   // 완료 시 총대 수고비(수수료 50% × 인원)가 서버 트리거로 적립됨 → 잔액 즉시 갱신
   if(typeof _refreshWalletBalance === "function") await _refreshWalletBalance();
@@ -4235,14 +3980,14 @@ function logAffiliateClick(busId, clickType){
     window.sb.rpc("log_affiliate_click", { p_bus_id: b.dbId, p_click_type: clickType }).then(()=>{}, ()=>{});
   }catch(_){}
 }
-// 총대 '주문 바로가기' — 제휴 변환 링크로 새 창 + order_intent 트래킹
+// 총대 '주문 바로가기' — 등록 상품 링크로 새 창 + order_intent 트래킹
 function goOrderLink(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
   logAffiliateClick(busId, "order_intent");
   window.open(b.productUrl || platformUrl(b), "_blank", "noopener");
 }
-// 상품 상세 보기(렌즈라라) — product_view 트래킹 + 새 창
+// 상품 상세 보기 — product_view 트래킹 + 새 창
 function viewBusProduct(busId){
   const b = BUSES.find(x=>x.id===busId);
   if(!b) return;
@@ -4446,20 +4191,13 @@ function editHostOptions(busId){
   const _hasRiders = (b.riders || []).length > 0;
   if(_hasRiders && b.hostEdited && !isAdminUser()){ alert("⚠️ 공구 옵션 수정은 1회만 가능합니다.\n이미 수정하셔서 더 이상 변경할 수 없어요."); return; }
   // 탑승자 있을 때만 수정 시작 전 1회 제한 동의 경고
-  if(_hasRiders && !isAdminUser() && !confirm("✋ 탑승자가 있어 공구 옵션(상품명·가격·수량·도수) 수정은 단 1회만 가능합니다.\n저장하면 이후 변경할 수 없어요.\n\n동의하고 수정하시겠어요?")) return;
+  if(_hasRiders && !isAdminUser() && !confirm("✋ 탑승자가 있어 공구 옵션(상품명·가격·수량) 수정은 단 1회만 가능합니다.\n저장하면 이후 변경할 수 없어요.\n\n동의하고 수정하시겠어요?")) return;
   _editHostBusId = busId;
-
-  // 도수 옵션 채우기
-  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
-  document.getElementById("ehPowerL").innerHTML = opts;
-  document.getElementById("ehPowerR").innerHTML = opts;
 
   // 값 설정
   document.getElementById("ehProdName").value = b.productName || "";
   document.getElementById("ehProdPrice").value = b.productPrice || 0;
   document.getElementById("ehQty").value = b.hostQty || 1;
-  document.getElementById("ehPowerL").value = b.hostPowerL || "0.00";
-  document.getElementById("ehPowerR").value = b.hostPowerR || "0.00";
 
   document.getElementById("editHostOptionsOverlay").style.display = "flex";
   document.body.style.overflow = "hidden";
@@ -4473,8 +4211,6 @@ async function saveEditHostOptions(){
   const prodName = document.getElementById("ehProdName").value.trim();
   const prodPrice = parseInt(document.getElementById("ehProdPrice").value, 10) || 0;
   const qty = parseInt(document.getElementById("ehQty").value, 10) || 1;
-  const powerL = document.getElementById("ehPowerL").value;
-  const powerR = document.getElementById("ehPowerR").value;
 
   if(!prodName || prodPrice < 0){
     alert("상품명과 가격을 정확히 입력해주세요.");
@@ -4498,9 +4234,7 @@ async function saveEditHostOptions(){
       .update({
         product_name: prodName,
         product_price: prodPrice,
-        host_qty: qty,
-        host_power_l: powerL,
-        host_power_r: powerR
+        host_qty: qty
       })
       .eq("id", b.dbId);
     
@@ -4533,16 +4267,8 @@ async function editMyInfo(busId, idx){
   // UX 사전 차단 (DB RLS 로도 막히지만 먼저 튕겨냄)
   if(b.ordered && !isAdminUser()){ alert("이미 주문이 시작되어 정보를 수정할 수 없습니다. 총대에게 문의하세요."); return; }
   // 상품/주문 수정을 아직 안 썼다면(소진 전) 1회 제한 동의 경고
-  if(!r.orderEdited && !isAdminUser() && !confirm("✋ 상품/주문 정보(상품명·가격·수량·도수·수령방법) 수정은 단 1회만 가능합니다.\n총대 승인 시 확정되며 이후 변경할 수 없어요.\n(배송지·연락처 등은 여러 번 수정 가능)\n\n동의하고 수정하시겠어요?")) return;
+  if(!r.orderEdited && !isAdminUser() && !confirm("✋ 상품/주문 정보(상품명·가격·수량·수령방법) 수정은 단 1회만 가능합니다.\n총대 승인 시 확정되며 이후 변경할 수 없어요.\n(배송지·연락처 등은 여러 번 수정 가능)\n\n동의하고 수정하시겠어요?")) return;
   _editTarget = { busId, idx };
-
-  // 도수 셀렉트 채우고 기존값 파싱("좌 X / 우 Y")
-  const opts = POWER_OPTIONS.map(v=>`<option value="${v}">${v}</option>`).join("");
-  document.getElementById("emPowerL").innerHTML = opts;
-  document.getElementById("emPowerR").innerHTML = opts;
-  const pm = /좌\s*(\S+)\s*\/\s*우\s*(\S+)/.exec(r.power || "");
-  document.getElementById("emPowerL").value = (pm && POWER_OPTIONS.includes(pm[1])) ? pm[1] : "0.00";
-  document.getElementById("emPowerR").value = (pm && POWER_OPTIONS.includes(pm[2])) ? pm[2] : "0.00";
 
   // 상품/수량 — 승인 대기 중(mod_request)이면 그 값, 아니면 현재 장부 값
   const mreq = r.modRequest || {};
@@ -4558,7 +4284,7 @@ async function editMyInfo(busId, idx){
   // 1회 소진 시 상품/주문 필드 잠금(PII 는 계속 수정 가능). 서버 트리거로도 강제됨.
   const locked = !!r.orderEdited && !isAdminUser();
   document.getElementById("emOrderLockNote").style.display = locked ? "block" : "none";
-  ["emProdName","emProdPrice","emQty","emPowerL","emPowerR"].forEach(id=>{
+  ["emProdName","emProdPrice","emQty"].forEach(id=>{
     const el = document.getElementById(id); if(el){ el.disabled = locked; el.style.opacity = locked ? "0.55" : ""; }
   });
   document.querySelectorAll('input[name="emShip"]').forEach(el=>{ el.disabled = locked; });
@@ -4604,15 +4330,14 @@ async function saveEditMyInfo(){
     if(_noSpaceLen(addr) < 4){ alert("배송지 주소를 정확히 입력해주세요."); return; }
   }
   const method  = (document.querySelector('input[name="emShip"]:checked')||{}).value || "conv";
-  const power   = `좌 ${document.getElementById("emPowerL").value} / 우 ${document.getElementById("emPowerR").value}`;
   const qty     = Math.max(1, Math.min(100, parseInt(document.getElementById("emQty").value, 10) || 1));
   const prodName = document.getElementById("emProdName").value.trim();
   const yen      = Math.max(0, Math.min(1000000, parseInt(document.getElementById("emProdPrice").value, 10) || 0));
   const memo    = document.getElementById("emMemo").value.trim() || null;
 
-  // 주문에 영향 주는 필드(상품명·가격·수량·도수·수령방법) 변경 여부 → 변경 시 총대 승인 필요(mod_request).
+  // 주문에 영향 주는 필드(상품명·가격·수량·수령방법) 변경 여부 → 변경 시 총대 승인 필요(mod_request).
   // (DB 트리거가 파티원의 product/qty/yen/amount 직접수정을 막으므로 승인 워크플로우로 우회)
-  let orderChanged = (qty !== (r.qty || 1)) || (power !== (r.power || "")) || (method !== (r.method || "conv"))
+  let orderChanged = (qty !== (r.qty || 1)) || (method !== (r.method || "conv"))
                   || (prodName !== (r.productName || "")) || (yen !== (r.yen || 0));
   if(orderChanged && !prodName){ alert("상품명을 입력해주세요."); return; }
   // 1회 제한: 이미 소진(승인 완료)이면 상품/주문 변경은 막고 PII/메모만 저장(동의 경고는 editMyInfo 진입 시 받음)
@@ -4631,10 +4356,10 @@ async function saveEditMyInfo(){
     if(e2) throw e2;
     piiSaved = !!(pd && pd.length);
     // ② 메모는 즉시 반영. 주문 영향 필드는 직접 쓰지 않고 mod_request(비-PII)에 담아 승인 대기.
-    //    ⚠️ mod_request 는 공개 SELECT 테이블이므로 PII 를 절대 담지 않는다(qty/power/method 만).
+    //    ⚠️ mod_request 는 공개 SELECT 테이블이므로 PII 를 절대 담지 않는다(qty/method 만).
     const upd = { memo };
     if(orderChanged){
-      upd.mod_request = { qty, power, method, product_name: prodName, yen, requested_at: new Date().toISOString() };
+      upd.mod_request = { qty, method, product_name: prodName, yen, requested_at: new Date().toISOString() };
     }
     const { error: e1 } = await window.sb.from("bus_riders").update(upd).eq("id", r.id);
     if(e1) throw e1;
@@ -4647,7 +4372,7 @@ async function saveEditMyInfo(){
   // 클라 즉시 반영 — 메모/PII 만(주문 영향 필드는 승인 전까지 장부값 유지, 대기 표시).
   r.memo = memo;
   if(piiSaved){ r.realName = name; r.phone = phoneD; r.store = addr; r.payer = payer; }
-  if(orderChanged){ r.modRequest = { qty, power, method, product_name: prodName, yen }; }
+  if(orderChanged){ r.modRequest = { qty, method, product_name: prodName, yen }; }
   closeEditMyInfo();
   showToast(orderChanged
     ? "총대님께 수정 요청을 보냈습니다. 승인 후 반영됩니다 ✅"
@@ -4668,7 +4393,7 @@ function openModRequests(busId){
   } else {
     body.innerHTML = reqs.map(r=>{
       const req = r.modRequest || {};
-      const nq = req.qty || 1, np = req.power || "도수 미입력", nm = req.method || "conv";
+      const nq = req.qty || 1, nm = req.method || "conv";
       const npn = (req.product_name != null ? req.product_name : (r.productName || "")) || "상품 미입력";
       const nyen = (req.yen != null ? req.yen : (r.yen || 0));
       const fee = nm === "home" ? 3500 : nm === "conv" ? 1800 : 0;
@@ -4685,7 +4410,6 @@ function openModRequests(busId){
         ${cell(r.productName||"상품 미입력", npn, npn!==(r.productName||""))}
         ${cell("단가 "+(r.yen||0).toLocaleString()+"엔", "단가 "+nyen.toLocaleString()+"엔", nyen!==(r.yen||0))}
         ${cell("수량 "+(r.qty||1)+"개", "수량 "+nq+"개", nq!==(r.qty||1))}
-        ${cell(r.power||"도수 미입력", np, np!==(r.power||""))}
         ${cell(methodShort(r.method), methodShort(nm), nm!==(r.method||"conv"))}
         ${cell((r.amount||0).toLocaleString()+"원", newAmount.toLocaleString()+"원", newAmount!==(r.amount||0))}
         <div class="flex gap-2 mt-3">
@@ -4711,7 +4435,7 @@ async function approveModRequest(riderId, busId){
   const b = BUSES.find(x=>x.id===busId);
   const wasOrdered = !!(b && b.ordered);
   const r = b && (b.riders || []).find(x=>x.id===riderId);
-  if(r) sendNotification(r.nick, "수정 요청이 승인됐어요 ✅", "총대가 수량/도수 변경을 승인했어요. 변경된 금액을 확인해주세요!");
+  if(r) sendNotification(r.nick, "수정 요청이 승인됐어요 ✅", "총대가 수량 변경을 승인했어요. 변경된 금액을 확인해주세요!");
   showToast("수정 요청을 승인했어요 ✅");
   const nb = await reloadBusRoom(busId);
   // 이 승인으로 100% 달성 → 서버 자동 마감. 총대(본인)에게 마감 알림.
@@ -4747,11 +4471,9 @@ function copyAddressBook(){
 }
 
 /* ═══════════════════════════════════
-   📋 자동 발주서 — 도수별 수량 합산 (탑승자 + 총대 본인 1세트)
+   📋 자동 발주서 — 상품별 수량 합산 (탑승자 + 총대 본인 1세트)
 ═══════════════════════════════════ */
 let _orderSheetBusId = null;
-// 도수 문자열 정규화(공백 차이로 그룹이 갈리지 않게)
-function _normPower(p){ return String(p||"도수 미입력").replace(/\s+/g," ").trim(); }
 
 // 제휴 트래킹 파라미터 자동 부착 함수 (단축링크 실패 시 폴백용)
 function _trackUrl(url) {
@@ -4784,19 +4506,14 @@ async function _shortenUrls(urls){
 // 단축 URL 있으면 그걸, 없으면 기존 utm 롱링크로 폴백(항상 동작 보장).
 function _shortOf(url){ return (url && _shortUrlCache[url]) || _trackUrl(url); }
 
-// b → { rows:[{power,qty}], total } (수량 많은 순)
-// b → { rows:[{isHost, nick, product, qty, power, productUrl}], totalQty, totalYen }
+// b → { rows:[{isHost, nick, product, qty, productUrl}], totalQty, totalYen }
 function _buildOrderSheet(b){
-  const hostPower = (b.hostPowerL || b.hostPowerR)
-    ? `좌 ${b.hostPowerL||"-"} / 우 ${b.hostPowerR||"-"}` : "도수 미입력";
-  
   const rows = [];
   rows.push({
     isHost: true,
     nick: b.captain || "총대",
     product: b.productName || "상품 미입력",
     qty: b.hostQty || 1,
-    power: hostPower,
     productUrl: b.productUrl || ""
   });
 
@@ -4806,7 +4523,6 @@ function _buildOrderSheet(b){
       nick: r.nick,
       product: riderProduct(r),
       qty: r.qty || 1,
-      power: r.power || "도수 미입력",
       productUrl: r.productUrl || b.productUrl || ""
     });
   });
@@ -4818,7 +4534,7 @@ function _buildOrderSheet(b){
 function _orderSheetText(b){
   const { rows, totalQty, totalYen } = _buildOrderSheet(b);
   const lines = rows.map(r => {
-    let text = `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개 / ${r.power}`;
+    let text = `• [${r.isHost ? "👑총대 " : ""}${r.nick}] ${r.product} / ${r.qty}개`;
     if(r.productUrl) text += `\n  🔗 상품으로 바로 이동: ${_shortOf(r.productUrl)}`;
     return text;
   });
@@ -4840,8 +4556,7 @@ async function openOrderSheet(busId){
             <span style="font-size:12px;font-weight:800;color:#3A2B30;background:#F9F9FB;padding:4px 8px;border-radius:6px">${r.isHost ? "👑 총대 " : "🙋 "}${_esc(r.nick)}</span>
             <span style="font-size:13px;font-weight:800;color:#D6437A;font-family:'Jua','Gowun Dodum',sans-serif;background:#FFF0F6;padding:4px 10px;border-radius:100px">수량 ${r.qty}개</span>
           </div>
-          <p style="font-size:14px;font-weight:800;color:#3A2B30;margin:0 0 4px">${_esc(r.product)}</p>
-          <p style="font-size:12.5px;color:#8D7B80;margin:0 ${r.productUrl ? "0 6px" : "0"};font-weight:700">도수: <span style="color:#6B5B60">${_esc(r.power)}</span></p>
+          <p style="font-size:14px;font-weight:800;color:#3A2B30;margin:0 ${r.productUrl ? "0 6px" : "0"}">${_esc(r.product)}</p>
           ${ r.productUrl ? `<p style="font-size:11px;margin:0;word-break:break-all"><a href="${_esc(_shortOf(r.productUrl))}" target="_blank" rel="noopener" style="color:#2D6FE0;text-decoration:none;font-weight:700">🔗 상품으로 바로 이동 — ${_esc(_shortOf(r.productUrl))} ›</a></p>` : "" }
         </div>`).join("")}
     </div>
@@ -7375,7 +7090,6 @@ function _checkMonthlyLikeReset(){
 _checkMonthlyLikeReset();
 drawFilter(); drawBanner(); drawBrands(); drawRanking(); drawNews(); go("home"); updateAuthBtn();
 renderPoints(); renderNotifBadge(); showGodFab(); syncServerAdmin(); if(authUser) checkDailyAttendance();
-loadLensCatalog();   // 추천 렌즈 카탈로그 SWR 로드(공개 — 로그인 불필요)
 
 /* ═══════════════════════════════════
    Supabase 세션 → authUser 브리지
