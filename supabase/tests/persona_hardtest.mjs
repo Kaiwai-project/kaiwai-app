@@ -84,12 +84,12 @@ try{
   const dHrs=dRes.ok?(new Date(dRes.data[0].expired_at)-Date.now())/3600000:-999;
   log(dRes.ok && dHrs>11 && dHrs<13, `D 위조 expired_at(2020) 무시 → 서버 강제 ${dHrs.toFixed(2)}h 후 (기대 ≈12h)`);
 
-  console.log('[페르소나 E] 무배 하한(10,000엔) 미만 조기 출발 차단');
-  // host product 5000 (current 5000 < 1만) → minGoal 1만이어도 무배 하한 가드가 먼저 차단
+  console.log('[페르소나 E] 최소 출발 하한(10,000엔) 미만 조기 출발 차단');
+  // host product 5000 (current 5000 < 최소 1만) → 서버 가드가 '최소 출발 금액' 메시지로 차단
   const bE=await mkBus(J.H,ids.H,5000,30000,10000);
   const upE=await uRest(J.H,'PATCH',`buses?id=eq.${bE}`,{ordered:true},'return=representation');
-  log(!upE.ok && String(upE.data.message||'').includes('무료 배송') && (await ordered(bE))===false,
-      `E 무배미달(${await currentOf(bE)}/10000) 출발 차단 → "${(upE.data.message||'').slice(0,40)}"`);
+  log(!upE.ok && String(upE.data.message||'').includes('최소 출발 금액') && (await ordered(bE))===false,
+      `E 최소하한미달(${await currentOf(bE)}/10000) 출발 차단 → "${(upE.data.message||'').slice(0,40)}"`);
 
   console.log('[페르소나 F] minimum_goal 10,000엔 CHECK 제약 (개설 거부)');
   const fRes=await uRest(J.H,'POST','buses',{owner_id:ids.H,captain:'H',title:'f',goal:30000,minimum_goal:5000,product_name:'상품',product_price:11000},'return=representation');
