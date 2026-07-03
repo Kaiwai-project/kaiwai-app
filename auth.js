@@ -45,8 +45,8 @@ const _capPlugin = (n) => (CAP && CAP.Plugins && CAP.Plugins[n]) || null;
 //   Supabase → Auth → URL Configuration → Redirect URLs 에 아래 값을 반드시 추가할 것.
 const NATIVE_REDIRECT = "kr.kaiwai.app://auth/callback";
 // 네이버 전용: Naver 콘솔은 http/https 콜백만 허용 → 배포된 브릿지가 커스텀 스킴으로 바운스.
-//   ⚠️ 실제 배포 웹 도메인으로 확인/교체하고 Naver 콘솔 Callback + Supabase 허용목록에 등록.
-const KAIWAI_WEB_ORIGIN = "https://kaiwai-app.vercel.app";
+//   Naver 콘솔 Callback + Supabase 허용목록에 아래 NAVER_BRIDGE_URI 를 등록해야 함.
+const KAIWAI_WEB_ORIGIN = "https://kaiwai.kr";
 const NAVER_BRIDGE_URI = KAIWAI_WEB_ORIGIN + "/auth/naver-bridge.html";
 
 /* ── 2. Supabase 클라이언트 (전역 1개) ──────────────────────── */
