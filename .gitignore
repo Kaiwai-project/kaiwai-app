@@ -19,3 +19,6 @@ backgrounds/
 
 # Node / Tailwind 빌드 (산출물 assets/kaiwai.tailwind.css 만 커밋)
 node_modules/
+
+# Capacitor webDir (npm run cap:assets 로 재생성 — 커밋 안 함)
+www/

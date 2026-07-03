@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KAIWAI</string>
+    <string name="title_activity_main">KAIWAI</string>
+    <string name="package_name">kr.kaiwai.app</string>
+    <string name="custom_url_scheme">kr.kaiwai.app</string>
+</resources>

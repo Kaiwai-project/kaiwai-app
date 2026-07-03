@@ -5,9 +5,16 @@
   "description": "KAIWAI 정적 앱 — Tailwind는 로컬 프리빌드 후 assets/kaiwai.tailwind.css 를 커밋(Vercel은 정적 서빙).",
   "scripts": {
     "build:css": "tailwindcss -i ./src/tailwind.input.css -o ./assets/kaiwai.tailwind.css --minify",
-    "watch:css": "tailwindcss -i ./src/tailwind.input.css -o ./assets/kaiwai.tailwind.css --watch"
+    "watch:css": "tailwindcss -i ./src/tailwind.input.css -o ./assets/kaiwai.tailwind.css --watch",
+    "cap:assets": "node scripts/copy-web-assets.mjs",
+    "cap:sync": "npm run cap:assets && npx cap copy android"
   },
   "devDependencies": {
     "tailwindcss": "^3.4.17"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
   }
 }
