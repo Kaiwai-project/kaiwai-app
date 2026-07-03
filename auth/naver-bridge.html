@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>KAIWAI 앱으로 이동 중… 🎀</title>
+<style>
+  body{font-family:'Noto Sans KR',sans-serif;background:#FFF0F5;color:#4A373A;
+       display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
+  .box{text-align:center;max-width:320px;padding:20px}
+  .spin{width:38px;height:38px;border:4px solid #FFD6E8;border-top-color:#FF6FA8;
+        border-radius:50%;animation:r .8s linear infinite;margin:0 auto 16px}
+  @keyframes r{to{transform:rotate(360deg)}}
+  .f{display:none;margin-top:14px}
+  a.btn{display:inline-block;margin-top:8px;background:#FF6FA8;color:#fff;font-weight:700;
+        text-decoration:none;padding:11px 18px;border-radius:12px;font-size:14px}
+  .sub{color:#8D7B80;font-size:12px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="spin"></div>
+  <p>KAIWAI 앱으로 돌아가는 중…</p>
+  <div class="f" id="f">
+    <p class="sub">앱이 자동으로 열리지 않으면 아래 버튼을 눌러주세요.</p>
+    <a class="btn" id="open" href="#">KAIWAI 앱 열기</a>
+  </div>
+</div>
+<script>
+/* 네이버 OAuth 는 http/https 콜백만 허용하므로, Naver 가 이 페이지(https)로 보낸
+   code/state 쿼리를 그대로 커스텀 스킴 딥링크로 바운스하여 네이티브 앱을 재실행한다.
+   (웹 로그인은 이 페이지를 거치지 않고 /auth/callback.html 로 직접 복귀) */
+(function () {
+  var qs = window.location.search || "";
+  var target = "kr.kaiwai.app://auth/callback" + qs;
+  var openEl = document.getElementById("open");
+  if (openEl) openEl.setAttribute("href", target);
+  // 즉시 스킴으로 이동 시도
+  window.location.replace(target);
+  // 실패(데스크톱/스킴 미설치) 대비 수동 버튼 노출
+  setTimeout(function () {
+    var f = document.getElementById("f");
+    if (f) f.style.display = "block";
+  }, 1400);
+})();
+</script>
+</body>
+</html>

@@ -22,6 +22,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- OAuth 딥링크: kr.kaiwai.app://auth/callback (소셜 로그인 콜백 복귀) -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="kr.kaiwai.app" />
+            </intent-filter>
+
         </activity>
 
         <provider

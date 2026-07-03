@@ -30,6 +30,25 @@ const NAVER_REDIRECT_URI = REDIRECT_URI;
 // 카카오/구글 등 Supabase 네이티브 OAuth 가 돌아올 곳 (Supabase 허용목록과 일치)
 const AUTH_REDIRECT = REDIRECT_URI;
 
+/* ── 네이티브(Capacitor) 딥링크 OAuth 설정 ──────────────────────
+   웹은 origin + /auth/callback.html 로 복귀하지만, 네이티브 앱은 외부 브라우저가
+   http(s)://localhost 로 돌아올 수 없어 '커스텀 스킴 딥링크'로 복귀한다.
+   흐름: signInWithOAuth(skipBrowserRedirect) → 인앱브라우저(Browser.open) →
+         공급자 로그인 → 커스텀 스킴 리다이렉트 → OS 가 앱 재실행(appUrlOpen) →
+         exchangeCodeForSession(code). PKCE code_verifier 는 앱 웹뷰 localStorage 에
+         남아 있어(singleTask 로 웹뷰 유지) 교환이 성립한다. */
+const CAP = window.Capacitor || null;
+const IS_NATIVE = !!(CAP && typeof CAP.isNativePlatform === "function" && CAP.isNativePlatform());
+const _capPlugin = (n) => (CAP && CAP.Plugins && CAP.Plugins[n]) || null;
+
+// 커스텀 스킴 딥링크 — AndroidManifest intent-filter + Supabase Redirect 허용목록과 "정확히" 일치.
+//   Supabase → Auth → URL Configuration → Redirect URLs 에 아래 값을 반드시 추가할 것.
+const NATIVE_REDIRECT = "kr.kaiwai.app://auth/callback";
+// 네이버 전용: Naver 콘솔은 http/https 콜백만 허용 → 배포된 브릿지가 커스텀 스킴으로 바운스.
+//   ⚠️ 실제 배포 웹 도메인으로 확인/교체하고 Naver 콘솔 Callback + Supabase 허용목록에 등록.
+const KAIWAI_WEB_ORIGIN = "https://kaiwai-app.vercel.app";
+const NAVER_BRIDGE_URI = KAIWAI_WEB_ORIGIN + "/auth/naver-bridge.html";
+
 /* ── 2. Supabase 클라이언트 (전역 1개) ──────────────────────── */
 //  detectSessionInUrl:false → 콜백에서 수동 코드 교환 (네이버 커스텀 흐름과 충돌 방지)
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -53,28 +72,34 @@ function _makeState() {
 /* ── 4. 로그인 시작: Naver 인증 페이지로 이동 ───────────────── */
 function startNaverLogin() {
   const state = _makeState();
+  // 네이티브: Naver 는 커스텀 스킴을 못 받으므로 https 브릿지로 보낸 뒤 스킴으로 바운스.
+  const redirect = IS_NATIVE ? NAVER_BRIDGE_URI : NAVER_REDIRECT_URI;
   const url =
     "https://nid.naver.com/oauth2.0/authorize?" +
     new URLSearchParams({
       response_type: "code",
       client_id: NAVER_CLIENT_ID,
-      redirect_uri: NAVER_REDIRECT_URI,
+      redirect_uri: redirect,
       state,
     }).toString();
-  window.location.href = url;   // 요청하신 location.href 이동
+  if (IS_NATIVE) { _openAuthUrl(url); return; }   // 인앱 브라우저로 오픈
+  window.location.href = url;   // 웹: 기존 location.href 이동
+}
+
+// 인앱 브라우저(Chrome Custom Tab)로 인증 URL 오픈. 플러그인 없으면 웹뷰 내 이동 폴백.
+async function _openAuthUrl(url) {
+  const Browser = _capPlugin("Browser");
+  if (Browser) {
+    try { await Browser.open({ url, presentationStyle: "popover" }); return; }
+    catch (_) { /* 폴백 */ }
+  }
+  window.location.href = url;
 }
 
 /* ── 5. 콜백 처리: code/state → verify-naver → verifyOtp ───── */
 //   callback.html 에서 호출. 성공 시 홈으로 리다이렉트.
-async function handleNaverCallback() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  const state = params.get("state");
-  const error = params.get("error");
-
-  if (error) throw new Error("Naver 인증 거부: " + error);
-  if (!code || !state) throw new Error("code/state 누락");
-
+// 네이버 코드/스테이트 → 세션 확립 (웹 콜백·네이티브 딥링크 공용 코어)
+async function _finishNaver(code, state) {
   // CSRF 검증: 보냈던 state 와 동일한지 확인
   const saved = sessionStorage.getItem("naver_oauth_state");
   if (!saved || saved !== state) throw new Error("state 불일치 (CSRF 의심)");
@@ -94,13 +119,36 @@ async function handleNaverCallback() {
   });
   if (otpErr) throw new Error("세션 확립 실패: " + otpErr.message);
 
-  // ③ 완료 → 홈으로
+  // ③ 완료
   return sb.auth.getUser();
+}
+
+async function handleNaverCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const state = params.get("state");
+  const error = params.get("error");
+
+  if (error) throw new Error("Naver 인증 거부: " + error);
+  if (!code || !state) throw new Error("code/state 누락");
+  return _finishNaver(code, state);
 }
 
 /* ── 6. 카카오/구글: Supabase 네이티브 OAuth ─────────────────── */
 //   signInWithOAuth 가 브라우저를 공급자 → Supabase → AUTH_REDIRECT 로 자동 리다이렉트.
+// 네이티브: Supabase OAuth URL 을 받아(skipBrowserRedirect) 인앱 브라우저로 오픈.
+//   공급자→Supabase→커스텀 스킴(NATIVE_REDIRECT) 리다이렉트 → appUrlOpen 이 code 처리.
+async function _startOAuthNative(provider) {
+  const { data, error } = await sb.auth.signInWithOAuth({
+    provider,
+    options: { redirectTo: NATIVE_REDIRECT, skipBrowserRedirect: true },
+  });
+  if (error) throw new Error(provider + " 로그인 시작 실패: " + error.message);
+  if (data?.url) await _openAuthUrl(data.url);
+}
+
 async function startKakaoLogin() {
+  if (IS_NATIVE) return _startOAuthNative("kakao");
   const { error } = await sb.auth.signInWithOAuth({
     provider: "kakao",
     options: { redirectTo: AUTH_REDIRECT },
@@ -109,11 +157,59 @@ async function startKakaoLogin() {
 }
 
 async function startGoogleLogin() {
+  if (IS_NATIVE) return _startOAuthNative("google");
   const { error } = await sb.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: AUTH_REDIRECT },
   });
   if (error) throw new Error("구글 로그인 시작 실패: " + error.message);
+}
+
+/* ── 네이티브 딥링크 콜백 핸들러 ────────────────────────────────
+   커스텀 스킴(kr.kaiwai.app://auth/callback?...) 으로 앱이 재실행될 때 호출.
+   앱 시작 시 initDeepLinkAuth() 로 1회 등록한다. */
+let _deepLinkReady = false;
+async function _handleDeepLink(url) {
+  if (!url || url.indexOf(NATIVE_REDIRECT) !== 0) return;   // 우리 콜백만 처리
+  const Browser = _capPlugin("Browser");
+  // 스킴 URL 을 표준 URL 로 파싱 (query 는 ? 뒤). URL API 가 커스텀 스킴도 파싱 가능.
+  let params;
+  try { params = new URL(url).searchParams; }
+  catch (_) { params = new URLSearchParams((url.split("?")[1] || "")); }
+
+  const code = params.get("code");
+  const state = params.get("state");
+  const errParam = params.get("error") || params.get("error_description");
+  try {
+    if (errParam) throw new Error("소셜 인증 실패: " + errParam);
+    if (!code) throw new Error("콜백 파라미터(code)가 없습니다.");
+
+    const savedState = sessionStorage.getItem("naver_oauth_state");
+    if (savedState && state === savedState) {
+      await _finishNaver(code, state);                 // 네이버(브릿지 경유)
+    } else {
+      const { error } = await sb.auth.exchangeCodeForSession(code);   // 카카오/구글 PKCE
+      if (error) throw new Error("세션 교환 실패: " + error.message);
+    }
+    if (Browser) { try { await Browser.close(); } catch (_) {} }
+    // 세션 확립 → onAuthStateChange 가 앱 UI 를 갱신. 방어적으로 이벤트도 발행.
+    window.dispatchEvent(new CustomEvent("kaiwai-auth-success"));
+  } catch (e) {
+    if (Browser) { try { await Browser.close(); } catch (_) {} }
+    window.dispatchEvent(new CustomEvent("kaiwai-auth-error", { detail: String(e.message || e) }));
+  }
+}
+
+// 앱 시작 시 1회 호출: 딥링크 리스너 등록 + 콜드스타트 URL 처리.
+async function initDeepLinkAuth() {
+  if (!IS_NATIVE || _deepLinkReady) return;
+  const App = _capPlugin("App");
+  if (!App) return;
+  _deepLinkReady = true;
+  App.addListener("appUrlOpen", (data) => { _handleDeepLink(data && data.url); });
+  // 앱이 딥링크로 콜드스타트된 경우(launchUrl) 도 처리
+  try { const ret = await App.getLaunchUrl(); if (ret && ret.url) _handleDeepLink(ret.url); }
+  catch (_) {}
 }
 
 /* ── 7. 통합 콜백 핸들러 (callback.html 에서 호출) ───────────── */
@@ -141,8 +237,13 @@ async function handleAuthCallback() {
 
 /* 전역 노출 (인라인 onclick / callback.html 에서 사용) */
 window.sb = sb;
+window.IS_NATIVE = IS_NATIVE;
 window.startNaverLogin = startNaverLogin;
 window.startKakaoLogin = startKakaoLogin;
 window.startGoogleLogin = startGoogleLogin;
 window.handleNaverCallback = handleNaverCallback;
 window.handleAuthCallback = handleAuthCallback;
+window.initDeepLinkAuth = initDeepLinkAuth;
+
+// 네이티브 앱: 로드 즉시 딥링크 인증 리스너 등록
+if (IS_NATIVE) { initDeepLinkAuth(); }
