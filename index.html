@@ -5179,8 +5179,8 @@ function _renderNews(){
       ${n.dow?`<span style="font-family:var(--kw-num);font-size:13px;color:var(--kw-pink-deep);font-weight:800">${n.dow}</span>`:""}
     </div>
     <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:9px;min-width:0">
-      <div style="font-size:15px;line-height:1.4;color:#222;font-weight:500">${n.text}</div>
-      <div style="display:flex;gap:7px;flex-wrap:wrap">${tags}</div>
+      <div class="clamp2" style="font-size:15px;line-height:1.4;color:#222;font-weight:500;height:44px">${n.text}</div>
+      <div style="display:flex;gap:7px;flex-wrap:nowrap;overflow:hidden">${tags}</div>
     </div>
     <button onclick="event.stopPropagation();nextNews()" aria-label="다음 소식" style="flex:none;align-self:center;width:24px;height:24px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--kw-pink)"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg>
