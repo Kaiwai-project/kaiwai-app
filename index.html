@@ -7197,6 +7197,9 @@ async function initSupabaseAuth(){
   window.sb.auth.onAuthStateChange((event, session)=>{
     if((event==="SIGNED_IN" || event==="TOKEN_REFRESHED") && session?.user){
       applySupabaseUser(session.user);
+      // 소셜 로그인(네이티브 인앱브라우저)은 같은 페이지로 복귀 → 로그인 시트가 안 닫힘.
+      // 세션 확립(SIGNED_IN) 시 시트를 닫아준다. (이메일 로그인은 자체 closeAuth 도 있음 — 중복 무해)
+      if(event==="SIGNED_IN") closeAuth();
     } else if(event==="SIGNED_OUT"){
       _clearAuthLocal();
     }

@@ -26,6 +26,7 @@ const ALLOWLIST = [
   'index.html', 'profile.html', 'privacy.html', 'terms.html',
   'auth.js', 'coop-core.js', 'profile.js', 'profile.css',
   'wallpaper.jpg', 'kaiwai-logo-trim_resize.png',
+  'calendar_data.json',                 // loadCal() 이 fetch 하는 캘린더 데이터(웹뷰 번들 필수 — 누락 시 앱 캘린더 빈 상태)
   'assets', 'illust', 'UI', 'auth',
 ];
 
