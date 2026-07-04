@@ -121,6 +121,13 @@
      1회만 재생되던 버그 → .su 토글이 항상 이기도록 보강(밑에서 올라오는 모달 일관성) */
   .kw-pop.su{animation:slideUp .32s cubic-bezier(.32,.72,0,1) !important}
   .clamp2{display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  /* ══ Safe Area 일괄 대응 (노치·상태바·홈인디케이터 / iOS·Android 공통) ══
+     viewport-fit=cover 로 앱이 화면 전체를 덮으므로, 기기별 안전영역만큼 콘텐츠를 밀어준다. */
+  #app{ min-height:100vh; min-height:100dvh; }               /* dvh: 모바일 주소창 변동 대응(vh 폴백) */
+  /* 각 탭 최상단 sticky 헤더: 상태바/노치 아래로 콘텐츠 확보(기존 pt-7 = 1.75rem 유지 + 안전영역 가산) */
+  .kw-safetop{ padding-top: calc(1.75rem + env(safe-area-inset-top)) !important; }
+  /* 바텀시트(둥근 상단 팝업) 하단: 홈인디케이터 위로 내부 콘텐츠를 밀어올림(배경은 바닥까지 유지) */
+  .kw-pop[style*="28px 28px 0 0"]{ padding-bottom: env(safe-area-inset-bottom); }
   .masonry{columns:2;column-gap:10px}
   .mitem{break-inside:avoid;margin-bottom:10px}
   a{text-decoration:none}
@@ -263,7 +270,7 @@
 
 <!-- ══ 홈 탭 ══ -->
 <div id="tHome" class="flex flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.5),rgba(255,240,245,0))">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3 kw-safetop" style="background:linear-gradient(to bottom,rgba(255,240,245,.5),rgba(255,240,245,0))">
     <div class="flex items-center justify-between mb-3">
       <img onclick="goHome()" src="kaiwai-logo-trim_resize.png" alt="KAIWAI" title="홈으로" role="button" loading="lazy" decoding="async" width="101" height="46" style="cursor:pointer;height:46px;width:auto;object-fit:contain;display:block;filter:drop-shadow(0 2px 4px rgba(214,67,122,.22))"/>
       <div style="display:flex;align-items:center;gap:8px">
@@ -334,7 +341,7 @@
 
 <!-- ══ 쇼핑맵 탭 ══ -->
 <div id="tMap" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3 kw-safetop" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
     <div class="flex items-center justify-between mb-4">
       <div><h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🗺️ 쇼핑 맵</h1><p style="color:#8D7B80;font-size:10px">현지 오프라인 매장 가이드</p></div>
       <span style="background:#FFE8F0;color:#8D7B80;font-size:10px;padding:4px 10px;border-radius:10px">면세 ✓ 표시 있음</span>
@@ -348,7 +355,7 @@
 
 <!-- ══ 피드 탭 ══ -->
 <div id="tFeed" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0))">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3 kw-safetop" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0))">
     <div class="flex items-center justify-between">
       <div><h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">📸 스타일 피드</h1><p style="color:#8D7B80;font-size:10px">서브컬쳐 OOTD 모음</p></div>
       <button onclick="openUpload()" style="background:#FFE0EE;color:#D6437A;border:1.5px solid #FFB3CC;font-size:11px;font-weight:700;padding:6px 14px;border-radius:100px;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif">+ 업로드</button>
@@ -377,7 +384,7 @@
 
 <!-- ══ 공구(버스) 탭 ══ -->
 <div id="tBus" style="display:none" class="flex-col flex-1">
-  <div class="sticky top-0 z-10 px-4 pt-7 pb-3" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
+  <div class="sticky top-0 z-10 px-4 pt-7 pb-3 kw-safetop" style="background:linear-gradient(to bottom,rgba(255,240,245,.6) 85%,rgba(255,240,245,0));backdrop-filter:blur(10px)">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="font-bold text-lg" style="color:#4A4A4A;font-family:'Jua','Gowun Dodum',sans-serif">🚌 안심 공구</h1>
@@ -410,7 +417,7 @@
 </div>
 
 <!-- ══ 하단 탭바 ══ -->
-<nav class="fixed bottom-0 z-20 w-full max-w-[430px] flex" style="background:var(--kw-pink);box-shadow:0 -4px 16px -6px var(--kw-pink-deep)">
+<nav class="fixed bottom-0 z-20 w-full max-w-[430px] flex" style="background:var(--kw-pink);box-shadow:0 -4px 16px -6px var(--kw-pink-deep);padding-bottom:env(safe-area-inset-bottom)">
   <button id="nb-home" onclick="go('home')" class="active flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:700;color:#fff;border:none;background:none;cursor:pointer;font-family:var(--kw-num);transition:opacity .2s,transform .2s"><span style="font-size:18px">🎀</span>홈</button>
   <button id="nb-feed" onclick="go('feed')" class="flex-1 flex flex-col items-center gap-0.5 py-3" style="font-size:10px;font-weight:700;color:#fff;opacity:.62;border:none;background:none;cursor:pointer;font-family:var(--kw-num);transition:opacity .2s,transform .2s"><span style="font-size:18px">📸</span>피드</button>
   <button id="nb-bus"  onclick="go('bus')"  class="flex-1 flex flex-col items-center justify-end py-2" style="border:none;background:none;cursor:pointer;font-family:var(--kw-num)">
@@ -423,12 +430,12 @@
 
 <!-- ══ [공구] 탭 전용: 공구 열기 플로팅 버튼(FAB) ══ -->
 <button id="busFab" onclick="openCreateBus()" class="shadow-lg"
-  style="display:none;position:fixed;bottom:96px;right:max(16px,calc(50% - 199px));z-index:30;border:none;cursor:pointer;display:none;align-items:center;gap:7px;padding:14px 18px;border-radius:100px;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:14px;background:linear-gradient(135deg,#E8608D,#D6437A);box-shadow:0 12px 26px -8px rgba(196,16,85,.7)">
+  style="display:none;position:fixed;bottom:calc(96px + env(safe-area-inset-bottom));right:max(16px,calc(50% - 199px));z-index:30;border:none;cursor:pointer;display:none;align-items:center;gap:7px;padding:14px 18px;border-radius:100px;color:#fff;font-family:'Jua','Gowun Dodum',sans-serif;font-weight:800;font-size:14px;background:linear-gradient(135deg,#E8608D,#D6437A);box-shadow:0 12px 26px -8px rgba(196,16,85,.7)">
   <span style="font-size:16px">➕</span> 공구 열기
 </button>
 
 <!-- ══ God Mode 디버그 FAB (관리자 전용 · 기본 숨김) ══ -->
-<button id="godFab" onclick="openGodPanel()" title="God Mode 디버그" style="display:none;position:fixed;left:max(12px,calc(50% - 207px));bottom:84px;z-index:40;width:46px;height:46px;border-radius:50%;border:2px solid #7BE8A8;background:#1B1430;color:#7BE8A8;font-size:18px;cursor:pointer;box-shadow:0 0 16px rgba(123,232,168,.5);animation:godPulse 2.4s ease-in-out infinite">🐞</button>
+<button id="godFab" onclick="openGodPanel()" title="God Mode 디버그" style="display:none;position:fixed;left:max(12px,calc(50% - 207px));bottom:calc(84px + env(safe-area-inset-bottom));z-index:40;width:46px;height:46px;border-radius:50%;border:2px solid #7BE8A8;background:#1B1430;color:#7BE8A8;font-size:18px;cursor:pointer;box-shadow:0 0 16px rgba(123,232,168,.5);animation:godPulse 2.4s ease-in-out infinite">🐞</button>
 <style>@keyframes godPulse{0%,100%{box-shadow:0 0 10px rgba(123,232,168,.4)}50%{box-shadow:0 0 22px rgba(123,232,168,.8)}}</style>
 
 <div id="godOverlay" onclick="if(event.target===this)closeGodPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:61;align-items:center;justify-content:center;padding:22px">
@@ -917,7 +924,7 @@
       <p style="font-size:12px;color:#8D7B80;margin:0;line-height:1.5">주문 내역을 합산했어요. 편하게 보고 복사하세요</p>
     </div>
     <div id="orderSheetBody" style="flex:1;overflow-y:auto;padding:14px 22px 16px"></div>
-    <div style="flex-shrink:0;padding:12px 22px calc(16px + env(safe-area-inset-bottom));border-top:1.5px solid #FFE0EE;background:#FFF7FB">
+    <div style="flex-shrink:0;padding:12px 22px 16px;border-top:1.5px solid #FFE0EE;background:#FFF7FB">
       <button onclick="copyOrderSheet()" class="w-full rounded-2xl py-3.5" style="border:none;cursor:pointer;font-family:'Jua','Gowun Dodum',sans-serif;font-size:14px;font-weight:800;color:#fff;background:linear-gradient(120deg,#E8608D,#D6437A);box-shadow:0 8px 20px -8px rgba(196,16,85,.6)">🛒 주문서 일괄 복사</button>
     </div>
   </div>
@@ -1327,7 +1334,7 @@
 
 <!-- ══ 취향 진단 퀴즈 ══ -->
 <div id="quizOverlay" class="kw-pop" style="display:none;position:fixed;inset:0;z-index:60;background:#FFF7FB;overflow-y:auto">
-  <div style="width:100%;max-width:430px;margin:0 auto;min-height:100%;display:flex;flex-direction:column">
+  <div style="width:100%;max-width:430px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);box-sizing:border-box">
     <div id="quizBody" style="flex:1;display:flex;flex-direction:column;transition:opacity .22s ease"></div>
   </div>
 </div>
