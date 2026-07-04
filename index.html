@@ -92,6 +92,9 @@
   nav button{ transition:transform .25s var(--jelly); }
   nav button:hover{ transform:translateY(-3px) scale(1.12); }
   nav button:active{ transform:scale(.9); }
+  /* 하단 탭바 라벨 — 카이와이 무드(Jua) + 가독성(살짝 크게·또렷·대비 그림자) */
+  nav button{ font-family:var(--kw-cute) !important; font-size:11px !important; font-weight:700; letter-spacing:-.2px; text-shadow:0 1px 2px rgba(150,30,75,.32); }
+  nav button[style*="opacity:.62"]{ opacity:.8 !important; }        /* 비활성 탭 흐림 완화 → 가독성 ↑ */
   /* 젤리 버튼: 모든 버튼/링크에 쫀득한 눌림감 */
   button, a[onclick], a[href]{ transition:transform .3s var(--jelly), filter .15s, opacity .15s, box-shadow .25s; }
   button:active, a[onclick]:active{ transform:scale(.96); }
