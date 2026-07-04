@@ -121,8 +121,8 @@
   @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .su{animation:slideUp .32s cubic-bezier(.32,.72,0,1)}
   /* 소식 카드 슬라이드 전환: 다음=오른쪽에서, 이전=왼쪽에서 (fade+slide) */
-  @keyframes newsInR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
-  @keyframes newsInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes newsInR{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes newsInL{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
   /* mSheet 는 .kw-pop[style*="28px..."](특이도 0,2,0)이 .su 를 덮어 재오픈 시 애니메이션이
      1회만 재생되던 버그 → .su 토글이 항상 이기도록 보강(밑에서 올라오는 모달 일관성) */
   .kw-pop.su{animation:slideUp .32s cubic-bezier(.32,.72,0,1) !important}
@@ -157,6 +157,9 @@
   /* 모바일: 회색 탭 하이라이트 제거 + 부드러운 스크롤·관성 스크롤 */
   *{ -webkit-tap-highlight-color:transparent }
   html{ scroll-behavior:smooth }
+  /* 웹뷰 앱: 고무줄 오버스크롤 바운스 제거 → 스와이프 시 하단 고정 nav 튕김 방지.
+     (overflow-x:hidden 은 sticky 헤더를 깨뜨릴 수 있어 쓰지 않음 — 슬라이드 폭을 패딩 안쪽으로 제한해 오버플로 회피) */
+  html,body{ overscroll-behavior:none; }
   body{ -webkit-overflow-scrolling:touch }
   /* 키보드 접근성: 포커스 링은 키보드 탐색 시에만 (마우스 클릭엔 안 보임) */
   :focus-visible{ outline:2.5px solid var(--pink-mid); outline-offset:2px; border-radius:10px }
@@ -301,7 +304,7 @@
   <!-- ✨ 다가오는 소식 캐러셀 (실데이터: 곧 다가오는 온라인 발매·예약 일정 CAL) -->
   <div id="newsSection" class="px-4 mt-1 mb-4">
     <div style="text-align:center;font-size:14px;color:#3d2b2b;margin-bottom:12px">주목해야 할 다가오는 소식 !</div>
-    <div id="newsWrap"></div>
+    <div id="newsWrap" style="touch-action:pan-y"></div>
     <div id="newsDots" style="display:flex;gap:7px;justify-content:center;margin-top:11px"></div>
   </div>
 
@@ -5196,8 +5199,15 @@ function _initNewsSwipe(){
   const wrap=document.getElementById("newsWrap");
   if(!wrap||_newsSwipeReady) return;
   _newsSwipeReady=true;
-  let sx=0, sy=0, on=false;
-  wrap.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; on=true; },{passive:true});
+  let sx=0, sy=0, on=false, horiz=false;
+  wrap.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; on=true; horiz=false; },{passive:true});
+  // 가로 스와이프로 판정되면 브라우저 기본 스크롤/오버스크롤 바운스를 막는다(하단 nav 튕김 방지).
+  wrap.addEventListener("touchmove",e=>{
+    if(!on) return;
+    const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+    if(!horiz && Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>6) horiz=true;
+    if(horiz && e.cancelable) e.preventDefault();
+  },{passive:false});
   wrap.addEventListener("touchend",e=>{
     if(!on) return; on=false;
     if(_newsItems.length<2) return;
