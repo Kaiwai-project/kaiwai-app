@@ -9,6 +9,14 @@ if (hasKeystore) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+// ── 앱 버전 단일 소스 ──
+// 여기 semver(MAJOR.MINOR.PATCH) 한 줄만 올리면 versionCode 자동 계산됨.
+//   예) "1.0.0"→10000, "1.0.1"→10001, "1.2.3"→10203  (스토어는 versionCode 증가 필수)
+//   각 자리는 0~99 범위로 관리 (MINOR/PATCH 100 미만).
+def appVersionName = "1.0.0"
+def (vMajor, vMinor, vPatch) = appVersionName.tokenize('.').collect { it.toInteger() }
+def appVersionCode = vMajor * 10000 + vMinor * 100 + vPatch
+
 android {
     namespace = "kr.kaiwai.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -16,8 +24,8 @@ android {
         applicationId "kr.kaiwai.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersionCode
+        versionName appVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
