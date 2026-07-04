@@ -120,6 +120,9 @@
   .fu{animation:fadeUp .36s ease both}
   @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .su{animation:slideUp .32s cubic-bezier(.32,.72,0,1)}
+  /* 소식 카드 슬라이드 전환: 다음=오른쪽에서, 이전=왼쪽에서 (fade+slide) */
+  @keyframes newsInR{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes newsInL{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:translateX(0)}}
   /* mSheet 는 .kw-pop[style*="28px..."](특이도 0,2,0)이 .su 를 덮어 재오픈 시 애니메이션이
      1회만 재생되던 버그 → .su 토글이 항상 이기도록 보강(밑에서 올라오는 모달 일관성) */
   .kw-pop.su{animation:slideUp .32s cubic-bezier(.32,.72,0,1) !important}
@@ -5132,7 +5135,7 @@ function gridCard(b, delay){
 /* ═══════════════════════════════════
    홈 v2 — 다가오는 소식 캐러셀 (실데이터: 곧 다가오는 온라인 발매·예약 일정 CAL)
 ═══════════════════════════════════ */
-let _newsIdx = 0, _newsTimer = null, _newsItems = [];
+let _newsIdx = 0, _newsTimer = null, _newsItems = [], _newsDir = 1;
 function _buildNews(){
   const today = _todayStr();
   const DOW=["일","월","화","수","목","금","토"];
@@ -5155,8 +5158,9 @@ function drawNews(){
   }
   if(_newsIdx>=_newsItems.length) _newsIdx=0;
   _renderNews();
+  _initNewsSwipe();
   clearInterval(_newsTimer);
-  if(_newsItems.length>1) _newsTimer=setInterval(()=>{ if(tab==="home"){ _newsIdx=(_newsIdx+1)%_newsItems.length; _renderNews(); } }, 4800);
+  if(_newsItems.length>1) _newsTimer=setInterval(()=>{ if(tab==="home"){ _newsDir=1; _newsIdx=(_newsIdx+1)%_newsItems.length; _renderNews(); } }, 4800);
 }
 function _renderNews(){
   const wrap=document.getElementById("newsWrap"); if(!wrap) return;
@@ -5165,7 +5169,7 @@ function _renderNews(){
   const tagSoft=(t)=>`<span style="font-family:var(--kw-num);font-weight:700;font-size:11px;color:#a8848f;background:var(--kw-pink-pale);border-radius:13px;padding:4px 11px">${t}</span>`;
   const tags=(n.tags||[]).map((t,i)=> i===0?tagOut(t):tagSoft(t)).join("");
   const clickable = n.bid!=null;
-  wrap.innerHTML = `<div class="kw-news"${clickable?` role="button" onclick="openM(${n.bid})" style="cursor:pointer"`:""}>
+  wrap.innerHTML = `<div class="kw-news" style="animation:${_newsDir<0?"newsInL":"newsInR"} .32s cubic-bezier(.32,.72,0,1)${clickable?";cursor:pointer":""}"${clickable?` role="button" onclick="openM(${n.bid})"`:""}>
     <div class="kw-news__date">
       <span style="font-family:var(--kw-num);font-size:12px;color:var(--kw-gray);font-weight:700">${n.month}</span>
       <span style="font-family:var(--kw-num);font-size:34px;font-weight:900;color:#444;line-height:1">${n.day}</span>
@@ -5182,8 +5186,25 @@ function _renderNews(){
   const dots=document.getElementById("newsDots");
   if(dots) dots.innerHTML=_newsItems.map((_,i)=>`<button onclick="goNews(${i})" aria-label="소식 ${i+1}" style="width:${i===_newsIdx?"22px":"8px"};height:8px;border-radius:4px;border:none;cursor:pointer;transition:all .25s;background:${i===_newsIdx?"var(--kw-pink)":"var(--kw-pink-light)"}"></button>`).join("");
 }
-function nextNews(){ if(!_newsItems.length) return; _newsIdx=(_newsIdx+1)%_newsItems.length; _renderNews(); }
-function goNews(i){ _newsIdx=i; _renderNews(); }
+function nextNews(){ if(!_newsItems.length) return; _newsDir=1; _newsIdx=(_newsIdx+1)%_newsItems.length; _renderNews(); }
+function prevNews(){ if(!_newsItems.length) return; _newsDir=-1; _newsIdx=(_newsIdx-1+_newsItems.length)%_newsItems.length; _renderNews(); }
+function goNews(i){ if(i===_newsIdx) return; _newsDir = (i>_newsIdx)?1:-1; _newsIdx=i; _renderNews(); }
+/* 소식 카드 스와이프: #newsWrap 은 innerHTML 만 교체되고 자신은 유지되므로 리스너 1회만 부착.
+   좌→다음 / 우→이전. 세로 스크롤과 충돌 방지(가로 이동이 더 클 때만 반응). */
+let _newsSwipeReady=false;
+function _initNewsSwipe(){
+  const wrap=document.getElementById("newsWrap");
+  if(!wrap||_newsSwipeReady) return;
+  _newsSwipeReady=true;
+  let sx=0, sy=0, on=false;
+  wrap.addEventListener("touchstart",e=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; on=true; },{passive:true});
+  wrap.addEventListener("touchend",e=>{
+    if(!on) return; on=false;
+    if(_newsItems.length<2) return;
+    const t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+    if(Math.abs(dx)>40 && Math.abs(dx)>Math.abs(dy)){ dx<0 ? nextNews() : prevNews(); }
+  },{passive:true});
+}
 
 /* ═══════════════════════════════════
    실시간 인기 랭킹 (좋아요순 Top 10, 가로 스크롤)
@@ -5737,6 +5758,12 @@ function drawCal(){
     // id 가 잡히면 클릭 시 openM(bid) 로 디렉토리 상세 모달을 앱 내에서 바로 띄운다.
     const bid = (it.bid!=null) ? it.bid : (B.find(x=>x.n===it.br)||{}).id;
     const clickable = bid!=null;
+    // 카드 테두리: 즐겨찾기 카드와 동일한 카테고리 그라데이션 border-box (favCatColor).
+    // 브랜드 매칭 시 그 카테고리색, 아니면 favCatColor 기본 핑크. 4면 균일.
+    const _cb = B.find(x=>x.id===bid);
+    const _cc = favCatColor(_cb ? _cb.s : null);
+    const favBorder = `background:linear-gradient(140deg,#FFFFFF 0%, ${_cc.fill} 42%, ${_cc.e1} 100%) padding-box,`
+                    + `linear-gradient(135deg, ${_cc.e1}, ${_cc.e2}) border-box;border:1.8px solid transparent`;
     // 날짜가 바뀌는 첫 항목 앞에 '핑크 리본 가로선' 구분선 삽입 (같은 날짜끼리 묶임)
     const newDay = (i===0) || (sorted[i-1].dt !== it.dt);
     const ribbon = `<span style="flex:1;height:0;border-top:2px dashed #FF9EC7;opacity:.9"></span>`;
@@ -5746,13 +5773,12 @@ function drawCal(){
       ${ribbon}
     </div>` : "";
     return daySep + `<div class="fu" ${clickable?`onclick="openM(${bid})" role="button" tabindex="0" aria-label="${it.br} 브랜드 상세 보기"`:""} style="animation-delay:${i*.04}s;display:flex;gap:10px;align-items:stretch;margin-bottom:10px;${clickable?"cursor:pointer":""}">
-      <div style="width:50px;flex-shrink:0;background:#fff;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;gap:1px;box-shadow:0 3px 12px rgba(255,150,180,.12)">
+      <div style="width:50px;flex-shrink:0;${favBorder};border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 4px;gap:1px;box-shadow:0 3px 12px rgba(255,150,180,.12)">
         <span style="font-size:9px;color:#C4A8B0;font-weight:500">${mm}월</span>
         <span style="font-size:22px;font-weight:800;color:#4A4A4A;line-height:1;font-family:'Jua','Gowun Dodum',sans-serif">${dd}</span>
         <span style="font-size:10px;font-weight:700;color:${it.c}">${dw}</span>
       </div>
-      <div style="flex:1;background:#fff;border-radius:18px;overflow:hidden;display:flex;box-shadow:0 3px 12px rgba(255,150,180,.12)${clickable?";transition:box-shadow .15s,transform .15s":""}" ${clickable?`onmouseover="this.style.boxShadow='0 6px 18px rgba(255,120,160,.28)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 3px 12px rgba(255,150,180,.12)';this.style.transform='translateY(0)'"`:""}>
-        <div style="width:4px;flex-shrink:0;background:${it.c}"></div>
+      <div style="flex:1;${favBorder};border-radius:18px;overflow:hidden;display:flex;box-shadow:0 3px 12px rgba(255,150,180,.12)${clickable?";transition:box-shadow .15s,transform .15s":""}" ${clickable?`onmouseover="this.style.boxShadow='0 6px 18px rgba(255,120,160,.28)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 3px 12px rgba(255,150,180,.12)';this.style.transform='translateY(0)'"`:""}>
         <div style="flex:1;padding:11px 13px;min-width:0">
           <p style="font-weight:700;color:#4A4A4A;font-size:13px;margin:0 0 8px;line-height:1.4">${it.e} ${it.d}</p>
           <div style="display:flex;gap:5px;flex-wrap:wrap">
